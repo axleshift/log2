@@ -19,6 +19,7 @@ import {
   cilSettings,
   cilTask,
   cilUser,
+  cilArrowThickFromRight,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
@@ -85,8 +86,8 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
         <CDropdownDivider />
         <CDropdownItem href="#">
-          <CIcon icon={cilLockLocked} className="me-2" />
-          Lock Account
+          <CIcon icon={cilArrowThickFromRight} className="me-2" />
+          SignOut
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
