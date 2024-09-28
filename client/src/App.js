@@ -8,11 +8,6 @@ import './scss/style.scss'
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
-//modules
-const Order = React.lazy(() => import('./views/filorder/order'))
-const Docutrack = React.lazy(() => import('./views/document tracking/Docutrack'))
-const FleetManage = React.lazy(() => import('./views/fleetmanage/FleetManage'))
-const VehicleReserv = React.lazy (() => import ('./views/vehiclereserv/VehicleReserv'))
 
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -49,10 +44,6 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/order" name="Order Page" element={<Order />} />
-          <Route exact path="/docutrack" name="DocuTrack Page" element={<Docutrack />} />
-          <Route exact path="/fleetmanage" name="FleetManage Page" element={<FleetManage />} />
-          <Route exact path="/vehiclereserv" name="VehicleReserv Page" element={<VehicleReserv/>}/>
           <Route exact path="/login" name="Login Page" element={<Login />} />
           <Route exact path="/register" name="Register Page" element={<Register />} />
           <Route exact path="/404" name="Page 404" element={<Page404 />} />

@@ -8,6 +8,7 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
+  CButton
 } from '@coreui/react'
 import {
   cilBell,
@@ -85,8 +86,7 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
         <CDropdownDivider />
         <CDropdownItem href="#">
-          <CIcon icon={cilArrowThickFromRight} className="me-2" />
-          SignOut
+        <CButton as="a" color="primary" href="/Login" role="button">SignOut</CButton>
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

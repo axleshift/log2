@@ -57,6 +57,11 @@ const AppHeader = () => {
               Dashboard
             </CNavLink>
           </CNavItem>
+          <CNavItem>
+            <CNavLink to="/order" as={NavLink}>
+              Order
+            </CNavLink>
+          </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
