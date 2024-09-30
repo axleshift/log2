@@ -45,9 +45,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Order Status',
-    to: '/orderstatus',
-    icon: <CIcon icon={cilCart} customClassName="nav-icon" />,
+    name: 'Trucking Status',
+    to: '/truckingstatus',
+    icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
     badge: {
       color: 'info',
       text: 'NEW',
