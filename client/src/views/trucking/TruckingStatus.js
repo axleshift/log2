@@ -1,10 +1,16 @@
-import { Colors } from "chart.js";
+import { CHeader } from "@coreui/react";
 import React, {useState}from "react";
 import DataTable from 'react-data-table-component';
 
 
 function TruckingStatus (){
         const columns = [
+          {
+            name: 'ID',
+            selector: row => row.id,
+            sortable: true
+            
+         },
           {
              name: 'Name',
              selector: row => row.name,
@@ -47,11 +53,17 @@ function TruckingStatus (){
           sortable: true
          },
          {
+          name: 'Quantity',
+          selector: row => row.quantity,
+          sortable: true
+         },
+         {
           name: 'Status',
           selector: row => row.status,
           sortable: true
          },
-         
+        
+
         ];
         const data =[
           {
@@ -101,9 +113,13 @@ function TruckingStatus (){
         }
         return(
           <div className='container mt-5'>
-            <div className="text-end"><input type="text" onChange={handleFilter} /></div>
+            <CHeader>
+            <div className="text-end"><input type="text" onChange={handleFilter} placeholder="Search" /></div>
+            <div>
             <button type="button" href="./order.js" className="btn btn-primary me-2" >CreatNew</button>
             <button type="button" className="btn btn-primary me-2" >Delete</button>
+            </div>
+            </CHeader>
             <DataTable
               columns={columns}
               data={records}

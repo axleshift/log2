@@ -18,8 +18,10 @@ import {
   cilSettings,
   cilAssistiveListeningSystem,
   cilTransfer,
-  cilFile
+  cilFile,
+  cilHouse,
 } from '@coreui/icons'
+
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [
@@ -55,19 +57,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Vehicle Reservation',
-    to: '/vehiclereservation',
-    icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
-  },
-  {
-    component: CNavItem,
-    name: 'FleetManagement',
-    to: '/fleetmanagement',
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    name: 'Warehouse',
+    to: '/warehouse',
+    icon: <CIcon icon={cilHouse} customClassName="nav-icon" />,
     badge: {
       color: 'info',
       text: 'NEW',
