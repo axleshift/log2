@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -13,54 +13,60 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+} from '@coreui/react';
+import CIcon from '@coreui/icons-react';
+import { cilLockLocked, cilUser } from '@coreui/icons';
 
 function Login() {
-  const [ username, setUsername ] = useState('');
-  const [ password, setPassword ] = useState('');
-  const navigate = useNavigate ();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-      fetchAdmins();
-    }, [])
+  const fetchAdmins = async () => {
+    const token = localStorage.getItem('token');
 
-  const fetchAdmins = () => {
-        axios
-        .get('http://localhost:3001/register')
-        .then((res) => {
-          console.log(res.data);
-        })
-        .catch((err) => {
-          console.err('Error fetching admins', err);
-        });
+    try {
+      const response = await axios.get('http://localhost:3001/register', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching admins', error.response ? error.response.data : error.message);
+    }
   };
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/login',
-        { username, password });
+      const response = await axios.post('http://localhost:3001/login', { username, password });
       const token = response.data.token;
       alert('Login Successfully');
-      setUsername('')
+      setUsername('');
       setPassword('');
-      fetchAdmins();
       localStorage.setItem('token', token);
-      navigate('/dashboard');  
-    } catch (err) {
-      console.error('Login Error', err);
-      alert('Login failed. Please Check your credentials');
+      navigate('/dashboard');
+    } catch (error) {
+      if (error.response) {
+        alert(`Login failed: ${error.response.data.message}`); // respond with status code other than 200
+      } else if (error.request) {
+        alert('Login failed: Network error. Please try again.'); // req was made but no response
+      } else {
+        alert('Login failed: An unexpected error occurred.'); // something happen in the req
+      }
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={6}>
+          <CCol md={5}>
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
@@ -71,13 +77,14 @@ function Login() {
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput 
-                      type="test"
-                      placeholder="Username"
-                      autoComplete="username" 
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
+                      <CFormInput
+                        type="text"
+                        placeholder="Username"
+                        autoComplete="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        aria-label="Username"
                       />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
@@ -91,25 +98,28 @@ function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        aria-label="Password"
                       />
                     </CInputGroup>
-                  <CRow className="justify-content-between">   
-                   <CCol xs={4}>
-                       <CButton color="primary" className="px-4" type="submit">Login</CButton>
-                     </CCol>   
-                     <CCol xs={4}>
-                       <CButton color="link" className="px-0">Forgot password?</CButton>
-                    </CCol>
+                    <CRow className="justify-content-between">
+                      <CCol xs={4}>
+                        <CButton color="primary" className="px-4" type="submit" disabled={loading}>
+                          {loading ? 'Logging in...' : 'Login'}
+                        </CButton>
+                      </CCol>
+                      <CCol xs={4}>
+                        <CButton color="link" className="px-0">Forgot password?</CButton>
+                      </CCol>
                     </CRow>
-                  <CRow className="justify-content-center">
-                    <CCol xs ={4}>
-                      <Link to="/register">
-                      <CButton color="link" className="px-0">
-                        Register Now!
-                      </CButton>
-                    </Link>
-                    </CCol>
-                   </CRow>
+                    <CRow className="justify-content-center">
+                      <CCol xs={4}>
+                        <Link to="/register">
+                          <CButton color="link" className="px-0">
+                            Register Now!
+                          </CButton>
+                        </Link>
+                      </CCol>
+                    </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
@@ -118,7 +128,7 @@ function Login() {
         </CRow>
       </CContainer>
     </div>
-  )
+  );
 }
 
 export default Login;
