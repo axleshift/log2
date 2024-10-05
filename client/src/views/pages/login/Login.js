@@ -23,40 +23,25 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fetchAdmins = async () => {
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await axios.get('http://localhost:3001/register', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching admins', error.response ? error.response.data : error.message);
-    }
-  };
-
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
+
+    console.log('Sending login request with:', { username, password });
+    
     try {
       const response = await axios.post('http://localhost:3001/login', { username, password });
       const token = response.data.token;
+
       alert('Login Successfully');
+      localStorage.setItem('token', token);
       setUsername('');
       setPassword('');
-      localStorage.setItem('token', token);
-      navigate('/dashboard');
+      navigate('/'); // Redirect to the home page
     } catch (error) {
-      if (error.response) {
-        alert(`Login failed: ${error.response.data.message}`); // respond with status code other than 200
-      } else if (error.request) {
-        alert('Login failed: Network error. Please try again.'); // req was made but no response
-      } else {
-        alert('Login failed: An unexpected error occurred.'); // something happen in the req
-      }
+      console.error('Login error:', error); // Log the error
+      const errorMsg = error.response?.data?.err || 'An unexpected error occurred. Please try again.';
+      alert(`Login failed: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -101,17 +86,19 @@ function Login() {
                         aria-label="Password"
                       />
                     </CInputGroup>
-                    <CRow className="justify-content-between">
-                      <CCol xs={4}>
-                        <CButton color="primary" className="px-4" type="submit" disabled={loading}>
-                          {loading ? 'Logging in...' : 'Login'}
+                    <CRow>
+                      <CCol sm={5} md={5}>
+                        <CButton color="success" variant="outline" className="px-4" type="submit" disabled={loading}>
+                          {loading ? 'Logging in...' : 'LOGIN'}
                         </CButton>
                       </CCol>
-                      <CCol xs={4}>
-                        <CButton color="link" className="px-0">Forgot password?</CButton>
+                      <CCol xs="auto" className="me-auto">
+                        <Link to="/forgotPass">
+                          <CButton color="danger" variant="outline" className="px-4" disabled={loading}>
+                            {loading ? 'Processing...' : 'FORGOT PASSWORD'}
+                          </CButton>
+                        </Link>
                       </CCol>
-                    </CRow>
-                    <CRow className="justify-content-center">
                       <CCol xs={4}>
                         <Link to="/register">
                           <CButton color="link" className="px-0">

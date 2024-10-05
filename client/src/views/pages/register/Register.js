@@ -29,7 +29,7 @@ function Register() {
       // Sanitize the user inputs
       const sanitizedData = {
         username: DOMPurify.sanitize(data.username),
-        email: data.email, // You can keep this if you prefer to sanitize
+        email: DOMPurify.sanitize(data.email), // Sanitize email as well
         password: DOMPurify.sanitize(data.password),
       };
       await axios.post('http://localhost:3001/register', sanitizedData);
@@ -54,6 +54,7 @@ function Register() {
                 <CForm onSubmit={handleSubmit(onSubmit)}>
                   <h1>Register</h1>
                   <p className="text-body-secondary">Create your account</p>
+                  
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilUser} />
