@@ -1,4 +1,5 @@
 import { CHeader } from "@coreui/react";
+import { left } from "@popperjs/core";
 import React, {useState}from "react";
 import DataTable from 'react-data-table-component';
 
@@ -102,7 +103,19 @@ function TruckingStatus (){
 
           },
          
-        ]
+        ];
+        const customStyles = {
+         
+            headCells: {
+              style:{ 
+                fontSize:"13px",
+                padding:"10px"
+                
+              },
+              
+            },
+           
+          }
         const [records, setRecords] = useState(data);
 
         function handleFilter(event){
@@ -113,10 +126,11 @@ function TruckingStatus (){
         }
         return(
           <div className='container mt-5'>
+            
             <CHeader>
             <div className="text-end"><input type="text" onChange={handleFilter} placeholder="Search" /></div>
             <div>
-            <button type="button" href="./order.js" className="btn btn-primary me-2" >CreatNew</button>
+            <button type="button" href="./order.js" className="btn btn-primary me-2" >+ CreatNew</button>
             <button type="button" className="btn btn-primary me-2" >Delete</button>
             </div>
             </CHeader>
@@ -126,6 +140,7 @@ function TruckingStatus (){
               selectableRows
               fixedHeader
               pagination
+              customStyles={customStyles}
             ></DataTable>
           </div>
         )

@@ -15,11 +15,12 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'));
 const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'));
 const ChangePassword = React.lazy(() => import('./views/pages/changePassword/ChangePassword')); 
 
+
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
+function ProtectedRoute({ children }) {
   const isUserLogin = !!localStorage.getItem('token');
   return isUserLogin ? children : <Navigate to="/login" />;
-};
+}
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
@@ -55,7 +56,8 @@ const App = () => {
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
           <Route exact path="/forgotPass" name="ForgotPass" element={<ForgotPass />} />
           <Route path="/changePassword/:id/:token" name="ChangePassword" element={<ChangePassword />} />
-    
+          
+
           {/* Protected Routes */}
           <Route path="*" name="Home" element={
             <ProtectedRoute>

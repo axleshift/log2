@@ -26,6 +26,16 @@ const Order = ( ) => {
           <CCardBody>
           <CForm>
             <CRow >
+            <CCol>
+                <CFormInput 
+                type="ID"
+                id="ControlInput1"
+                label="ID"
+                placeholder="0"
+                text=""
+                />
+              </CCol>
+
               <CCol >
             <CFormInput
               type="Name"

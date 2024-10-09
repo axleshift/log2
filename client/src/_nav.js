@@ -20,6 +20,7 @@ import {
   cilTransfer,
   cilFile,
   cilHouse,
+  cilClipboard
 } from '@coreui/icons'
 
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
@@ -60,6 +61,16 @@ const _nav = [
     name: 'Warehouse',
     to: '/warehouse',
     icon: <CIcon icon={cilHouse} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+      text: 'NEW',
+    },
+  },
+  {
+    component: CNavItem,
+    name: 'Inventory',
+    to: '/inventory',
+    icon: <CIcon icon={cilClipboard} customClassName="nav-icon" />,
     badge: {
       color: 'info',
       text: 'NEW',

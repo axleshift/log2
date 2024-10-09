@@ -1,0 +1,22 @@
+{
+  "name": "@freight-capstone/log2",
+  "version": "1.0.0",
+  "description": "",
+  "bugs": {
+    "url": "https://github.com/freight-capstone/log2/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:freight-capstone/log2.git"
+  },
+  "license": "MIT",
+  "author": "The Freight Capstone Log 2",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
