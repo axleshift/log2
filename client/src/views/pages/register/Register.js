@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import DOMPurify from 'dompurify';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import DOMPurify from 'dompurify'
 import {
   CButton,
   CCard,
@@ -14,35 +13,45 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-} from '@coreui/react';
-import CIcon from '@coreui/icons-react';
-import { cilLockLocked, cilUser } from '@coreui/icons';
+  CAlert,
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilLockLocked, cilUser } from '@coreui/icons'
+import { registerUser } from '../../../api/authService'
 
 function Register() {
-  const { register, handleSubmit, formState: { errors }, watch, reset } = useForm();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [notification, setNotification] = useState({ message: '', type: '' })
 
   const onSubmit = async (data) => {
-    setLoading(true);
+    setLoading(true)
+    setNotification({ message: '', type: '' })
     try {
-      // Sanitize the user inputs
       const sanitizedData = {
         username: DOMPurify.sanitize(data.username),
-        email: DOMPurify.sanitize(data.email), // Sanitize email as well
+        email: DOMPurify.sanitize(data.email),
         password: DOMPurify.sanitize(data.password),
-      };
-      await axios.post('http://localhost:3001/register', sanitizedData);
-      alert('Registration Successful');
-      reset(); // Reset form fields after successful registration
-      navigate('/login');
+      }
+      const response = await registerUser(sanitizedData)
+      setNotification({ message: 'Registration Successful! Redirecting...', type: 'success' })
+      reset()
+      setTimeout(() => navigate('/login'), 2000) // Redirect after a delay for user feedback
     } catch (error) {
-      alert("Registration failed. Please try again.");
-      console.error('Registration Error:', error.response ? error.response.data : error.message);
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.'
+      setNotification({ message: errorMessage, type: 'danger' })
+      console.error('Registration Error:', errorMessage)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -51,10 +60,15 @@ function Register() {
           <CCol md={9} lg={7} xl={6}>
             <CCard className="mx-4">
               <CCardBody className="p-4">
+                {notification.message && (
+                  <CAlert color={notification.type} dismissible>
+                    {notification.message}
+                  </CAlert>
+                )}
                 <CForm onSubmit={handleSubmit(onSubmit)}>
                   <h1>Register</h1>
                   <p className="text-body-secondary">Create your account</p>
-                  
+
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilUser} />
@@ -63,20 +77,11 @@ function Register() {
                       type="text"
                       placeholder="Username"
                       autoComplete="username"
-                      {...register("username", {
-                        required: "Username is required",
-                        minLength: {
-                          value: 3,
-                          message: "Username must be at least 3 characters",
-                        },
-                        maxLength: {
-                          value: 20,
-                          message: "Username must not exceed 20 characters",
-                        },
-                        pattern: {
-                          value: /^[a-zA-Z0-9._-]+$/,
-                          message: "Username can only contain letters, numbers, dots, underscores, and hyphens",
-                        },
+                      {...register('username', {
+                        required: 'Username is required',
+                        minLength: { value: 3, message: 'Username must be at least 3 characters' },
+                        maxLength: { value: 20, message: 'Username must not exceed 20 characters' },
+                        pattern: { value: /^[a-zA-Z0-9._-]+$/, message: 'Invalid username format' },
                       })}
                     />
                   </CInputGroup>
@@ -88,11 +93,11 @@ function Register() {
                       type="email"
                       placeholder="Email"
                       autoComplete="email"
-                      {...register("email", {
-                        required: "Email is required",
+                      {...register('email', {
+                        required: 'Email is required',
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: "Invalid email format",
+                          message: 'Invalid email format',
                         },
                       })}
                     />
@@ -107,15 +112,14 @@ function Register() {
                       type="password"
                       placeholder="Password"
                       autoComplete="new-password"
-                      {...register("password", {
-                        required: "Password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Password must be at least 6 characters",
-                        },
+                      {...register('password', {
+                        required: 'Password is required',
+                        minLength: { value: 6, message: 'Password must be at least 6 characters' },
                         validate: {
-                          hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain at least one uppercase letter",
-                          hasNumber: (value) => /[0-9]/.test(value) || "Password must contain at least one number",
+                          hasUpperCase: (value) =>
+                            /[A-Z]/.test(value) || 'At least one uppercase letter required',
+                          hasNumber: (value) =>
+                            /[0-9]/.test(value) || 'At least one number required',
                         },
                       })}
                     />
@@ -130,14 +134,16 @@ function Register() {
                       type="password"
                       placeholder="Repeat password"
                       autoComplete="new-password"
-                      {...register("confirmPassword", {
-                        required: "Confirm Password is required",
+                      {...register('confirmPassword', {
+                        required: 'Confirm Password is required',
                         validate: (value) =>
-                          value === watch('password') || "Passwords do not match",
+                          value === watch('password') || 'Passwords do not match',
                       })}
                     />
                   </CInputGroup>
-                  {errors.confirmPassword && <p className="text-danger">{errors.confirmPassword.message}</p>}
+                  {errors.confirmPassword && (
+                    <p className="text-danger">{errors.confirmPassword.message}</p>
+                  )}
 
                   <div className="d-grid">
                     <CButton color="success" type="submit" disabled={loading}>
@@ -151,7 +157,7 @@ function Register() {
         </CRow>
       </CContainer>
     </div>
-  );
+  )
 }
 
-export default Register;
+export default Register

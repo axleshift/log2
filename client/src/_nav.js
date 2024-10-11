@@ -1,29 +1,7 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilCursor,
-  cilDescription,
-  cilDataTransferUp,
-  cilNotes,
-  cilPencil,
-  cilPuzzle,
-  cilSpeedometer,
-  cilStar,
-  cilCart,
-  cilTruck,
-  cilCalendar,
-  cilSettings,
-  cilAssistiveListeningSystem,
-  cilTransfer,
-  cilFile,
-  cilHouse,
-  cilClipboard
-} from '@coreui/icons'
-
-import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { cilSpeedometer, cilFile, cilTruck, cilHouse, cilClipboard } from '@coreui/icons'
+import { CNavItem } from '@coreui/react'
 
 const _nav = [
   {
@@ -39,7 +17,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Invoice',
-    to: '/invoice',
+    to: '/invoice', // Use 'to' for navigation
     icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
     badge: {
       color: 'info',

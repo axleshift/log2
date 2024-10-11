@@ -36,10 +36,16 @@ const AppHeader = () => {
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
   useEffect(() => {
-    document.addEventListener('scroll', () => {
-      headerRef.current &&
+    const handleScroll = () => {
+      if (headerRef.current) {
         headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
-    })
+      }
+    }
+
+    document.addEventListener('scroll', handleScroll)
+    return () => {
+      document.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   return (
@@ -48,19 +54,20 @@ const AppHeader = () => {
         <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
+          aria-label="Toggle sidebar"
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
-            <CNavLink to="/dashboard" as={NavLink}>
+            <CNavLink to="/dashboard" as={NavLink} aria-label="Dashboard">
               Dashboard
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
-            <CNavLink href="#">
+            <CNavLink href="#" aria-label="Notifications">
               <CIcon icon={cilBell} size="lg" />
             </CNavLink>
           </CNavItem>
@@ -70,7 +77,7 @@ const AppHeader = () => {
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <CDropdown variant="nav-item" placement="bottom-end">
-            <CDropdownToggle caret={false}>
+            <CDropdownToggle caret={false} aria-label="Toggle color mode">
               {colorMode === 'dark' ? (
                 <CIcon icon={cilMoon} size="lg" />
               ) : colorMode === 'auto' ? (

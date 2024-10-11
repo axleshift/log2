@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -13,39 +12,50 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-} from '@coreui/react';
-import CIcon from '@coreui/icons-react';
-import { cilLockLocked, cilUser } from '@coreui/icons';
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilLockLocked, cilUser } from '@coreui/icons'
+import { loginUser } from '../../../api/authService.js'
 
 function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const navigate = useNavigate()
 
   const handleLogin = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-
-    console.log('Sending login request with:', { username, password });
-    
-    try {
-      const response = await axios.post('http://localhost:3001/login', { username, password });
-      const token = response.data.token;
-
-      alert('Login Successfully');
-      localStorage.setItem('token', token);
-      setUsername('');
-      setPassword('');
-      navigate('/'); // Redirect to the home page
-    } catch (error) {
-      console.error('Login error:', error); // Log the error
-      const errorMsg = error.response?.data?.err || 'An unexpected error occurred. Please try again.';
-      alert(`Login failed: ${errorMsg}`);
-    } finally {
-      setLoading(false);
+    event.preventDefault()
+    if (!username || !password) {
+      alert('Please fill in both fields.')
+      return
     }
-  };
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null) // Clear previous success messages
+
+    try {
+      const response = await loginUser({ username, password })
+      const token = response.token
+
+      localStorage.setItem('token', token)
+      setUsername('')
+      setPassword('')
+      setSuccess('Successfully logged in!')
+      setTimeout(() => {
+        navigate('/') // Redirect to the home page after a short delay
+      }, 1500)
+    } catch (error) {
+      console.error('Login error:', error)
+      const errorMsg =
+        error.response?.data?.message || 'An unexpected error occurred. Please try again.'
+      setError(errorMsg)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -58,6 +68,9 @@ function Login() {
                   <CForm onSubmit={handleLogin}>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
+                    {error && <p className="text-danger">{error}</p>}
+                    {success && <p className="text-success">{success}</p>}{' '}
+                    {/* Display success message */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -87,14 +100,25 @@ function Login() {
                       />
                     </CInputGroup>
                     <CRow>
-                      <CCol sm={5} md={5}>
-                        <CButton color="success" variant="outline" className="px-4" type="submit" disabled={loading}>
+                      <CCol sm={5}>
+                        <CButton
+                          color="success"
+                          variant="outline"
+                          className="px-4"
+                          type="submit"
+                          disabled={loading}
+                        >
                           {loading ? 'Logging in...' : 'LOGIN'}
                         </CButton>
                       </CCol>
                       <CCol xs="auto" className="me-auto">
                         <Link to="/forgotPass">
-                          <CButton color="danger" variant="outline" className="px-4" disabled={loading}>
+                          <CButton
+                            color="danger"
+                            variant="outline"
+                            className="px-4"
+                            disabled={loading}
+                          >
                             {loading ? 'Processing...' : 'FORGOT PASSWORD'}
                           </CButton>
                         </Link>
@@ -115,7 +139,7 @@ function Login() {
         </CRow>
       </CContainer>
     </div>
-  );
+  )
 }
 
-export default Login;
+export default Login

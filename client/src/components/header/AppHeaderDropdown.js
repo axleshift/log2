@@ -9,7 +9,7 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
-  CButton
+  CButton,
 } from '@coreui/react'
 import {
   cilBell,
@@ -26,12 +26,12 @@ import CIcon from '@coreui/icons-react'
 import avatarboy from './../../assets/images/avatars/boy.jpg'
 
 const AppHeaderDropdown = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleSignOut = () => {
-    localStorage.removeItem('token');
-    navigate('/login'); 
-  };
+    localStorage.removeItem('token')
+    navigate('/login')
+  }
 
   return (
     <CDropdown variant="nav-item">
@@ -93,11 +93,13 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
         <CDropdownDivider />
         <CDropdownItem onClick={handleSignOut}>
-        <CButton as="a" color="primary" href="/Login" role="button">SignOut</CButton>
+          <CButton as="a" color="primary" href="/Login" role="button">
+            SignOut
+          </CButton>
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
   )
 }
 
-export default AppHeaderDropdown;
+export default AppHeaderDropdown
