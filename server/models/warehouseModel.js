@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 const warehouseItemSchema = new mongoose.Schema({
     date: {
@@ -23,6 +23,6 @@ const warehouseItemSchema = new mongoose.Schema({
     },
 });
 
-const WarehouseItem = mongoose.model('WarehouseItem', warehouseItemSchema);
+const WarehouseItem = mongoose.model("WarehouseItem", warehouseItemSchema);
 
 export default WarehouseItem;

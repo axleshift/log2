@@ -16,17 +16,17 @@ const InvoiceSchema = mongoose.Schema(
             required: true,
             unique: true,
         },
-        address: { 
+        address: {
             type: String,
             required: true,
         },
         contact: {
-            type: String,  
+            type: String,
             required: true,
         },
         receiptAdd: {
             type: String,
-            required: true,  
+            required: true,
         },
         cost: {
             type: Number,
@@ -41,9 +41,7 @@ const InvoiceSchema = mongoose.Schema(
             required: true,
         },
     },
-    {
-        timestamps: true, 
-    }
+    { timestamps: true }
 );
 
 const Invoice = mongoose.model("Invoice", InvoiceSchema);

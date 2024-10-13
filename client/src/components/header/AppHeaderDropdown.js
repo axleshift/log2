@@ -29,8 +29,12 @@ const AppHeaderDropdown = () => {
   const navigate = useNavigate()
 
   const handleSignOut = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('token') // removes token after logging out
     navigate('/login')
+  }
+
+  const handleProfileClick = () => {
+    navigate('/profile')
   }
 
   return (
@@ -69,7 +73,7 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
+        <CDropdownItem onClick={handleProfileClick}>
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem>
@@ -93,8 +97,8 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
         <CDropdownDivider />
         <CDropdownItem onClick={handleSignOut}>
-          <CButton as="a" color="primary" href="/Login" role="button">
-            SignOut
+          <CButton as="a" color="primary" role="button">
+            Sign Out
           </CButton>
         </CDropdownItem>
       </CDropdownMenu>

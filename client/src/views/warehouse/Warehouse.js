@@ -32,10 +32,11 @@ const Warehouse = () => {
     productName: '',
     productCategory: '',
     vendorName: '',
-    unitsReceived: '',
+    unitsReceived: 0,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchAllItems()
@@ -46,7 +47,7 @@ const Warehouse = () => {
     setError(null)
     try {
       const data = await getWarehouseItems()
-      setItems(data)
+      setItems(Array.isArray(data) ? data : []) // Ensure data is an array
     } catch (error) {
       console.error('Error fetching items:', error)
       setError('Failed to fetch items. Please try again later.')
@@ -59,6 +60,7 @@ const Warehouse = () => {
     setLoading(true)
     setError(null)
     try {
+      console.log('New item to be added:', newItem)
       const result = await createWarehouseItem(newItem)
       setItems([...items, result])
       resetModal()
@@ -74,7 +76,11 @@ const Warehouse = () => {
     setLoading(true)
     setError(null)
     try {
-      const updatedItem = await updateWarehouseItem(currentItem._id, newItem)
+      const updatedItem = await updateWarehouseItem(currentItem._id, {
+        ...newItem,
+        unitsReceived: Number(newItem.unitsReceived), // Ensure it's a number
+      })
+      console.log('API response:', updatedItem)
       setItems(items.map((item) => (item._id === updatedItem._id ? updatedItem : item)))
       resetModal()
     } catch (error) {
@@ -101,7 +107,8 @@ const Warehouse = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setNewItem({ ...newItem, [name]: value })
+    const newValue = name === 'unitsReceived' ? Number(value) : value // Convert to number if needed
+    setNewItem({ ...newItem, [name]: newValue })
   }
 
   const handleEditItem = (id) => {
@@ -112,7 +119,7 @@ const Warehouse = () => {
   }
 
   const isFormValid = () => {
-    return Object.values(newItem).every((field) => field !== '')
+    return Object.values(newItem).every((field) => field !== '') && newItem.unitsReceived >= 0
   }
 
   const resetModal = () => {
@@ -122,10 +129,18 @@ const Warehouse = () => {
       productName: '',
       productCategory: '',
       vendorName: '',
-      unitsReceived: '',
+      unitsReceived: 0,
     })
     setCurrentItem(null)
+    setError(null)
   }
+  // ALLOWS USER TO SEARCH INPUT AND DISPLAYS THE ITEM IN THE TABLE REAL TIME
+  const filteredItems = items.filter(
+    (item) =>
+      item.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.productCategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.vendorName.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   return (
     <CCard>
@@ -135,7 +150,12 @@ const Warehouse = () => {
           <CButton color="primary" className="me-md-2" onClick={() => setModalVisible(true)}>
             + Create
           </CButton>
-          <CFormInput type="text" placeholder="Search" />
+          <CFormInput
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </CCardHeader>
 
@@ -157,10 +177,10 @@ const Warehouse = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {items.map((item) => (
+              {filteredItems.map((item, index) => (
                 <CTableRow key={item._id}>
-                  <CTableHeaderCell scope="row">{item._id}</CTableHeaderCell>
-                  <CTableDataCell>{item.date}</CTableDataCell>
+                  <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
+                  <CTableDataCell>{new Date(item.date).toLocaleDateString()}</CTableDataCell>
                   <CTableDataCell>{item.productName}</CTableDataCell>
                   <CTableDataCell>{item.productCategory}</CTableDataCell>
                   <CTableDataCell>{item.vendorName}</CTableDataCell>
@@ -187,7 +207,7 @@ const Warehouse = () => {
         </CModalHeader>
         <CModalBody>
           <CFormInput
-            type="text"
+            type="date"
             name="date"
             label="Date"
             value={newItem.date}

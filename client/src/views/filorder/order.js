@@ -1,7 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  CInputGroup,
-  CInputGroupText,
   CFormInput,
   CCard,
   CCardBody,
@@ -9,135 +7,242 @@ import {
   CCol,
   CCardHeader,
   CButton,
-  CButtonGroup,
   CCardFooter,
   CForm,
-  CCardTitle,
-  CFormLabel,
 } from '@coreui/react'
-
 import './order.scss'
+import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from '../../api/invoiceService'
 
 const Order = () => {
+  const [orders, setOrders] = useState([])
+  const [formData, setFormData] = useState({
+    id: '',
+    customerName: '',
+    email: '',
+    address: '',
+    contactNumber: '',
+    fullName: '',
+    recipientAddress: '',
+    recipientContactNumber: '',
+    weight: '',
+    cost: '',
+    quantity: '',
+  })
+
+  const [editingId, setEditingId] = useState(null)
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      const response = await getInvoices() // Use the service function
+      setOrders(response.data)
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    }
+  }
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      if (editingId) {
+        await updateInvoice(editingId, formData) // Use the service function
+      } else {
+        await createInvoice(formData) // Use the service function
+      }
+      resetForm()
+      fetchOrders()
+    } catch (error) {
+      console.error('Error saving order:', error)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      id: '',
+      customerName: '',
+      email: '',
+      address: '',
+      contactNumber: '',
+      fullName: '',
+      recipientAddress: '',
+      recipientContactNumber: '',
+      weight: '',
+      cost: '',
+      quantity: '',
+    })
+    setEditingId(null)
+  }
+
+  const handleEdit = (order) => {
+    setFormData(order)
+    setEditingId(order.id)
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteInvoice(id) // Use the service function
+      fetchOrders()
+    } catch (error) {
+      console.error('Error deleting order:', error)
+    }
+  }
+
   return (
     <CCard>
       <CCardHeader className="CardHeader">
         <h1>Customer Information</h1>
       </CCardHeader>
       <CCardBody>
-        <CForm>
+        <CForm onSubmit={handleSubmit}>
           <CRow>
             <CCol>
-              <CFormInput type="ID" id="ControlInput1" label="ID" placeholder="0" text="" />
+              <CFormInput
+                type="text"
+                id="id"
+                label="ID"
+                placeholder="0"
+                value={formData.id}
+                onChange={handleChange}
+              />
             </CCol>
-
             <CCol>
               <CFormInput
-                type="Name"
-                id="ControlInput1"
+                type="text"
+                id="customerName"
                 label="Customer Name"
                 placeholder="Juan DelaCruz"
-                text="Must be 8-20 characters long."
+                value={formData.customerName}
+                onChange={handleChange}
               />
             </CCol>
             <CCol>
               <CFormInput
-                type="Email"
-                id="ControlInput1"
+                type="email"
+                id="email"
                 label="Email Address"
                 placeholder="name@example.com"
-                text="Must be 8-20 characters long."
+                value={formData.email}
+                onChange={handleChange}
               />
             </CCol>
           </CRow>
-        </CForm>
-
-        <CForm>
           <CRow>
             <CCol>
               <CFormInput
-                type="Address"
-                id="ControlInput1"
+                type="text"
+                id="address"
                 label="Address"
-                placeholder="number and street name. You may include the city, state and ZIP code on the final line"
+                placeholder="number and street name"
+                value={formData.address}
+                onChange={handleChange}
               />
             </CCol>
-
             <CCol>
               <CFormInput
-                type="Contact Number"
-                id="ControlInput1"
-                label="ContactNumber"
+                type="text"
+                id="contactNumber"
+                label="Contact Number"
                 placeholder="000 0000 0000"
+                value={formData.contactNumber}
+                onChange={handleChange}
               />
             </CCol>
           </CRow>
-        </CForm>
-      </CCardBody>
-
-      <CCardBody>
-        <CForm>
           <CRow>
             <CCol>
               <CFormInput
-                type="Name"
-                id="ControlInput1"
+                type="text"
+                id="fullName"
                 label="Full Name"
                 placeholder="Juan DelaCruz"
+                value={formData.fullName}
+                onChange={handleChange}
               />
             </CCol>
             <CCol>
               <CFormInput
-                type="Recipient Address"
-                id="ControlInput1"
+                type="text"
+                id="recipientAddress"
                 label="Recipient Address"
-                placeholder="number and street name. You may include the city, state and ZIP code on the final line"
+                placeholder="number and street name"
+                value={formData.recipientAddress}
+                onChange={handleChange}
               />
             </CCol>
           </CRow>
-        </CForm>
-
-        <CForm>
           <CRow>
             <CCol>
               <CFormInput
-                type="Contact Number"
-                id="ControlInput1"
-                label="ContactNumber"
+                type="text"
+                id="recipientContactNumber"
+                label="Recipient Contact Number"
                 placeholder="000 0000 0000"
+                value={formData.recipientContactNumber}
+                onChange={handleChange}
               />
             </CCol>
-
-            <CCol>
-              <CFormInput type="Weight" id="ControlInput1" label="Weight" placeholder="" />
-            </CCol>
-          </CRow>
-        </CForm>
-
-        <CForm>
-          <CRow>
-            <CCol>
-              <CFormInput type="Cost" id="ControlInput1" label="Cost" placeholder="" />
-            </CCol>
-
             <CCol>
               <CFormInput
-                type="Quantity"
-                id="ControlInput1"
+                type="text"
+                id="weight"
+                label="Weight"
+                value={formData.weight}
+                onChange={handleChange}
+              />
+            </CCol>
+          </CRow>
+          <CRow>
+            <CCol>
+              <CFormInput
+                type="text"
+                id="cost"
+                label="Cost"
+                value={formData.cost}
+                onChange={handleChange}
+              />
+            </CCol>
+            <CCol>
+              <CFormInput
+                type="number"
+                id="quantity"
                 label="Product Quantity"
                 placeholder="1"
+                value={formData.quantity}
+                onChange={handleChange}
               />
             </CCol>
           </CRow>
+          <div className="d-grid gap-2 col-6 mx-auto">
+            <CButton color="primary" shape="rounded-pill" type="submit">
+              {editingId ? 'UPDATE' : 'SUBMIT'}
+            </CButton>
+          </div>
         </CForm>
       </CCardBody>
-      <CCardBody>
-        <div className="d-grid gap-2 col-6 mx-auto ">
-          <CButton color="primary" shape="rounded-pill">
-            SUBMIT
-          </CButton>
-        </div>
-      </CCardBody>
+
+      <CCardFooter>
+        <h3>Orders List</h3>
+        <ul>
+          {orders.map((order) => (
+            <li key={order.id}>
+              {order.customerName} - {order.email}
+              <CButton color="warning" onClick={() => handleEdit(order)}>
+                Edit
+              </CButton>
+              <CButton color="danger" onClick={() => handleDelete(order.id)}>
+                Delete
+              </CButton>
+            </li>
+          ))}
+        </ul>
+      </CCardFooter>
     </CCard>
   )
 }
