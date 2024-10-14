@@ -1,0 +1,67 @@
+name: Build
+
+on:
+    push:
+        branches: ["main"]
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+        
+      - name: Build frontend
+        run: |
+          cd client
+          npm i
+          npm run lint
+          npm run build
+
+      - name: Upload frontend
+        id: push_directory_frontend
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: client/build
+          destination-github-username: 'freight-capstone'
+          # Replace with your module name
+          destination-repository-name: 'log2'
+          # Replace with your email address
+          user-email: nazzchwan@gmail.com
+          # Replace (optional)
+          commit-message: Production
+          # Replace core1 with your module name
+          target-branch: log2-frontend
+          
+      - name: Build backend
+        # Change the following commands if you have custom build
+        run: |
+          cd server
+          npm i
+          npm run lint
+          rm -rf node_modules
+
+      - name: Upload backend
+        id: push_directory_backend
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: server/
+          destination-github-username: 'freight-capstone'
+          # Replace with your module name
+          destination-repository-name: 'log2'
+          # Replace with your email address
+          user-email: nazzchwan@gmail.com
+          # Replace (optional)
+          commit-message: Production
+          # Replace core1 with your module name
+          target-branch: log2-backend
