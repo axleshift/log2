@@ -20,6 +20,9 @@ jobs:
       - name: Build frontend
         run: |
           cd client
+          echo "VITE_APP_API_URL=${{ secrets.APP_API_URL }}" >> .env
+          echo "VITE_APP_NODE_ENV${{ secrets.APP_NODE_ENV }}" >> .env
+          echo "VITE_APP_SECRET_KEY${{ secrets.APP_SECRET_KEY }}" >> .env
           npm i
           npm run lint
           npm run build
