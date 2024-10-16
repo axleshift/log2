@@ -1,5 +1,5 @@
-import TruckingItem from "../models/truckingModel.js"; // Your Mongoose model
-import { validationResult } from "express-validator"; // For input validation
+import TruckingItem from "../models/truckingModel.js";
+import { validationResult } from "express-validator";
 
 const getRecords = async (req, res) => {
     try {

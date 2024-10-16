@@ -6,7 +6,8 @@ dotenv.config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
 export const tokenMiddleware = (req, res, next) => {
-    const token = req.cookies.token || req.headers["authorization"]; // Access the token from cookies
+    // Access the token from cookies or authorization header
+    const token = req.cookies.accessToken || req.headers["authorization"]?.split(" ")[1];
 
     if (!token) {
         return res.status(403).json({ err: "No token provided" });
@@ -14,11 +15,10 @@ export const tokenMiddleware = (req, res, next) => {
 
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) {
-            if (err.name === "TokenExpiredError") {
-                return res.status(401).json({ err: "Token has expired" });
-            }
-            return res.status(401).json({ err: "Unauthorized" });
+            const message = err.name === "TokenExpiredError" ? "Token has expired" : "Unauthorized";
+            return res.status(401).json({ err: message });
         }
+
         req.userId = decoded.userId; // Attach user ID to request
         next();
     });
