@@ -1,25 +1,14 @@
 import express from "express";
-import mongoose from "mongoose";
 import UserModel from "../models/UserModel.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { registerValidation, loginValidation } from "../middleware/validationHandler.js";
-import { tokenMiddleware } from "../middleware/authMiddleware.js";
+import { TokenService } from "../utils/tokenService.js";
 
 dotenv.config();
 
 const router = express.Router();
 const SECRET_KEY = process.env.SECRET_KEY;
-
-// Validate environment variables
-const validateEnvVariables = () => {
-    if (!SECRET_KEY || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        throw new Error("Environment variables not set properly.");
-    }
-};
-
-validateEnvVariables();
 
 // Registration Route
 router.post("/register", registerValidation, async (req, res, next) => {
@@ -37,6 +26,7 @@ router.post("/register", registerValidation, async (req, res, next) => {
 
         return res.status(201).json({ status: "success", message: "User created successfully" });
     } catch (error) {
+        console.error(error);
         return next(error);
     }
 });
@@ -60,26 +50,23 @@ router.post("/login", loginValidation, async (req, res) => {
             return res.status(401).json({ status: "error", message: "Invalid credentials" });
         }
 
-        const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: "1h" });
-        res.cookie("token", token, { httpOnly: true }); // Set the token as a cookie
-        res.json({ status: "success", message: "Login successful" });
+        const accessToken = TokenService.generateAccessToken({ userId: user._id, role: user.role });
+
+        // Send the access token in the response body
+        res.json({
+            status: "success",
+            message: "Login successful",
+            token: accessToken // Return the token here
+        });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ status: "error", message: "Internal server error" });
     }
 });
 
-// Profile Route
-router.get("/profile", tokenMiddleware, async (req, res) => {
-    try {
-        const user = await UserModel.findById(req.userId); // Use req.userId set by tokenMiddleware
-        if (!user) {
-            return res.sendStatus(404); // Not Found
-        }
-
-        res.json({ user: { id: user._id, email: user.email, username: user.username } });
-    } catch (error) {
-        res.status(500).json({ status: "error", message: "Internal server error" });
-    }
+// Logout Route
+router.post("/logout", (req, res) => {
+    return res.json({ status: "success", message: "Logged out successfully" });
 });
 
 export default router;

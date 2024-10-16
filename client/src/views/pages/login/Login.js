@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CButton,
   CCard,
@@ -12,50 +12,51 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
-import { loginUser } from '../../../api/authService.js'
+} from '@coreui/react';
+import CIcon from '@coreui/icons-react';
+import { cilLockLocked, cilUser } from '@coreui/icons';
+import { loginUser } from '../../../api/authService.js';
 
 function Login() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
-  const navigate = useNavigate()
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const navigate = useNavigate();
 
   const handleLogin = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
     if (!username || !password) {
-      alert('Please fill in both fields.')
-      return
+      alert('Please fill in both fields.');
+      return;
     }
 
-    setLoading(true)
-    setError(null)
-    setSuccess(null) // Clear previous success messages
+    setLoading(true);
+    setError(null);
+    setSuccess(null); // Clear previous success messages
 
     try {
-      const response = await loginUser({ username, password })
-      const token = response.token
+      const response = await loginUser({ username, password });
+      if (response) {
 
-      localStorage.setItem('token', token)
-      setUsername('')
-      setPassword('')
-      setSuccess('Successfully logged in!')
-      setTimeout(() => {
-        navigate('/') // Redirect to the home page after a short delay
-      }, 1500)
+        localStorage.setItem('token', response.token); // Store token in localStorage
+        setUsername('');
+        setPassword('');
+        setSuccess('Successfully logged in!');
+        setTimeout(() => {
+          navigate('/'); // Redirect to the home page after a short delay
+        }, 1500);
+      }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Login error:', error);
       const errorMsg =
-        error.response?.data?.message || 'An unexpected error occurred. Please try again.'
-      setError(errorMsg)
+        error.response?.data?.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMsg);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -69,8 +70,7 @@ function Login() {
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     {error && <p className="text-danger">{error}</p>}
-                    {success && <p className="text-success">{success}</p>}{' '}
-                    {/* Display success message */}
+                    {success && <p className="text-success">{success}</p>} {/* Display success message */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -139,7 +139,7 @@ function Login() {
         </CRow>
       </CContainer>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

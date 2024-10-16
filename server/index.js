@@ -7,13 +7,22 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoute.js";
 import invoiceRoutes from "./routes/invoiceRoute.js";
-import warehouseRoutes from "./routes/warehouseRoute.js";
 import truckingRoutes from "./routes/truckingRoute.js";
 import inventoryRoutes from "./routes/inventoryRoute.js";
 
 dotenv.config();
 
 const app = express();
+
+// Validate environment variables
+const validateEnvVariables = () => {
+    const { SECRET_KEY, NODE_ENV, DB_URI } = process.env;
+    if (!SECRET_KEY || !NODE_ENV || !DB_URI) {
+        throw new Error("Environment variables not set properly.");
+    }
+};
+
+validateEnvVariables();
 
 // Middleware setup
 app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
@@ -35,7 +44,11 @@ const dbURI = process.env.DB_URI;
 const connectWithRetry = () => {
     mongoose
         .connect(dbURI)
-        .then(() => app.listen(process.env.PORT || 3001, () => console.log("Server running on port 3001 and Kicking")))
+        .then(() => {
+            app.listen(process.env.PORT || 5058, () => {
+                console.log(`Server running on port ${process.env.PORT || 5058}`);
+            });
+        })
         .catch((err) => {
             console.error("MongoDB connection failed, retrying in 5 seconds...", err);
             setTimeout(connectWithRetry, 5000);
@@ -47,9 +60,8 @@ connectWithRetry();
 // Use routes
 app.use("/auth", authRoutes);
 app.use("/api/invoice", invoiceRoutes);
-app.use("/api/warehouse", warehouseRoutes);
-app.use("/api/trucking", truckingRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/trucking", truckingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -67,5 +79,11 @@ const shutdown = () => {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
-process.on("uncaughtException", shutdown);
-process.on("unhandledRejection", shutdown);
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    shutdown();
+});
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    shutdown();
+});

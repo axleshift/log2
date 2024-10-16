@@ -1,11 +1,11 @@
 import express from "express";
-import { getItems, createItem, updateItem, deleteItem } from "../controller/inventoryController.js";
+import { getAllItems, createItem, updateItem, deleteItem, validateItem } from "../controller/InventoryController.js";
 
 const router = express.Router();
 
-router.get("/", getItems);
-router.post("/", createItem);
-router.put("/:id", updateItem);
+router.get("/", getAllItems);
+router.post("/", validateItem, createItem);
+router.put("/:id", validateItem, updateItem);
 router.delete("/:id", deleteItem);
 
 export default router;
