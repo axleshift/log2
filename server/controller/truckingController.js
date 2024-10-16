@@ -1,5 +1,5 @@
-import TruckingItem from "../models/truckingModel.js"; 
-import { validationResult } from "express-validator"; 
+import TruckingItem from "../models/truckingModel.js";
+import { validationResult } from "express-validator";
 
 const getRecords = async (req, res) => {
     try {

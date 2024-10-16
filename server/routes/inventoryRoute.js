@@ -4,8 +4,8 @@ import { getAllItems, createItem, updateItem, deleteItem, validateItem } from ".
 const router = express.Router();
 
 router.get("/", getAllItems);
-router.post("/", validateItem, createItem);
-router.put("/:id", validateItem, updateItem);
+router.post("/", createItem);
+router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);
 
 export default router;

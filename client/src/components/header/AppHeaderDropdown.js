@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CAvatar,
   CBadge,
@@ -10,7 +10,7 @@ import {
   CDropdownMenu,
   CDropdownToggle,
   CButton,
-} from '@coreui/react';
+} from '@coreui/react'
 import {
   cilBell,
   cilCreditCard,
@@ -20,22 +20,22 @@ import {
   cilSettings,
   cilTask,
   cilUser,
-} from '@coreui/icons';
-import CIcon from '@coreui/icons-react';
-import avatarboy from './../../assets/images/avatars/boy.jpg';
+} from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
+import avatarboy from './../../assets/images/avatars/boy.jpg'
 import { logoutUser } from '../../api/authService.js'
 
 const AppHeaderDropdown = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleSignOut = async () => {
-    await logoutUser(); // Call the logout function to clear the cookie
-    navigate('/login'); // Navigate to the login page
-  };
+    await logoutUser() // Call the logout function to clear the cookie
+    navigate('/login') // Navigate to the login page
+  }
 
   const handleProfileClick = () => {
-    navigate('/profile');
-  };
+    navigate('/profile')
+  }
 
   return (
     <CDropdown variant="nav-item">
@@ -44,30 +44,38 @@ const AppHeaderDropdown = () => {
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
-        
+
         <CDropdownItem>
           <CIcon icon={cilBell} className="me-2" />
           Updates
-          <CBadge color="info" className="ms-2">42</CBadge>
+          <CBadge color="info" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
           Messages
-          <CBadge color="success" className="ms-2">42</CBadge>
+          <CBadge color="success" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilTask} className="me-2" />
           Tasks
-          <CBadge color="danger" className="ms-2">42</CBadge>
+          <CBadge color="danger" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilCommentSquare} className="me-2" />
           Comments
-          <CBadge color="warning" className="ms-2">42</CBadge>
+          <CBadge color="warning" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
-        
+
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        
+
         <CDropdownItem onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilUser} className="me-2" />
           Profile
@@ -79,16 +87,20 @@ const AppHeaderDropdown = () => {
         <CDropdownItem>
           <CIcon icon={cilCreditCard} className="me-2" />
           Payments
-          <CBadge color="secondary" className="ms-2">42</CBadge>
+          <CBadge color="secondary" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilFile} className="me-2" />
           Projects
-          <CBadge color="primary" className="ms-2">42</CBadge>
+          <CBadge color="primary" className="ms-2">
+            42
+          </CBadge>
         </CDropdownItem>
-        
+
         <CDropdownDivider />
-        
+
         <CDropdownItem onClick={handleSignOut}>
           <CButton color="primary" role="button">
             Sign Out
@@ -96,7 +108,7 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
-  );
-};
+  )
+}
 
-export default AppHeaderDropdown;
+export default AppHeaderDropdown

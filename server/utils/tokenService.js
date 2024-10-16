@@ -20,7 +20,7 @@ export class TokenService {
         if (!token) {
             throw new Error("Token must be provided for verification.");
         }
-        
+
         try {
             return jwt.verify(token, SECRET_KEY);
         } catch (error) {

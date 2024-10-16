@@ -1,27 +1,32 @@
 import mongoose from "mongoose";
 
-const inventoryItemSchema = new mongoose.Schema({
-    date: {
-        type: Date,
-        required: true,
+const inventoryItemSchema = new mongoose.Schema(
+    {
+        productName: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+        price: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+        total: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
     },
-    productName: {
-        type: String,
-        required: true,
-    },
-    productCategory: {
-        type: String,
-        required: true,
-    },
-    vendorName: {
-        type: String,
-        required: true,
-    },
-    unitsReceived: {
-        type: Number,
-        required: true,
-    },
-});
+    {
+        timestamps: true,
+    }
+);
 
 const InventoryItem = mongoose.model("InventoryItem", inventoryItemSchema);
 

@@ -1,9 +1,9 @@
-import InventoryItem from "../models/inventoryModel.js"; 
+import InventoryItem from "../models/inventoryModel.js";
 
 // Get all items
 export const getAllItems = async (req, res) => {
     try {
-        const items = await InventoryItem.find(); 
+        const items = await InventoryItem.find();
         res.status(200).json(items);
     } catch (error) {
         console.error("Error fetching items:", error);
@@ -14,7 +14,7 @@ export const getAllItems = async (req, res) => {
 // Create a new item
 export const createItem = async (req, res) => {
     try {
-        const newItem = new InventoryItem(req.body); 
+        const newItem = new InventoryItem(req.body);
         await newItem.save();
         res.status(201).json(newItem);
     } catch (error) {
@@ -51,10 +51,10 @@ export const deleteItem = async (req, res) => {
     }
 };
 
-// validation middleware
+// Validation middleware
 export const validateItem = (req, res, next) => {
-    const { productName, productCategory, vendorName, unitsReceived } = req.body;
-    if (!productName || !productCategory || !vendorName || typeof unitsReceived !== "number") {
+    const { productName, quantity, price, total } = req.body;
+    if (!productName || typeof quantity !== "number" || typeof price !== "number" || typeof total !== "number") {
         return res.status(400).json({ message: "Invalid item structure received." });
     }
     next();

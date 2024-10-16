@@ -18,7 +18,7 @@ export const tokenMiddleware = (req, res, next) => {
             const message = err.name === "TokenExpiredError" ? "Token has expired" : "Unauthorized";
             return res.status(401).json({ err: message });
         }
-        
+
         req.userId = decoded.userId; // Attach user ID to request
         next();
     });

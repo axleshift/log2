@@ -56,7 +56,7 @@ router.post("/login", loginValidation, async (req, res) => {
         res.json({
             status: "success",
             message: "Login successful",
-            token: accessToken // Return the token here
+            token: accessToken, // Return the token here
         });
     } catch (error) {
         console.error(error);

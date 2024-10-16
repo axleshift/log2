@@ -28,10 +28,10 @@ const Inventory = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [currentItem, setCurrentItem] = useState(null)
   const [newItem, setNewItem] = useState({
-    name: '',
+    productName: '',
     quantity: 0,
-    min_level: 0,
-    location: '',
+    price: '',
+    total: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -97,21 +97,50 @@ const Inventory = () => {
   const resetModal = () => {
     setModalVisible(false)
     setNewItem({
-      name: '',
+      productName: '',
       quantity: 0,
-      min_level: 0,
-      location: '',
+      price: '',
+      total: '',
     })
     setCurrentItem(null)
     setError(null)
   }
 
-  const filteredItems = items.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredItems = items.filter((item) => {
+    const productName = item?.productName?.toLowerCase() || ''
+    const total = item?.total?.toString().toLowerCase() || ''
 
+    return (
+      productName.includes(searchQuery.toLowerCase()) || total.includes(searchQuery.toLowerCase())
+    )
+  })
+
+  const getStockStatus = (quantity) => {
+    return quantity > 6 ? 'In Stock' : 'Out of Stock'
+  }
+
+  const calculateTotal = (quantity, price) => {
+    const totalValue = parseFloat(quantity) * parseFloat(price || 0)
+    setNewItem((prevState) => ({ ...prevState, total: totalValue.toFixed(2) }))
+  }
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value
+    setNewItem((prevState) => ({
+      ...prevState,
+      quantity: value,
+    }))
+    calculateTotal(value, newItem.price)
+  }
+
+  const handlePriceChange = (e) => {
+    const value = e.target.value
+    setNewItem((prevState) => ({
+      ...prevState,
+      price: value,
+    }))
+    calculateTotal(newItem.quantity, value)
+  }
   return (
     <CCard>
       <h1 className="text-center">Inventory Management</h1>
@@ -138,10 +167,11 @@ const Inventory = () => {
             <CTableHead>
               <CTableRow>
                 <CTableHeaderCell>No.</CTableHeaderCell>
-                <CTableHeaderCell>Name</CTableHeaderCell>
+                <CTableHeaderCell>Product Name</CTableHeaderCell>
                 <CTableHeaderCell>Quantity</CTableHeaderCell>
-                <CTableHeaderCell>Minimum Level</CTableHeaderCell>
-                <CTableHeaderCell>Location</CTableHeaderCell>
+                <CTableHeaderCell>Price</CTableHeaderCell>
+                <CTableHeaderCell>Total</CTableHeaderCell>
+                <CTableHeaderCell>Stock Status</CTableHeaderCell>
                 <CTableHeaderCell>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -149,10 +179,13 @@ const Inventory = () => {
               {filteredItems.map((item, index) => (
                 <CTableRow key={item._id}>
                   <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                  <CTableDataCell>{item.name}</CTableDataCell>
+                  <CTableDataCell>{item.productName}</CTableDataCell>
                   <CTableDataCell>{item.quantity}</CTableDataCell>
-                  <CTableDataCell>{item.min_level}</CTableDataCell>
-                  <CTableDataCell>{item.location}</CTableDataCell>
+                  <CTableDataCell>{item.price}</CTableDataCell>
+                  <CTableDataCell>{item.total}</CTableDataCell>
+                  <CTableDataCell style={{ color: item.quantity > 6 ? 'green' : 'red' }}>
+                    {getStockStatus(item.quantity)}
+                  </CTableDataCell>
                   <CTableDataCell>
                     <CButton color="info" onClick={() => handleEditItem(item)}>
                       Edit
@@ -168,7 +201,6 @@ const Inventory = () => {
         </>
       )}
 
-      {/* Modal for Create/Edit */}
       <CModal visible={modalVisible} onClose={resetModal}>
         <CModalHeader>
           <CModalTitle>{currentItem ? 'Edit Item' : 'Create Item'}</CModalTitle>
@@ -176,32 +208,26 @@ const Inventory = () => {
         <CModalBody>
           <CFormInput
             type="text"
-            name="name"
-            label="Item Name"
-            value={newItem.name}
-            onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+            name="productName"
+            label="Product Name"
+            value={newItem.productName}
+            onChange={(e) => setNewItem({ ...newItem, productName: e.target.value })}
           />
           <CFormInput
             type="number"
             name="quantity"
             label="Quantity"
             value={newItem.quantity}
-            onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-          />
-          <CFormInput
-            type="number"
-            name="min_level"
-            label="Minimum Level"
-            value={newItem.min_level}
-            onChange={(e) => setNewItem({ ...newItem, min_level: Number(e.target.value) })}
+            onChange={handleQuantityChange}
           />
           <CFormInput
             type="text"
-            name="location"
-            label="Location"
-            value={newItem.location}
-            onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
+            name="price"
+            label="Price"
+            value={newItem.price}
+            onChange={handlePriceChange}
           />
+          <CFormInput type="text" name="total" label="Total" value={newItem.total} disabled />
         </CModalBody>
         <CModalFooter>
           <CButton color="primary" onClick={handleAddOrUpdateItem}>
