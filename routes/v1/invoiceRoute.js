@@ -1,5 +1,5 @@
 import express from "express";
-import { getInvoices, getInvoice, createInvoice, updateInvoice, deleteInvoice } from "../controller/invoiceController.js";
+import { getInvoices, getInvoice, createInvoice, updateInvoice, deleteInvoice } from "../../controller/invoiceController.js";
 
 const router = express.Router(); // creates new router object to handle routes for invoices
 
