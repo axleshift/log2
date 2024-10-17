@@ -5,10 +5,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import authRoutes from "./routes/authRoute.js";
-import invoiceRoutes from "./routes/invoiceRoute.js";
-import truckingRoutes from "./routes/truckingRoute.js";
-import inventoryRoutes from "./routes/inventoryRoute.js";
+import APIv1 from "./routes/v1/indexRoute.js";
 
 dotenv.config();
 
@@ -31,6 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+
+app.use("/api/v1/", APIv1); // routes for APIv1
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -57,11 +56,6 @@ const connectWithRetry = () => {
 
 connectWithRetry();
 
-// Use routes
-app.use("/auth", authRoutes);
-app.use("/api/invoice", invoiceRoutes);
-app.use("/api/inventory", inventoryRoutes);
-app.use("/api/trucking", truckingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

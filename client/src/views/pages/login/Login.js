@@ -41,24 +41,26 @@ function Login() {
     setSuccess(null)
 
     try {
-      const response = await loginUser({ username, password })
+      console.log("Attempting to log in with:", { username, password });
+      const response = await loginUser({ username, password });
+      
       if (response) {
-        localStorage.setItem('token', response.token)
-        setUsername('')
-        setPassword('')
-        setSuccess('Successfully logged in!')
+        console.log("Login successful, response:", response);
+        localStorage.setItem('token', response.token);
+        setUsername('');
+        setPassword('');
+        setSuccess('Successfully logged in!');
         setTimeout(() => {
-          navigate('/')
-        }, 1500)
+          navigate('/');
+        }, 1500);
       }
     } catch (error) {
-      console.error('Login error:', error)
-      const errorMsg =
-        error.response?.data?.message || 'An unexpected error occurred. Please try again.'
-      setError(errorMsg)
-      handleUnsuccessfulLogin(error)
+      console.error('Login error:', error);
+      const errorMsg = error.response?.data?.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMsg);
+      handleUnsuccessfulLogin(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 

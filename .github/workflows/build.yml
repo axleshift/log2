@@ -21,8 +21,8 @@ jobs:
         run: |
           cd client
           echo "VITE_APP_API_URL=${{ secrets.APP_API_URL }}" >> .env
-          echo "VITE_APP_NODE_ENV${{ secrets.APP_NODE_ENV }}" >> .env
-          echo "VITE_APP_SECRET_KEY${{ secrets.APP_SECRET_KEY }}" >> .env
+          echo "VITE_APP_NODE_ENV=${{ secrets.APP_NODE_ENV }}" >> .env
+          echo "VITE_APP_SECRET_KEY=${{ secrets.APP_SECRET_KEY }}" >> .env
           npm i
           npm run lint
           npm run build
@@ -35,22 +35,18 @@ jobs:
         with:
           source-directory: client/build
           destination-github-username: 'freight-capstone'
-          # Replace with your module name
           destination-repository-name: 'log2'
-          # Replace with your email address
           user-email: nazzchwan@gmail.com
-          # Replace (optional)
           commit-message: Production
-          # Replace core1 with your module name
           target-branch: log2-frontend
           
       - name: Build backend
-        # Change the following commands if you have custom build
         run: |
           cd server
           npm i
           npm run lint
-          rm -rf node_modules
+          # Optional: Clean up if necessary
+          # rm -rf node_modules
 
       - name: Upload backend
         id: push_directory_backend
@@ -60,11 +56,7 @@ jobs:
         with:
           source-directory: server/
           destination-github-username: 'freight-capstone'
-          # Replace with your module name
           destination-repository-name: 'log2'
-          # Replace with your email address
           user-email: nazzchwan@gmail.com
-          # Replace (optional)
           commit-message: Production
-          # Replace core1 with your module name
           target-branch: log2-backend

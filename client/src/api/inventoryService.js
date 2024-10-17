@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/inventory`
+const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
 
 const inventoryAxiosInstance = axios.create({
   baseURL: INVENTORY_API_URL,

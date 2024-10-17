@@ -26,8 +26,8 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Trucking Status',
-    to: '/truckingstatus',
+    name: 'Tracking Status',
+    to: '/tracking',
     icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
     badge: {
       color: 'info',

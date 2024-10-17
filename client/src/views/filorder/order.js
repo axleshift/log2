@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   CFormInput,
   CCard,
@@ -9,12 +9,12 @@ import {
   CButton,
   CCardFooter,
   CForm,
-} from '@coreui/react'
-import './order.scss'
-import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from '../../api/invoiceService'
+} from '@coreui/react';
+import './order.scss';
+import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from '../../api/invoiceService';
 
 const Order = () => {
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState([]);
   const [formData, setFormData] = useState({
     id: '',
     customerName: '',
@@ -27,41 +27,44 @@ const Order = () => {
     weight: '',
     cost: '',
     quantity: '',
-  })
+  });
 
-  const [editingId, setEditingId] = useState(null)
+  const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState(null); // For error messages
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    fetchOrders();
+  }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await getInvoices() // Use the service function
-      setOrders(response.data)
+      const response = await getInvoices();
+      setOrders(response); 
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error('Error fetching orders:', error);
+      setError('Failed to fetch orders. Please try again later.');
     }
-  }
+  };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       if (editingId) {
-        await updateInvoice(editingId, formData) // Use the service function
+        await updateInvoice(editingId, formData);
       } else {
-        await createInvoice(formData) // Use the service function
+        await createInvoice(formData);
       }
-      resetForm()
-      fetchOrders()
+      resetForm();
+      fetchOrders();
     } catch (error) {
-      console.error('Error saving order:', error)
+      console.error('Error saving order:', error);
+      setError('Failed to save order. Please try again.');
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -76,23 +79,25 @@ const Order = () => {
       weight: '',
       cost: '',
       quantity: '',
-    })
-    setEditingId(null)
-  }
+    });
+    setEditingId(null);
+    setError(null); // Clear any errors
+  };
 
   const handleEdit = (order) => {
-    setFormData(order)
-    setEditingId(order.id)
-  }
+    setFormData(order);
+    setEditingId(order.id);
+  };
 
   const handleDelete = async (id) => {
     try {
-      await deleteInvoice(id) // Use the service function
-      fetchOrders()
+      await deleteInvoice(id);
+      fetchOrders();
     } catch (error) {
-      console.error('Error deleting order:', error)
+      console.error('Error deleting order:', error);
+      setError('Failed to delete order. Please try again.');
     }
-  }
+  };
 
   return (
     <CCard>
@@ -100,6 +105,7 @@ const Order = () => {
         <h1>Customer Information</h1>
       </CCardHeader>
       <CCardBody>
+        {error && <div className="error-message">{error}</div>} {/* Display error messages */}
         <CForm onSubmit={handleSubmit}>
           <CRow>
             <CCol>
@@ -117,7 +123,7 @@ const Order = () => {
                 type="text"
                 id="customerName"
                 label="Customer Name"
-                placeholder="Juan DelaCruz"
+                placeholder="Juan Dela Cruz"
                 value={formData.customerName}
                 onChange={handleChange}
               />
@@ -161,7 +167,7 @@ const Order = () => {
                 type="text"
                 id="fullName"
                 label="Full Name"
-                placeholder="Juan DelaCruz"
+                placeholder="Juan Dela Cruz"
                 value={formData.fullName}
                 onChange={handleChange}
               />
@@ -230,21 +236,25 @@ const Order = () => {
       <CCardFooter>
         <h3>Orders List</h3>
         <ul>
-          {orders.map((order) => (
-            <li key={order.id}>
-              {order.customerName} - {order.email}
-              <CButton color="warning" onClick={() => handleEdit(order)}>
-                Edit
-              </CButton>
-              <CButton color="danger" onClick={() => handleDelete(order.id)}>
-                Delete
-              </CButton>
-            </li>
-          ))}
+          {orders.length > 0 ? ( 
+            orders.map((order) => (
+              <li key={order.id}>
+                {order.customerName} - {order.email}
+                <CButton color="warning" onClick={() => handleEdit(order)}>
+                  Edit
+                </CButton>
+                <CButton color="danger" onClick={() => handleDelete(order.id)}>
+                  Delete
+                </CButton>
+              </li>
+            ))
+          ) : (
+            <li>No orders found.</li> 
+          )}
         </ul>
       </CCardFooter>
     </CCard>
-  )
-}
+  );
+};
 
-export default Order
+export default Order;
