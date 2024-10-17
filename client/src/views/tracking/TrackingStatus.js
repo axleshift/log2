@@ -1,17 +1,17 @@
-import { CHeader } from '@coreui/react';
-import React, { useEffect, useState } from 'react';
-import DataTable from 'react-data-table-component';
+import { CHeader } from '@coreui/react'
+import React, { useEffect, useState } from 'react'
+import DataTable from 'react-data-table-component'
 import {
   getTrackingItems,
   createTrackingItem,
   updateTrackingItem,
   deleteTrackingItem,
-} from '../../api/trackingService';
+} from '../../api/trackingService'
 
 function TrackingStatus() {
-  const [records, setRecords] = useState([]);
-  const [originalRecords, setOriginalRecords] = useState([]);
-  const [editingRecord, setEditingRecord] = useState(null);
+  const [records, setRecords] = useState([])
+  const [originalRecords, setOriginalRecords] = useState([])
+  const [editingRecord, setEditingRecord] = useState(null)
   const [formData, setFormData] = useState({
     customerName: '',
     email: '',
@@ -23,10 +23,10 @@ function TrackingStatus() {
     paidAmount: '',
     quantity: '',
     status: 'Pending', // Default value
-  });
+  })
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const columns = [
     { name: 'ID', selector: (row) => row.id, sortable: true },
@@ -40,61 +40,61 @@ function TrackingStatus() {
     { name: 'Paid Amount', selector: (row) => row.paidAmount, sortable: true },
     { name: 'Quantity', selector: (row) => row.quantity, sortable: true },
     { name: 'Status', selector: (row) => row.status, sortable: true },
-  ];
+  ]
 
   useEffect(() => {
-    fetchRecords();
-  }, []);
+    fetchRecords()
+  }, [])
 
   const fetchRecords = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await getTrackingItems();
-      setRecords(data);
-      setOriginalRecords(data);
+      const data = await getTrackingItems()
+      setRecords(data)
+      setOriginalRecords(data)
     } catch (err) {
-      setError('Failed to fetch records');
+      setError('Failed to fetch records')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    console.log(`Changing ${name} to ${value}`); // Debugging line
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+    const { name, value } = event.target
+    console.log(`Changing ${name} to ${value}`) // Debugging line
+    setFormData((prevData) => ({ ...prevData, [name]: value }))
+  }
 
   const handleEdit = (record) => {
-    setEditingRecord(record);
-    setFormData(record);
-  };
+    setEditingRecord(record)
+    setFormData(record)
+  }
 
   const handleUpdate = async () => {
     if (!formData.customerName || !formData.email) {
-      setError('Customer Name and Email are required');
-      return;
+      setError('Customer Name and Email are required')
+      return
     }
     try {
-      await updateTrackingItem(formData.id, formData);
-      fetchRecords();
-      resetForm();
+      await updateTrackingItem(formData.id, formData)
+      fetchRecords()
+      resetForm()
     } catch (error) {
-      setError('Failed to update record');
+      setError('Failed to update record')
     }
-  };
+  }
 
   const handleDelete = async (recordId) => {
     try {
-      await deleteTrackingItem(recordId);
-      fetchRecords();
+      await deleteTrackingItem(recordId)
+      fetchRecords()
     } catch (error) {
-      setError('Failed to delete record');
+      setError('Failed to delete record')
     }
-  };
+  }
 
   const handleCreate = async () => {
-    console.log('Form Data Before Create:', formData);
+    console.log('Form Data Before Create:', formData)
     if (
       !formData.customerName ||
       !formData.email ||
@@ -106,18 +106,18 @@ function TrackingStatus() {
       !formData.paidAmount ||
       !formData.quantity
     ) {
-      setError('All fields are required');
-      return;
+      setError('All fields are required')
+      return
     }
     try {
-      await createTrackingItem({ ...formData });
-      fetchRecords();
-      resetForm();
+      await createTrackingItem({ ...formData })
+      fetchRecords()
+      resetForm()
     } catch (error) {
-      console.error('Error creating tracking items', error.response.data);
-      setError('Failed to create record: ' + (error.response.data.message || 'Unknown error'));
+      console.error('Error creating tracking items', error.response.data)
+      setError('Failed to create record: ' + (error.response.data.message || 'Unknown error'))
     }
-  };
+  }
 
   const resetForm = () => {
     setFormData({
@@ -131,18 +131,18 @@ function TrackingStatus() {
       paidAmount: '',
       quantity: '',
       status: 'Pending', // Reset to default value
-    });
-    setEditingRecord(null);
-    setError(null);
-  };
+    })
+    setEditingRecord(null)
+    setError(null)
+  }
 
   const handleFilter = (event) => {
-    const filterValue = event.target.value.toLowerCase();
+    const filterValue = event.target.value.toLowerCase()
     const filteredRecords = originalRecords.filter((record) =>
       record.customerName.toLowerCase().includes(filterValue),
-    );
-    setRecords(filteredRecords);
-  };
+    )
+    setRecords(filteredRecords)
+  }
 
   return (
     <div className="container mt-5">
@@ -180,14 +180,19 @@ function TrackingStatus() {
           selectableRowsOnClick
           onSelectedRowsChange={({ selectedRows }) => {
             if (selectedRows.length) {
-              handleDelete(selectedRows[0].id);
+              handleDelete(selectedRows[0].id)
             }
           }}
         />
       )}
       <div className="mt-3">
         <h5>{editingRecord ? 'Edit Record' : 'Create New Record'}</h5>
-        <input name="customerName" value={formData.customerName} onChange={handleInputChange} placeholder="Customer Name" />
+        <input
+          name="customerName"
+          value={formData.customerName}
+          onChange={handleInputChange}
+          placeholder="Customer Name"
+        />
         <input
           name="email"
           value={formData.email}
@@ -247,7 +252,7 @@ function TrackingStatus() {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
-export default TrackingStatus;
+export default TrackingStatus

@@ -39,7 +39,6 @@ router.post("/register", registerValidation, async (req, res, next) => {
     }
 });
 
-
 // Login Route
 router.post("/login", loginValidation, async (req, res, next) => {
     const { username, password } = req.body;
