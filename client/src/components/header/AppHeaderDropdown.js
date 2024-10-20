@@ -23,11 +23,20 @@ import {
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import avatarboy from './../../assets/images/avatars/boy.jpg'
-import { logoutUser } from '../../api/authService.js'
+import Cookies from 'js-cookie' // Ensure you import js-cookie
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+
+  const logoutUser = async () => {
+    // Clear cookies
+    Cookies.remove('token')
+    Cookies.remove('refreshToken')
+
+    // Clear session storage
+    sessionStorage.clear()
+  }
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -36,6 +45,7 @@ const AppHeaderDropdown = () => {
       navigate('/login')
     } catch (error) {
       console.error('Logout failed', error)
+      alert('Logout failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -52,38 +62,36 @@ const AppHeaderDropdown = () => {
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
-
         <CDropdownItem>
           <CIcon icon={cilBell} className="me-2" />
-          Updates
+          Updates{' '}
           <CBadge color="info" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
-          Messages
+          Messages{' '}
           <CBadge color="success" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilTask} className="me-2" />
-          Tasks
+          Tasks{' '}
           <CBadge color="danger" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilCommentSquare} className="me-2" />
-          Comments
+          Comments{' '}
           <CBadge color="warning" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
 
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-
         <CDropdownItem onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilUser} className="me-2" />
           Profile
@@ -94,21 +102,20 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilCreditCard} className="me-2" />
-          Payments
+          Payments{' '}
           <CBadge color="secondary" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
         <CDropdownItem>
           <CIcon icon={cilFile} className="me-2" />
-          Projects
+          Projects{' '}
           <CBadge color="primary" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
 
         <CDropdownDivider />
-
         <CDropdownItem onClick={handleSignOut}>
           <CButton color="primary" role="button" disabled={loading}>
             {loading ? 'Signing Out...' : 'Sign Out'}

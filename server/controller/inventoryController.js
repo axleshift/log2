@@ -1,61 +1,77 @@
-import InventoryItem from "../models/inventoryModel.js";
+import InventoryRecord from "../models/inventoryModel.js";
+import logger from "../utils/logger.js";
 
-// Get all items
-export const getAllItems = async (req, res) => {
+// Utility function for consistent responses
+const handleResponse = (res, status, message, data = null) => {
+    return res.status(status).json({ status: status === 200 ? "success" : "error", message, data });
+};
+
+// Get all shipment records
+export const getAllShipments = async (req, res, next) => {
     try {
-        const items = await InventoryItem.find();
-        res.status(200).json(items);
+        const shipments = await InventoryRecord.find();
+        logger.info("Fetched all shipments");
+        return handleResponse(res, 200, "Shipments retrieved successfully", shipments);
     } catch (error) {
-        console.error("Error fetching items:", error);
-        res.status(500).json({ message: "Failed to fetch items." });
+        logger.error("Error fetching shipments:", { message: error.message, stack: error.stack });
+        next(error);
     }
 };
 
-// Create a new item
-export const createItem = async (req, res) => {
+// Get a shipment record by ID
+export const getShipmentById = async (req, res, next) => {
     try {
-        const newItem = new InventoryItem(req.body);
-        await newItem.save();
-        res.status(201).json(newItem);
-    } catch (error) {
-        console.error("Error creating item:", error);
-        res.status(400).json({ message: "Failed to create item." });
-    }
-};
-
-// Update an item
-export const updateItem = async (req, res) => {
-    try {
-        const updatedItem = await InventoryItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedItem) {
-            return res.status(404).json({ message: "Item not found." });
+        const shipment = await InventoryRecord.findById(req.params.id);
+        if (!shipment) {
+            logger.warn(`Shipment not found: ${req.params.id}`);
+            return handleResponse(res, 404, "Shipment not found");
         }
-        res.status(200).json(updatedItem);
+        logger.info(`Fetched shipment: ${req.params.id}`);
+        return handleResponse(res, 200, "Shipment retrieved successfully", shipment);
     } catch (error) {
-        console.error("Error updating item:", error);
-        res.status(400).json({ message: "Failed to update item." });
+        logger.error(`Error fetching shipment ${req.params.id}:`, { message: error.message, stack: error.stack });
+        next(error);
     }
 };
 
-// Delete an item
-export const deleteItem = async (req, res) => {
+// Update a shipment record by ID
+export const updateShipment = async (req, res, next) => {
     try {
-        const deletedItem = await InventoryItem.findByIdAndDelete(req.params.id);
-        if (!deletedItem) {
-            return res.status(404).json({ message: "Item not found." });
+        const { status, ...updateData } = req.body;
+        const shipment = await InventoryRecord.findByIdAndUpdate(req.params.id, { ...updateData, ...(status && { status }) }, { new: true, runValidators: true });
+
+        if (!shipment) {
+            logger.warn(`Shipment not found for update: ${req.params.id}`);
+            return handleResponse(res, 404, "Shipment not found");
         }
-        res.status(204).send(); // No content
+        logger.info(`Updated shipment: ${req.params.id}`);
+        return handleResponse(res, 200, "Shipment updated successfully", shipment);
     } catch (error) {
-        console.error("Error deleting item:", error);
-        res.status(500).json({ message: "Failed to delete item." });
+        logger.error(`Error updating shipment ${req.params.id}:`, { message: error.message, stack: error.stack });
+        next(error);
     }
 };
 
-// Validation middleware
-export const validateItem = (req, res, next) => {
-    const { productName, quantity, price, total } = req.body;
-    if (!productName || typeof quantity !== "number" || typeof price !== "number" || typeof total !== "number") {
-        return res.status(400).json({ message: "Invalid item structure received." });
+// Delete a shipment record by ID
+export const deleteShipment = async (req, res, next) => {
+    try {
+        const shipment = await InventoryRecord.findByIdAndDelete(req.params.id);
+        if (!shipment) {
+            logger.warn(`Shipment not found for deletion: ${req.params.id}`);
+            return handleResponse(res, 404, "Shipment not found");
+        }
+        logger.info(`Deleted shipment: ${req.params.id}`);
+        return res.sendStatus(204);
+    } catch (error) {
+        logger.error(`Error deleting shipment ${req.params.id}:`, { message: error.message, stack: error.stack });
+        next(error);
     }
-    next();
+};
+
+// Export controller
+export default {
+    getAllShipments,
+    getShipmentById,
+    updateShipment,
+    deleteShipment,
 };

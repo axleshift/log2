@@ -17,9 +17,10 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-import { registerUser } from '../../../api/authService'
+import Cookies from 'js-cookie'
 
 function Register() {
+  const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
   const {
     register,
     handleSubmit,
@@ -31,9 +32,22 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
 
+  const registerUser = async (data) => {
+    const response = await fetch(`${USER_API_URL}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      throw new Error('Registration failed. Please try again.')
+    }
+    return response.json()
+  }
+
   const onSubmit = async (data) => {
     setLoading(true)
     setNotification({ message: '', type: '' })
+
     try {
       const sanitizedData = {
         username: DOMPurify.sanitize(data.username),
@@ -41,13 +55,16 @@ function Register() {
         password: DOMPurify.sanitize(data.password),
       }
       const response = await registerUser(sanitizedData)
+
+      Cookies.set('token', response.accessToken, { expires: 1 }) // Set cookie for 1 day
+      Cookies.set('refreshToken', response.refreshToken, { expires: 1 }) // Set refresh token in cookies
+
       setNotification({ message: 'Registration Successful! Redirecting...', type: 'success' })
       reset()
-      setTimeout(() => navigate('/login'), 2000) // Redirect after a delay for user feedback
+      setTimeout(() => navigate('/login'), 2000)
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.'
-      setNotification({ message: errorMessage, type: 'danger' })
-      console.error('Registration Error:', errorMessage)
+      setNotification({ message: error.message, type: 'danger' })
+      console.error('Registration Error:', error.message)
     } finally {
       setLoading(false)
     }

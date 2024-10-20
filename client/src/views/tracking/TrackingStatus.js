@@ -1,12 +1,8 @@
 import { CHeader } from '@coreui/react'
 import React, { useEffect, useState } from 'react'
 import DataTable from 'react-data-table-component'
-import {
-  getTrackingItems,
-  createTrackingItem,
-  updateTrackingItem,
-  deleteTrackingItem,
-} from '../../api/trackingService'
+
+const TRACKING_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/tracking`
 
 function TrackingStatus() {
   const [records, setRecords] = useState([])
@@ -22,24 +18,23 @@ function TrackingStatus() {
     weight: '',
     paidAmount: '',
     quantity: '',
-    status: 'Pending', // Default value
+    status: 'Pending',
   })
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const columns = [
-    { name: 'ID', selector: (row) => row.id, sortable: true },
-    { name: 'Name', selector: (row) => row.customerName, sortable: true },
-    { name: 'Email', selector: (row) => row.email, sortable: true },
-    { name: 'Billing Address', selector: (row) => row.billingAddress, sortable: true },
-    { name: 'Contact Number', selector: (row) => row.contactNumber, sortable: true },
-    { name: 'Recipient Address', selector: (row) => row.recipientAddress, sortable: true },
-    { name: 'Recipient Number', selector: (row) => row.recipientNumber, sortable: true },
-    { name: 'Weight', selector: (row) => row.weight, sortable: true },
-    { name: 'Paid Amount', selector: (row) => row.paidAmount, sortable: true },
-    { name: 'Quantity', selector: (row) => row.quantity, sortable: true },
-    { name: 'Status', selector: (row) => row.status, sortable: true },
+    { name: 'ID', selector: 'id', sortable: true },
+    { name: 'Name', selector: 'customerName', sortable: true },
+    { name: 'Email', selector: 'email', sortable: true },
+    { name: 'Billing Address', selector: 'billingAddress', sortable: true },
+    { name: 'Contact Number', selector: 'contactNumber', sortable: true },
+    { name: 'Recipient Address', selector: 'recipientAddress', sortable: true },
+    { name: 'Recipient Number', selector: 'recipientNumber', sortable: true },
+    { name: 'Weight', selector: 'weight', sortable: true },
+    { name: 'Paid Amount', selector: 'paidAmount', sortable: true },
+    { name: 'Quantity', selector: 'quantity', sortable: true },
+    { name: 'Status', selector: 'status', sortable: true },
   ]
 
   useEffect(() => {
@@ -48,20 +43,20 @@ function TrackingStatus() {
 
   const fetchRecords = async () => {
     setLoading(true)
+    setError(null)
     try {
-      const data = await getTrackingItems()
+      const response = await fetch(TRACKING_API_URL)
+      const data = await response.json()
       setRecords(data)
       setOriginalRecords(data)
-    } catch (err) {
+    } catch {
       setError('Failed to fetch records')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target
-    console.log(`Changing ${name} to ${value}`) // Debugging line
+  const handleInputChange = ({ target: { name, value } }) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }))
   }
 
@@ -71,51 +66,71 @@ function TrackingStatus() {
   }
 
   const handleUpdate = async () => {
-    if (!formData.customerName || !formData.email) {
+    const { customerName, email } = formData
+    if (!customerName || !email) {
       setError('Customer Name and Email are required')
       return
     }
     try {
-      await updateTrackingItem(formData.id, formData)
-      fetchRecords()
+      await fetch(`${TRACKING_API_URL}/${formData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      await fetchRecords()
       resetForm()
-    } catch (error) {
+    } catch {
       setError('Failed to update record')
     }
   }
 
   const handleDelete = async (recordId) => {
-    try {
-      await deleteTrackingItem(recordId)
-      fetchRecords()
-    } catch (error) {
-      setError('Failed to delete record')
+    if (window.confirm('Are you sure you want to delete this record?')) {
+      try {
+        await fetch(`${TRACKING_API_URL}/${recordId}`, { method: 'DELETE' })
+        await fetchRecords()
+      } catch {
+        setError('Failed to delete record')
+      }
     }
   }
 
   const handleCreate = async () => {
-    console.log('Form Data Before Create:', formData)
+    const {
+      customerName,
+      email,
+      billingAddress,
+      contactNumber,
+      recipientAddress,
+      recipientNumber,
+      weight,
+      paidAmount,
+      quantity,
+    } = formData
     if (
-      !formData.customerName ||
-      !formData.email ||
-      !formData.billingAddress ||
-      !formData.contactNumber ||
-      !formData.recipientAddress ||
-      !formData.recipientNumber ||
-      !formData.weight ||
-      !formData.paidAmount ||
-      !formData.quantity
+      !customerName ||
+      !email ||
+      !billingAddress ||
+      !contactNumber ||
+      !recipientAddress ||
+      !recipientNumber ||
+      !weight ||
+      !paidAmount ||
+      !quantity
     ) {
       setError('All fields are required')
       return
     }
     try {
-      await createTrackingItem({ ...formData })
-      fetchRecords()
+      await fetch(TRACKING_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      await fetchRecords()
       resetForm()
     } catch (error) {
-      console.error('Error creating tracking items', error.response.data)
-      setError('Failed to create record: ' + (error.response.data.message || 'Unknown error'))
+      setError(`Failed to create record: ${error.message || 'Unknown error'}`)
     }
   }
 
@@ -130,14 +145,14 @@ function TrackingStatus() {
       weight: '',
       paidAmount: '',
       quantity: '',
-      status: 'Pending', // Reset to default value
+      status: 'Pending',
     })
     setEditingRecord(null)
     setError(null)
   }
 
-  const handleFilter = (event) => {
-    const filterValue = event.target.value.toLowerCase()
+  const handleFilter = ({ target: { value } }) => {
+    const filterValue = value.toLowerCase()
     const filteredRecords = originalRecords.filter((record) =>
       record.customerName.toLowerCase().includes(filterValue),
     )
@@ -155,6 +170,7 @@ function TrackingStatus() {
             type="button"
             onClick={editingRecord ? handleUpdate : handleCreate}
             className="btn btn-primary me-2"
+            disabled={loading}
           >
             {editingRecord ? 'Update' : '+ Create New'}
           </button>
@@ -187,66 +203,15 @@ function TrackingStatus() {
       )}
       <div className="mt-3">
         <h5>{editingRecord ? 'Edit Record' : 'Create New Record'}</h5>
-        <input
-          name="customerName"
-          value={formData.customerName}
-          onChange={handleInputChange}
-          placeholder="Customer Name"
-        />
-        <input
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          placeholder="Email"
-        />
-        <input
-          name="billingAddress"
-          value={formData.billingAddress}
-          onChange={handleInputChange}
-          placeholder="Billing Address"
-        />
-        <input
-          name="contactNumber"
-          value={formData.contactNumber}
-          onChange={handleInputChange}
-          placeholder="Contact Number"
-        />
-        <input
-          name="recipientAddress"
-          value={formData.recipientAddress}
-          onChange={handleInputChange}
-          placeholder="Recipient Address"
-        />
-        <input
-          name="recipientNumber"
-          value={formData.recipientNumber}
-          onChange={handleInputChange}
-          placeholder="Recipient Number"
-        />
-        <input
-          name="weight"
-          value={formData.weight}
-          onChange={handleInputChange}
-          placeholder="Weight"
-        />
-        <input
-          name="paidAmount"
-          value={formData.paidAmount}
-          onChange={handleInputChange}
-          placeholder="Paid Amount"
-        />
-        <input
-          name="quantity"
-          value={formData.quantity}
-          onChange={handleInputChange}
-          placeholder="Quantity"
-        />
-        <input
-          name="status"
-          value={formData.status}
-          onChange={handleInputChange}
-          placeholder="Status"
-        />
+        {Object.keys(formData).map((key) => (
+          <input
+            key={key}
+            name={key}
+            value={formData[key]}
+            onChange={handleInputChange}
+            placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+          />
+        ))}
         <button onClick={editingRecord ? handleUpdate : handleCreate}>
           {editingRecord ? 'Save Changes' : 'Create'}
         </button>

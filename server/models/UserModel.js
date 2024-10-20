@@ -1,30 +1,31 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
+const userSchema = new mongoose.Schema(
+    {
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            match: /.+\@.+\..+/,
+        },
+        username: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
     },
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
-    preferences: {
-        type: Object,
-        default: {},
-    },
-    activityHistory: {
-        type: Array,
-        default: [],
-    },
-});
+    { timestamps: true }
+);
 
-// Model declaration
 const UserModel = mongoose.model("User", userSchema);
+
+export const findUserByUsername = async (username) => {
+    const user = await UserModel.findOne({ username }).lean();
+    return user;
+};
 
 export default UserModel;

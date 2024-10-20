@@ -5,21 +5,14 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import session from "express-session";
 import APIv1 from "./routes/v1/indexRoute.js";
+import connectWithRetry from "./utils/db.js";
+import logger from "./utils/logger.js";
 
 dotenv.config();
 
 const app = express();
-
-// Validate environment variables
-const validateEnvVariables = () => {
-    const { SECRET_KEY, NODE_ENV, DB_URI } = process.env;
-    if (!SECRET_KEY || !NODE_ENV || !DB_URI) {
-        throw new Error("Environment variables not set properly.");
-    }
-};
-
-validateEnvVariables();
 
 // Middleware setup
 app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
@@ -29,54 +22,58 @@ app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-app.use("/api/v1/", APIv1); // routes for APIv1
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            secure: process.env.NODE_ENV === "production",
+            httpOnly: true,
+            sameSite: "Strict",
+        },
+    })
+);
 
 // Logging middleware
 app.use((req, res, next) => {
-    console.log(`Incoming request: ${req.method} ${req.originalUrl}`);
+    logger.info(`Incoming request: ${req.method} ${req.originalUrl}`);
     next();
 });
 
-// Connect to MongoDB
-const dbURI = process.env.DB_URI;
-
-const connectWithRetry = () => {
-    mongoose
-        .connect(dbURI)
-        .then(() => {
-            app.listen(process.env.PORT || 5058, () => {
-                console.log(`Server running on port ${process.env.PORT || 5058}`);
-            });
-        })
-        .catch((err) => {
-            console.error("MongoDB connection failed, retrying in 5 seconds...", err);
-            setTimeout(connectWithRetry, 5000);
-        });
-};
-
-connectWithRetry();
+// Routes for APIv1
+app.use("/api/v1/", APIv1);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({ message: err.message || "Internal Server Error" });
+    logger.error(`Error ${err.status || 500}: ${err.message} at ${req.method} ${req.originalUrl}`);
+    res.status(err.status || 500).json({
+        message: process.env.NODE_ENV === "development" ? err.message : "Internal Server Error",
+    });
 });
 
+// Start the MongoDB connection
+connectWithRetry(app);
+
 // Graceful shutdown
-const shutdown = () => {
-    mongoose.connection.close(() => {
-        console.log("MongoDB connection closed due to application termination");
+const shutdown = async () => {
+    logger.info("Shutting down gracefully...");
+    await mongoose.connection.close();
+    logger.info("MongoDB connection closed");
+    server.close(() => {
+        logger.info("HTTP server closed");
         process.exit(0);
     });
 };
 
+// Listen for termination signals
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 process.on("uncaughtException", (err) => {
-    console.error("Uncaught Exception:", err);
+    logger.error("Uncaught Exception:", err);
     shutdown();
 });
 process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    logger.error("Unhandled Rejection at:", promise, "reason:", reason);
     shutdown();
 });

@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import DOMPurify from 'dompurify'
 import {
   CButton,
   CCard,
@@ -12,54 +14,58 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CAlert,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-import { loginUser } from '../../../api/authService.js'
+import Cookies from 'js-cookie'
 
 function Login() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
+  const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm()
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [notification, setNotification] = useState({ message: '', type: '' })
 
-  const handleUnsuccessfulLogin = (error) => {
-    console.error('Login attempt failed:', error)
+  const loginUser = async (data) => {
+    const response = await fetch(`${USER_API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      const responseData = await response.json()
+      throw new Error(responseData.message || 'Login failed')
+    }
+    return response.json()
   }
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    if (!username || !password) {
-      alert('Please fill in both fields.')
-      return
-    }
-
+  const onSubmit = async (data) => {
     setLoading(true)
-    setError(null)
-    setSuccess(null)
+    setNotification({ message: '', type: '' })
 
     try {
-      console.log('Attempting to log in with:', { username, password })
-      const response = await loginUser({ username, password })
-
-      if (response) {
-        console.log('Login successful, response:', response)
-        localStorage.setItem('token', response.token)
-        setUsername('')
-        setPassword('')
-        setSuccess('Successfully logged in!')
-        setTimeout(() => {
-          navigate('/')
-        }, 1500)
+      const sanitizedData = {
+        username: DOMPurify.sanitize(data.username),
+        password: DOMPurify.sanitize(data.password),
       }
+      const response = await loginUser(sanitizedData)
+
+      // Store tokens in cookies
+      Cookies.set('token', response.accessToken, { expires: 1 })
+      Cookies.set('refreshToken', response.refreshToken, { expires: 1 })
+
+      setNotification({ message: 'Login Successful! Redirecting...', type: 'success' })
+      reset()
+      setTimeout(() => navigate('/dashboard'), 2000)
     } catch (error) {
-      console.error('Login error:', error)
-      const errorMsg =
-        error.response?.data?.message || 'An unexpected error occurred. Please try again.'
-      setError(errorMsg)
-      handleUnsuccessfulLogin(error)
+      setNotification({ message: error.message, type: 'danger' })
+      console.error('Login Error:', error.message)
     } finally {
       setLoading(false)
     }
@@ -73,11 +79,14 @@ function Login() {
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
-                  <CForm onSubmit={handleLogin}>
+                  {notification.message && (
+                    <CAlert color={notification.type} dismissible>
+                      {notification.message}
+                    </CAlert>
+                  )}
+                  <CForm onSubmit={handleSubmit(onSubmit)}>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
-                    {error && <p className="text-danger">{error}</p>}
-                    {success && <p className="text-success">{success}</p>}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -86,12 +95,10 @@ function Login() {
                         type="text"
                         placeholder="Username"
                         autoComplete="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        aria-label="Username"
+                        {...register('username', { required: 'Username is required' })}
                       />
                     </CInputGroup>
+                    {errors.username && <p className="text-danger">{errors.username.message}</p>}
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
@@ -100,12 +107,10 @@ function Login() {
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        aria-label="Password"
+                        {...register('password', { required: 'Password is required' })}
                       />
                     </CInputGroup>
+                    {errors.password && <p className="text-danger">{errors.password.message}</p>}
                     <CRow>
                       <CCol sm={5}>
                         <CButton
