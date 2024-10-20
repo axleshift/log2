@@ -1,68 +1,75 @@
 import TrackingItem from "../models/trackingModel.js";
 import { validationResult } from "express-validator";
+import logger from "../utils/logger.js";
+
+// Utility function for validation errors
+const handleValidationErrors = (res, errors) => {
+    return res.status(400).json({ status: "error", errors: errors.array() });
+};
 
 // Create a tracking item
-export const createTrackingItem = async (req, res) => {
+export const createTrackingItem = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return handleValidationErrors(res, errors);
     }
 
     try {
-        const newItem = new TrackingItem(req.body); // Use req.body to create a new item
+        const newItem = new TrackingItem(req.body);
         const savedItem = await newItem.save();
-        console.log("Created tracking item:", savedItem);
-        return res.status(201).json(savedItem); // Return the newly created item
+        logger.info("Created tracking item:", { id: savedItem._id, data: savedItem });
+        return res.status(201).json({ status: "success", item: savedItem });
     } catch (error) {
-        console.error("Error creating tracking item:", error);
-        return res.status(500).json({ error: "Failed to create tracking item" });
+        logger.error("Failed to create tracking item:", { message: error.message, stack: error.stack });
+        next(error); // Pass the error to the error handler middleware
     }
 };
 
 // Get all tracking items
-export const getTrackingItems = async (req, res) => {
+export const getTrackingItems = async (req, res, next) => {
     try {
-        const items = await TrackingItem.find(); // Fetch all tracking items
-        console.log("Fetched tracking items:", items);
-        return res.json(items);
+        const items = await TrackingItem.find();
+        logger.info("Fetched tracking items:", { count: items.length });
+        return res.json({ status: "success", items });
     } catch (error) {
-        console.error("Error fetching tracking items:", error);
-        return res.status(500).json({ error: "Failed to fetch tracking items" });
+        logger.error("Failed to fetch tracking items:", { message: error.message, stack: error.stack });
+        next(error);
     }
 };
 
 // Update a tracking item
-export const updateTrackingItem = async (req, res) => {
+export const updateTrackingItem = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return handleValidationErrors(res, errors);
     }
 
-    const { id } = req.params; // Get ID from request parameters
+    const { id } = req.params;
     try {
         const updatedItem = await TrackingItem.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedItem) {
-            return res.status(404).json({ error: "Tracking item not found" });
+            return res.status(404).json({ status: "error", message: "Tracking item not found" });
         }
-        return res.json(updatedItem);
+        logger.info("Updated tracking item:", { id, data: updatedItem });
+        return res.json({ status: "success", item: updatedItem });
     } catch (error) {
-        console.error("Error updating tracking item:", error);
-        return res.status(500).json({ error: "Failed to update tracking item" });
+        logger.error("Failed to update tracking item:", { message: error.message, stack: error.stack });
+        next(error);
     }
 };
 
 // Delete a tracking item
-export const deleteTrackingItem = async (req, res) => {
-    const { id } = req.params; // Get ID from request parameters
+export const deleteTrackingItem = async (req, res, next) => {
+    const { id } = req.params;
     try {
         const deletedItem = await TrackingItem.findByIdAndDelete(id);
         if (!deletedItem) {
-            return res.status(404).json({ error: "Tracking item not found" });
+            return res.status(404).json({ status: "error", message: "Tracking item not found" });
         }
-        console.log("Deleted tracking item:", deletedItem);
+        logger.info("Deleted tracking item:", { id: deletedItem._id });
         return res.sendStatus(204);
     } catch (error) {
-        console.error("Error deleting tracking item:", error);
-        return res.status(500).json({ error: "Failed to delete tracking item" });
+        logger.error("Failed to delete tracking item:", { message: error.message, stack: error.stack });
+        next(error);
     }
 };

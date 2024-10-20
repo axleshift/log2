@@ -1,14 +1,15 @@
 import express from "express";
-import authRoutes from "./authRoute.js";
-import invoiceRoutes from "./invoiceRoute.js";
-import trackingRoutes from "./trackingRoute.js";
-import inventoryRoutes from "./inventoryRoute.js";
+import authRoute from "./authRoute.js";
+import trackingRoute from "./trackingRoute.js";
+import inventoryRoute from "./inventoryRoute.js";
+import invoiceRoute from "./invoiceRoute.js";
 
 const router = express.Router();
+
 // Use routes
-router.use("/auth", authRoutes);
-router.use("/invoice", invoiceRoutes);
-router.use("/inventory", inventoryRoutes);
-router.use("/tracking", trackingRoutes);
+router.use("/auth", authRoute);
+router.use("/inventory", inventoryRoute);
+router.use("/tracking", trackingRoute);
+router.use("/invoice", invoiceRoute);
 
 export default router;
