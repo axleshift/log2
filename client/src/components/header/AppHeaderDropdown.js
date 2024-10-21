@@ -23,7 +23,7 @@ import {
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import avatarboy from './../../assets/images/avatars/boy.jpg'
-import Cookies from 'js-cookie' // Ensure you import js-cookie
+import Cookies from 'js-cookie'
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()

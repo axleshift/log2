@@ -5,7 +5,7 @@ import winston from "winston";
 dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
-const REFRESH_KEY = process.env.REFRESH_KEY; // Renamed constant
+const REFRESH_KEY = process.env.REFRESH_KEY;
 
 // Logger setup
 const logger = winston.createLogger({
@@ -27,7 +27,7 @@ export class TokenService {
 
     // Generate refresh token
     static generateRefreshToken(payload, expiresIn = "7d") {
-        return jwt.sign(payload, REFRESH_KEY, { expiresIn }); // Updated to use REFRESH_KEY
+        return jwt.sign(payload, REFRESH_KEY, { expiresIn });
     }
 
     // Verify access token
@@ -37,7 +37,7 @@ export class TokenService {
 
     // Verify refresh token
     static verifyRefreshToken(token) {
-        return this.verifyToken(token, REFRESH_KEY); // Updated to use REFRESH_KEY
+        return this.verifyToken(token, REFRESH_KEY);
     }
 
     // Token verification method

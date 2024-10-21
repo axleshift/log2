@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import {
   CCard,
@@ -10,12 +10,14 @@ import {
   CTableBody,
   CTableDataCell,
   CButton,
+  CForm,
   CFormInput,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
+  CSpinner,
 } from '@coreui/react'
 
 const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
@@ -23,7 +25,12 @@ const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
 const Inventory = () => {
   const [items, setItems] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
-  const [currentItem, setCurrentItem] = useState(null)
+  const [currentItem, setCurrentItem] = useState({
+    shipper: {},
+    consignee: {},
+    shipment: {},
+    shipping: { shipping_details: { land: {}, air: {}, sea: {} } },
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -32,32 +39,33 @@ const Inventory = () => {
     fetchAllItems()
   }, [])
 
-  const fetchAllItems = async () => {
+  const fetchAllItems = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const response = await axios.get(INVENTORY_API_URL)
-      // Ensure items is always an array
-      setItems(Array.isArray(response.data) ? response.data : [])
+      setItems(Array.isArray(response.data.data) ? response.data.data : [])
     } catch (error) {
       console.error('Error fetching items:', error)
       setError('Failed to fetch items. Please try again later.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const handleDeleteItem = async (id) => {
-    setLoading(true)
-    setError(null)
-    try {
-      await axios.delete(`${INVENTORY_API_URL}/${id}`)
-      fetchAllItems()
-    } catch (error) {
-      console.error('Error deleting item:', error)
-      setError('Failed to delete item. Please try again.')
-    } finally {
-      setLoading(false)
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      setLoading(true)
+      setError(null)
+      try {
+        await axios.delete(`${INVENTORY_API_URL}/${id}`)
+        fetchAllItems()
+      } catch (error) {
+        console.error('Error deleting item:', error)
+        setError('Failed to delete item. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -66,18 +74,20 @@ const Inventory = () => {
     setModalVisible(true)
   }
 
-  const handleUpdateItem = async () => {
+  const handleCreateOrUpdateItem = async (isUpdate) => {
     setLoading(true)
     setError(null)
     try {
-      if (currentItem) {
+      if (isUpdate) {
         await axios.put(`${INVENTORY_API_URL}/${currentItem._id}`, currentItem)
-        fetchAllItems()
-        resetModal()
+      } else {
+        await axios.post(INVENTORY_API_URL, currentItem)
       }
+      fetchAllItems()
+      resetModal()
     } catch (error) {
-      console.error('Error updating item:', error)
-      setError('Failed to update item. Please try again.')
+      console.error(`Error ${isUpdate ? 'updating' : 'creating'} item:`, error)
+      setError(`Failed to ${isUpdate ? 'update' : 'create'} item. Please try again.`)
     } finally {
       setLoading(false)
     }
@@ -85,14 +95,68 @@ const Inventory = () => {
 
   const resetModal = () => {
     setModalVisible(false)
-    setCurrentItem(null)
+    setCurrentItem({
+      shipper: {},
+      consignee: {},
+      shipment: {},
+      shipping: { shipping_details: { land: {}, air: {}, sea: {} } },
+    })
     setError(null)
   }
 
-  const filteredItems = items.filter((item) => {
-    const description = item?.shipment?.shipment_description?.toLowerCase() || ''
-    return description.includes(searchQuery.toLowerCase())
-  })
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+
+    const fieldMap = {
+      shipper: 'shipper_',
+      consignee: 'consignee_',
+      shipment: 'shipment_',
+      status: 'status',
+    }
+
+    let updatedField = null
+
+    for (const [field, prefix] of Object.entries(fieldMap)) {
+      if (name.startsWith(prefix)) {
+        const fieldName = name.replace(prefix, '')
+        updatedField = { [fieldName]: value }
+
+        setCurrentItem((prevItem) => ({
+          ...prevItem,
+          [field]: {
+            ...prevItem[field],
+            ...updatedField,
+          },
+        }))
+        return
+      }
+    }
+  }
+
+  const handleShippingDetailsChange = (e) => {
+    const { name, value } = e.target
+    const [mode, field] = name.split('.')
+
+    setCurrentItem((prevItem) => ({
+      ...prevItem,
+      shipping: {
+        ...prevItem.shipping,
+        shipping_details: {
+          ...prevItem.shipping.shipping_details,
+          [mode]: {
+            ...prevItem.shipping.shipping_details[mode],
+            [field]: value,
+          },
+        },
+      },
+    }))
+  }
+
+  const formatDateForInput = (date) => (date ? new Date(date).toISOString().split('T')[0] : '')
+
+  const filteredItems = items.filter((item) =>
+    item?.shipment?.shipment_description?.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   return (
     <CCard>
@@ -105,6 +169,15 @@ const Inventory = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <CButton
+            color="success"
+            onClick={() => {
+              setModalVisible(true)
+              resetModal()
+            }}
+          >
+            Add New Item
+          </CButton>
         </div>
       </CCardHeader>
 
@@ -152,46 +225,138 @@ const Inventory = () => {
 
       <CModal visible={modalVisible} onClose={resetModal}>
         <CModalHeader>
-          <CModalTitle>{currentItem ? 'View / Edit Item' : 'Item Details'}</CModalTitle>
+          <CModalTitle>{currentItem._id ? 'Edit Item' : 'Add New Item'}</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {/* Display Item Details */}
-          {currentItem && (
-            <>
+          <CForm
+            onSubmit={(e) => {
+              e.preventDefault() // Prevent default form submission
+              handleCreateOrUpdateItem(!!currentItem._id)
+            }}
+          >
+            <div>
               <h5>Shipper Details</h5>
-              <p>Company Name: {currentItem.shipper.shipper_company_name}</p>
-              <p>Contact Name: {currentItem.shipper.shipper_contact_name}</p>
-              <p>Email: {currentItem.shipper.shipper_contact_email_address}</p>
-              <p>Address: {currentItem.shipper.shipper_company_address}</p>
+              <CFormInput
+                label="Company Name"
+                name="shipper_company_name"
+                value={currentItem.shipper?.shipper_company_name || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Contact Name"
+                name="shipper_contact_name"
+                value={currentItem.shipper?.shipper_contact_name || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Email"
+                name="shipper_contact_email_address"
+                value={currentItem.shipper?.shipper_contact_email_address || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Address"
+                name="shipper_company_address"
+                value={currentItem.shipper?.shipper_company_address || ''}
+                onChange={handleInputChange}
+              />
 
               <h5>Consignee Details</h5>
-              <p>Company Name: {currentItem.consignee.consignee_company_name}</p>
-              <p>Contact Name: {currentItem.consignee.consignee_contact_name}</p>
-              <p>Email: {currentItem.consignee.consignee_contact_email_address}</p>
-              <p>Phone: {currentItem.consignee.consignee_contact_phone_number}</p>
-              <p>Address: {currentItem.consignee.consignee_company_address}</p>
+              <CFormInput
+                label="Company Name"
+                name="consignee_company_name"
+                value={currentItem.consignee?.consignee_company_name || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Contact Name"
+                name="consignee_contact_name"
+                value={currentItem.consignee?.consignee_contact_name || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Email"
+                name="consignee_contact_email_address"
+                value={currentItem.consignee?.consignee_contact_email_address || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Phone"
+                name="consignee_contact_phone_number"
+                value={currentItem.consignee?.consignee_contact_phone_number || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Address"
+                name="consignee_company_address"
+                value={currentItem.consignee?.consignee_company_address || ''}
+                onChange={handleInputChange}
+              />
 
               <h5>Shipment Details</h5>
-              <p>Description: {currentItem.shipment.shipment_description}</p>
-              <p>Weight: {currentItem.shipment.shipment_weight}</p>
-              <p>Value: {currentItem.shipment.shipment_value}</p>
-              <p>Instructions: {currentItem.shipment.shipment_instructions}</p>
+              <CFormInput
+                label="Description"
+                name="shipment_description"
+                value={currentItem.shipment?.shipment_description || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Weight"
+                name="shipment_weight"
+                value={currentItem.shipment?.shipment_weight || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Value"
+                name="shipment_value"
+                value={currentItem.shipment?.shipment_value || ''}
+                onChange={handleInputChange}
+              />
+              <CFormInput
+                label="Status"
+                name="status"
+                value={currentItem.status || ''}
+                onChange={handleInputChange}
+              />
 
-              <h5>Status</h5>
-              <p>{currentItem.status}</p>
-            </>
-          )}
+              <h5>Shipping Details</h5>
+              <CFormInput
+                label="Land"
+                name="land.description"
+                value={currentItem.shipping?.shipping_details?.land?.description || ''}
+                onChange={handleShippingDetailsChange}
+              />
+              <CFormInput
+                label="Air"
+                name="air.description"
+                value={currentItem.shipping?.shipping_details?.air?.description || ''}
+                onChange={handleShippingDetailsChange}
+              />
+              <CFormInput
+                label="Sea"
+                name="sea.description"
+                value={currentItem.shipping?.shipping_details?.sea?.description || ''}
+                onChange={handleShippingDetailsChange}
+              />
+            </div>
+
+            {/* Submit and Close buttons */}
+            <CModalFooter>
+              {loading ? (
+                <CSpinner size="sm" />
+              ) : (
+                <>
+                  <CButton color={currentItem._id ? 'primary' : 'success'} type="submit">
+                    {currentItem._id ? 'Update' : 'Create'}
+                  </CButton>
+                  <CButton color="secondary" onClick={resetModal}>
+                    Close
+                  </CButton>
+                </>
+              )}
+            </CModalFooter>
+          </CForm>
         </CModalBody>
-        <CModalFooter>
-          {currentItem && (
-            <CButton color="primary" onClick={handleUpdateItem}>
-              Update
-            </CButton>
-          )}
-          <CButton color="secondary" onClick={resetModal}>
-            Close
-          </CButton>
-        </CModalFooter>
       </CModal>
     </CCard>
   )
