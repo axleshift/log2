@@ -1,223 +1,141 @@
-import { CHeader } from '@coreui/react'
-import React, { useEffect, useState } from 'react'
-import DataTable from 'react-data-table-component'
+import React from "react";
+import {
+  CListGroup,
+  CListGroupItem,
+  CRow,
+  CCol,
+  CBadge,
+  CContainer,
+  CHeader,
+  CButton,
+  CCardHeader
+} from "@coreui/react";
+import "@coreui/coreui/dist/css/coreui.min.css"; // CoreUI CSS
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTruck, faBoxOpen, faShippingFast, faCheckCircle, faFileInvoice } from "@fortawesome/free-solid-svg-icons";
 
-const TRACKING_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/tracking`
+import "./tracking.scss";
 
-function TrackingStatus() {
-  const [records, setRecords] = useState([])
-  const [originalRecords, setOriginalRecords] = useState([])
-  const [editingRecord, setEditingRecord] = useState(null)
-  const [formData, setFormData] = useState({
-    customerName: '',
-    email: '',
-    billingAddress: '',
-    contactNumber: '',
-    recipientAddress: '',
-    recipientNumber: '',
-    weight: '',
-    paidAmount: '',
-    quantity: '',
-    status: 'Pending',
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+const TrackingStatus = () => {
+  const orderHistory = [
+    {
+      date: "22 Oct 2024 13:20:33",
+      status: "Delivered",
+      location: " Parcel has been delivered Recipient: Ma.Angelica Olavidez ",
+      delivered: true,
+      
+    },
+    {
+      date: "22 Oct 2024 08:19:04",
+      status: "In Transit",
+      location: " Parcel is out for delivery. Rider: Rona",
+      delivered: false,
+       
+    },
+    {
+      date: "22 07:44:20",
+      status: "In Transit",
+      location: " Your parcel has arrived at the delivery hub : Mid QC Hub",
+      delivered: false,
+    },
+    {
+      date: "21 Oct 2024 23:23:47",
+      status: "In Transit",
+      location: "Parcel has arrived and to be received by the delivery hub",
+      delivered: false,
+    },
+    {
+      date: "19 Oct 2024 14:31:21",
+      status: "In Transit",
+      location: " Parcel has arrived at sorting facility",
+      delivered: false,
+    },
+    {
+      date: "19 Oct 2024 21:53:42",
+      status: "Created",
+      location: " Order has been created",
+      delivered: false,
+    },
+  ];
 
-  const columns = [
-    { name: 'ID', selector: 'id', sortable: true },
-    { name: 'Name', selector: 'customerName', sortable: true },
-    { name: 'Email', selector: 'email', sortable: true },
-    { name: 'Billing Address', selector: 'billingAddress', sortable: true },
-    { name: 'Contact Number', selector: 'contactNumber', sortable: true },
-    { name: 'Recipient Address', selector: 'recipientAddress', sortable: true },
-    { name: 'Recipient Number', selector: 'recipientNumber', sortable: true },
-    { name: 'Weight', selector: 'weight', sortable: true },
-    { name: 'Paid Amount', selector: 'paidAmount', sortable: true },
-    { name: 'Quantity', selector: 'quantity', sortable: true },
-    { name: 'Status', selector: 'status', sortable: true },
-  ]
+  const steps = [
+    { label: "Order Created", icon: faFileInvoice },
+    { label: "Picked Up", icon: faTruck },
+    { label: "Sorting", icon: faBoxOpen },
+    { label: "Courier Delivery", icon: faShippingFast },
+    { label: "Delivered", icon: faCheckCircle },
+  ];
 
-  useEffect(() => {
-    fetchRecords()
-  }, [])
-
-  const fetchRecords = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch(TRACKING_API_URL)
-      const data = await response.json()
-      setRecords(data)
-      setOriginalRecords(data)
-    } catch {
-      setError('Failed to fetch records')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleInputChange = ({ target: { name, value } }) => {
-    setFormData((prevData) => ({ ...prevData, [name]: value }))
-  }
-
-  const handleEdit = (record) => {
-    setEditingRecord(record)
-    setFormData(record)
-  }
-
-  const handleUpdate = async () => {
-    const { customerName, email } = formData
-    if (!customerName || !email) {
-      setError('Customer Name and Email are required')
-      return
-    }
-    try {
-      await fetch(`${TRACKING_API_URL}/${formData.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-      await fetchRecords()
-      resetForm()
-    } catch {
-      setError('Failed to update record')
-    }
-  }
-
-  const handleDelete = async (recordId) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await fetch(`${TRACKING_API_URL}/${recordId}`, { method: 'DELETE' })
-        await fetchRecords()
-      } catch {
-        setError('Failed to delete record')
-      }
-    }
-  }
-
-  const handleCreate = async () => {
-    const {
-      customerName,
-      email,
-      billingAddress,
-      contactNumber,
-      recipientAddress,
-      recipientNumber,
-      weight,
-      paidAmount,
-      quantity,
-    } = formData
-    if (
-      !customerName ||
-      !email ||
-      !billingAddress ||
-      !contactNumber ||
-      !recipientAddress ||
-      !recipientNumber ||
-      !weight ||
-      !paidAmount ||
-      !quantity
-    ) {
-      setError('All fields are required')
-      return
-    }
-    try {
-      await fetch(TRACKING_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-      await fetchRecords()
-      resetForm()
-    } catch (error) {
-      setError(`Failed to create record: ${error.message || 'Unknown error'}`)
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      customerName: '',
-      email: '',
-      billingAddress: '',
-      contactNumber: '',
-      recipientAddress: '',
-      recipientNumber: '',
-      weight: '',
-      paidAmount: '',
-      quantity: '',
-      status: 'Pending',
-    })
-    setEditingRecord(null)
-    setError(null)
-  }
-
-  const handleFilter = ({ target: { value } }) => {
-    const filterValue = value.toLowerCase()
-    const filteredRecords = originalRecords.filter((record) =>
-      record.customerName.toLowerCase().includes(filterValue),
-    )
-    setRecords(filteredRecords)
-  }
+  const currentStep = 4; // Example of completed steps.
 
   return (
-    <div className="container mt-5">
-      <CHeader>
-        <div className="text-end">
-          <input type="text" onChange={handleFilter} placeholder="Search" />
-        </div>
-        <div>
-          <button
-            type="button"
-            onClick={editingRecord ? handleUpdate : handleCreate}
-            className="btn btn-primary me-2"
-            disabled={loading}
-          >
-            {editingRecord ? 'Update' : '+ Create New'}
-          </button>
-          {editingRecord && (
-            <button type="button" onClick={resetForm} className="btn btn-secondary me-2">
-              Cancel
-            </button>
-          )}
-        </div>
-      </CHeader>
-      {loading ? (
-        <p>Loading records...</p>
-      ) : error ? (
-        <p className="text-danger">{error}</p>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={records}
-          selectableRows
-          fixedHeader
-          pagination
-          onRowClicked={handleEdit}
-          selectableRowsOnClick
-          onSelectedRowsChange={({ selectedRows }) => {
-            if (selectedRows.length) {
-              handleDelete(selectedRows[0].id)
-            }
-          }}
-        />
-      )}
-      <div className="mt-3">
-        <h5>{editingRecord ? 'Edit Record' : 'Create New Record'}</h5>
-        {Object.keys(formData).map((key) => (
-          <input
-            key={key}
-            name={key}
-            value={formData[key]}
-            onChange={handleInputChange}
-            placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-          />
-        ))}
-        <button onClick={editingRecord ? handleUpdate : handleCreate}>
-          {editingRecord ? 'Save Changes' : 'Create'}
-        </button>
-      </div>
+    <CContainer fluid>
+     {/* Tracking Timeline */}
+     <CHeader style={{ marginBottom: '25px' }}>
+     <input 
+     type="text" 
+     placeholder="Tracking Number"
+     style={{
+      width: '300px',   
+      height: '45px',   
+      fontSize: '18px',
+      padding: '10px'   
+    }}
+     />
+     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+     <CButton color="primary">TRACK NUMBER</CButton>
     </div>
-  )
-}
+    </CHeader>
+      <div className="tracking-timeline">
+        <CRow className="text-center mb-4">
+          {steps.map((step, index) => (
+            <CCol key={index}>
+              <div className={`timeline-step ${index <= currentStep ? "active" : ""}`}>
+                <FontAwesomeIcon icon={step.icon} className="timeline-icon" />
+                <div>{step.label}</div>
+              </div>
+            </CCol>
+          ))}
+        </CRow>
+      </div>
 
-export default TrackingStatus
+      <CRow>
+        {/* Package Information */}
+        <CCol md="4">
+          <div className="package-info p-3 mb-4 bg-light rounded">
+            <h5>Package Information</h5>
+            <p><strong>Tracking Number:</strong> <span className="text-danger">PH247296860339A</span></p>
+            <p><strong>Recipient Name:</strong> <span className="text-danger">Ma.Angelica Olavidez</span></p>
+            <p><strong>Tel Number:</strong> +639518941731</p>
+          </div>
+        </CCol>
+
+        {/* Order Tracking History */}
+        <CCol md="8">
+          <h5>Delivered</h5>
+          <CListGroup>
+            {orderHistory.map((entry, index) => (
+              <CListGroupItem key={index} className="d-flex justify-content-between align-items-start">
+                <CRow>
+                  <CCol md="3">
+                    <strong>{entry.date}</strong>
+                  </CCol>
+                  <CCol md="9">
+                    <div>{entry.location}</div>
+                  </CCol>
+                </CRow>
+                {entry.delivered && (
+                  <CBadge color="success" shape="rounded-pill">
+                    Delivered
+                  </CBadge>
+                )}
+              </CListGroupItem>
+            ))}
+          </CListGroup>
+        </CCol>
+      </CRow>
+    </CContainer>
+  );
+};
+
+export default TrackingStatus;

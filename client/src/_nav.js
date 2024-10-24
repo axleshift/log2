@@ -1,14 +1,14 @@
 import React from 'react'
-import CIcon from '@coreui/icons-react'
-import { cilSpeedometer, cilFile, cilTruck, cilHouse, cilClipboard } from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClipboardList, faDashboard, faFileInvoice, faTruckMoving } from '@fortawesome/free-solid-svg-icons';
 const _nav = [
   {
     component: CNavItem,
-    name: 'Dashboard',
+    name: ' Dashboard',
     to: '/dashboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    icon: <FontAwesomeIcon icon={faDashboard} customClassName="nav-icon" size='xl' style={{ marginRight: '10px' }}/>,
     badge: {
       color: 'info',
       text: 'NEW',
@@ -16,9 +16,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Invoice',
+    name: ' Invoice',
     to: '/invoice', // Use 'to' for navigation
-    icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+    icon: <FontAwesomeIcon icon={faFileInvoice} customClassName="nav-icon"  size='xl' style={{ marginRight: '15px' }}/>,
     badge: {
       color: 'info',
       text: 'NEW',
@@ -26,9 +26,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Tracking Status',
+    name: ' Tracking Status',
     to: '/tracking',
-    icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
+    icon: <FontAwesomeIcon icon={faTruckMoving} customClassName="nav-icon" size='l' style={{ marginRight: '12px' }}/>,
     badge: {
       color: 'info',
       text: 'NEW',
@@ -36,9 +36,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Inventory',
+    name: ' Inventory',
     to: '/inventory',
-    icon: <CIcon icon={cilClipboard} customClassName="nav-icon" />,
+    icon: <FontAwesomeIcon icon={faClipboardList} customClassName="nav-icon" size='xl' style={{ marginRight: '13px' }}/>,
     badge: {
       color: 'info',
       text: 'NEW',

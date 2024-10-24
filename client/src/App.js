@@ -17,7 +17,7 @@ const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'
 
 function ProtectedRoute({ children }) {
   const isUserLogin = document.cookie.split('; ').some((row) => row.startsWith('token='))
-  const isDevMode = false //process.env.NODE_ENV === 'development' // MAKE SURE TO UNCOMMENT PROCESS TO BYPASS LOGIN :D
+  const isDevMode = process.env.NODE_ENV === 'development' // MAKE SURE TO UNCOMMENT PROCESS TO BYPASS LOGIN :D
 
   // Allow access if in development mode
   return isDevMode || isUserLogin ? children : <Navigate to="/login" />

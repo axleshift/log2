@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CAvatar,
@@ -11,6 +11,7 @@ import {
   CDropdownToggle,
   CButton,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
 import {
   cilBell,
   cilCreditCard,
@@ -21,13 +22,33 @@ import {
   cilTask,
   cilUser,
 } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
-import avatarboy from './../../assets/images/avatars/boy.jpg'
+import defaultAvatar from './../../assets/images/avatars/boy.jpg' // Default avatar image
 import Cookies from 'js-cookie'
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [userName, setUserName] = useState('Anonymous') // Fallback to 'Anonymous'
+  const [userAvatar, setUserAvatar] = useState(defaultAvatar) // Default avatar if none is provided
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    console.log('User Info:', userInfo) // Debugging line
+
+    if (userInfo && userInfo.name) {
+      setUserName(userInfo.name)
+    } else {
+      setUserName('Anonymous') // Fallback user name
+    }
+
+    if (userInfo && userInfo.avatar) {
+      setUserAvatar(userInfo.avatar)
+    } else {
+      setUserAvatar(defaultAvatar) // Fallback to default avatar
+    }
+  }, [])
 
   const logoutUser = async () => {
     // Clear cookies
@@ -36,6 +57,9 @@ const AppHeaderDropdown = () => {
 
     // Clear session storage
     sessionStorage.clear()
+
+    // Clear localStorage (optional)
+    localStorage.removeItem('user')
   }
 
   const handleSignOut = async () => {
@@ -58,10 +82,12 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={avatarboy} size="lg" />
+        <CAvatar src={userAvatar} size="lg" /> {/* Use dynamic avatar */}
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
+        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
+          {userName} {/* Display dynamic user name */}
+        </CDropdownHeader>
         <CDropdownItem>
           <CIcon icon={cilBell} className="me-2" />
           Updates{' '}
