@@ -2,7 +2,7 @@ import { element, exact } from 'prop-types'
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const TrackingStatus = React.lazy(() => import('./views/tracking/TrackingStatus'));
+const TrackingStatus = React.lazy(() => import('./views/tracking/TrackingStatus'))
 const Inventory = React.lazy(() => import('./views/inventory/Inventory.js'))
 const InvoiceForm = React.lazy(() => import('./views/invoice/InvoiceForm.js'))
 

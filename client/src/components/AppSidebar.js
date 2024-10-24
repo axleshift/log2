@@ -7,7 +7,7 @@ import {
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
-  CImage
+  CImage,
 } from '@coreui/react'
 
 import { AppSidebarNav } from './AppSidebarNav'
@@ -33,12 +33,12 @@ const AppSidebar = () => {
         <CSidebarBrand to="/">
           <CImage
             fluid
-            src="/image/logo.png"  // Path from 'public' folder
+            src="/image/logo.png" // Path from 'public' folder
             className="sidebar-brand-full"
             height={30}
           />
           <CImage
-            src="/image/favicon.png"  // Path from 'public' folder
+            src="/image/favicon.png" // Path from 'public' folder
             className="sidebar-brand-narrow"
             height={30}
           />

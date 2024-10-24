@@ -33,8 +33,8 @@ const AppHeaderDropdown = () => {
 
   useEffect(() => {
     // Retrieve user data from localStorage
-    const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-    
+    const userInfo = JSON.parse(localStorage.getItem('user') || '{}')
+
     console.log('User Info:', userInfo) // Debugging line
 
     if (userInfo && userInfo.name) {
