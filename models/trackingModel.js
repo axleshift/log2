@@ -1,49 +1,21 @@
 import mongoose from "mongoose";
 
-const trackingItemSchema = new mongoose.Schema(
-    {
-        customerName: {
-            type: String,
-            required: true,
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        billingAddress: {
-            type: String,
-            required: true,
-        },
-        contactNumber: {
-            type: String,
-            required: true,
-        },
-        recipientAddress: {
-            type: String,
-            required: true,
-        },
-        weight: {
-            type: Number,
-            required: true,
-        },
-        paidAmount: {
-            type: Number,
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-        },
-        status: {
-            type: String,
-            required: true,
-            default: "Pending", // Default status
-        },
-    },
-    { timestamps: true }
-);
+// models/Tracking.js
 
-const TrackingItem = mongoose.model("TrackingItem", trackingItemSchema);
+const trackingSchema = new mongoose.Schema({
+    trackingNumber: { type: String, required: true },
+    recipientName: { type: String, required: true },
+    recipientPhone: { type: String, required: true },
+    orderHistory: [
+        {
+            date: { type: String, required: true },
+            status: { type: String, required: true },
+            location: { type: String, required: true },
+            delivered: { type: Boolean, required: true },
+        },
+    ],
+});
+
+const TrackingItem = mongoose.model("Tracking", trackingSchema);
 
 export default TrackingItem;
