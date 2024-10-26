@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 
-import { CChartLine } from '@coreui/react-chartjs'
+import { CChart } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
 
 const MainChart = () => {
@@ -30,7 +30,8 @@ const MainChart = () => {
 
   return (
     <>
-      <CChartLine
+      <CChart
+        type="bar"
         ref={chartRef}
         style={{ height: '300px', marginTop: '40px' }}
         data={{

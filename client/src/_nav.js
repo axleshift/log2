@@ -28,40 +28,6 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: ' Invoice',
-    to: '/invoice', // Use 'to' for navigation
-    icon: (
-      <FontAwesomeIcon
-        icon={faFileInvoice}
-        customClassName="nav-icon"
-        size="xl"
-        style={{ marginRight: '15px' }}
-      />
-    ),
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
-  },
-  {
-    component: CNavItem,
-    name: ' Tracking Status',
-    to: '/tracking',
-    icon: (
-      <FontAwesomeIcon
-        icon={faTruckMoving}
-        customClassName="nav-icon"
-        size="l"
-        style={{ marginRight: '12px' }}
-      />
-    ),
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
-  },
-  {
-    component: CNavItem,
     name: ' Inventory',
     to: '/inventory',
     icon: (

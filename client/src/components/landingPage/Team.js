@@ -16,27 +16,27 @@ import { faShip, faRoute, faUser, faUserShield } from '@fortawesome/free-solid-s
 const Team = () => {
   const teamMembers = [
     {
-      name: 'Melvin Jones Repol',
+      name: 'Rona P. Irader',
       major: 'IM',
-      image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
+      image: 'https://avatars.githubusercontent.com/u/126496983?s=400&u=22d294fa41d24060eba0b1b556cd84c01c293cd6&v=4',
     },
     {
-      name: 'John Reybel Pilon',
+      name: 'Ma Angelica Olavidez',
       major: 'IM',
-      image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
+      image: 'https://avatars.githubusercontent.com/u/127282844?v=4&size=64',
     },
     {
-      name: 'Maresa Gregana',
+      name: 'Rhica Mhay E. Ricafranca',
       major: 'NA',
-      image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
+      image: 'https://avatars.githubusercontent.com/u/127093925?v=4',
     },
     {
-      name: 'Jullana Mariz Jovenal',
+      name: 'Brian Joseph P. Pura',
       major: 'IS',
-      image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
+      image: 'https://avatars.githubusercontent.com/u/186307007?v=4&size=64',
     },
     {
-      name: 'Kenneth Pameroyan',
+      name: 'Louise Dollosa',
       major: 'IS',
       image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
     },

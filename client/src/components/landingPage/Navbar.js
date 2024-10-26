@@ -35,7 +35,7 @@ const Navbar = () => {
     <CNavbar expand="sm" colorScheme={colorMode}>
       <CContainer fluid>
         <CNavbarBrand to="/" as={NavLink} data-aos="fade-down" data-aos-duration="1000">
-          <CImage src="/images/logo.png" width="150px" />
+          <CImage src="/image/logo.png" width="150px" />
         </CNavbarBrand>
         <CNavbarToggler
           aria-label="Toggle navigation"

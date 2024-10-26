@@ -169,15 +169,7 @@ const Inventory = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <CButton
-            color="success"
-            onClick={() => {
-              setModalVisible(true)
-              resetModal()
-            }}
-          >
-            Add New Item
-          </CButton>
+          
         </div>
       </CCardHeader>
 
@@ -189,7 +181,7 @@ const Inventory = () => {
           <CTable bordered hover>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>No.</CTableHeaderCell>
+                <CTableHeaderCell>Tracking Id</CTableHeaderCell>
                 <CTableHeaderCell>Shipment Description</CTableHeaderCell>
                 <CTableHeaderCell>Weight</CTableHeaderCell>
                 <CTableHeaderCell>Value</CTableHeaderCell>

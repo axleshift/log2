@@ -44,21 +44,7 @@ const Services = () => {
                 enhance visibility and efficiency.
               </p>
             </CCol>
-            <CCol xs data-aos="zoom-out-up">
-              <div className="mb-2 d-inline-block rounded-pill bg-primary bg-opacity-25 p-3">
-                <FontAwesomeIcon
-                  style={{ width: '40px', height: '40px' }}
-                  icon={faRoute}
-                  className="fa-2x text-primary"
-                />
-              </div>
-              <h3>AI Powered Route</h3>
-              <p>
-                Leverage AI algorithms to determine the most efficient routes, reducing travel time
-                and fuel costs. Our system continuously adapts to real-time conditions for optimal
-                performance.
-              </p>
-            </CCol>
+          
             <CCol xs data-aos="zoom-out-up">
               <div className="mb-2 d-inline-block rounded-pill bg-primary bg-opacity-25 p-3">
                 <FontAwesomeIcon
