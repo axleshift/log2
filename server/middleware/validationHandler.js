@@ -27,3 +27,45 @@ export const loginValidation = (req, res, next) => {
     }
     next();
 };
+
+// Forgot Password Validation
+export const forgotPasswordValidation = (req, res, next) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ status: "error", message: "Email is required." });
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+        return res.status(400).json({ status: "error", message: "Invalid email format." });
+    }
+    next();
+};
+
+// OTP Validation
+export const otpValidation = (req, res, next) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+        return res.status(400).json({ status: "error", message: "Email and OTP are required." });
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+        return res.status(400).json({ status: "error", message: "Invalid email format." });
+    }
+    if (otp.length !== 6) {
+        return res.status(400).json({ status: "error", message: "OTP must be 6 digits." });
+    }
+    next();
+};
+
+// Change Password Validation
+export const changePasswordValidation = (req, res, next) => {
+    const { otp, newPassword } = req.body;
+    if (!otp || !newPassword) {
+        return res.status(400).json({ status: "error", message: "OTP and new password are required." });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ status: "error", message: "New password must be at least 6 characters." });
+    }
+    if (otp.length !== 6) {
+        return res.status(400).json({ status: "error", message: "OTP must be 6 digits." });
+    }
+    next();
+};

@@ -1,11 +1,18 @@
-import express from "express";
-import { getTrackingItems, createTrackingItem, updateTrackingItem, deleteTrackingItem } from "../../controller/trackingController.js";
+import express from 'express';
+import {
+    createTracking,
+    getAllTrackings,
+    getTrackingById,
+    updateTracking,
+    deleteTracking,
+} from '../../controller/trackingController.js';
 
 const router = express.Router();
 
-router.get("/", getTrackingItems);
-router.post("/", createTrackingItem);
-router.put("/:id", updateTrackingItem);
-router.delete("/:id", deleteTrackingItem);
+router.post('/', createTracking);
+router.get('/', getAllTrackings);
+router.get('/:id', getTrackingById);
+router.put('/:id', updateTracking);
+router.delete('/:id', deleteTracking);
 
 export default router;
