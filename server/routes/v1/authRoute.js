@@ -1,20 +1,6 @@
 import express from "express";
-import {
-    registerUser,
-    loginUser,
-    logoutUser,
-    refreshToken,
-    forgotPassword,
-    verifyOtp,
-    changePassword,
-    getAllUsers,
-} from "../../controller/userController.js";
-import {
-    registerValidation,
-    loginValidation,
-    forgotPasswordValidation,
-    changePasswordValidation,
-} from "../../middleware/validationHandler.js";
+import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, getAllUsers } from "../../controller/userController.js";
+import { registerValidation, loginValidation, forgotPasswordValidation, changePasswordValidation } from "../../middleware/validationHandler.js";
 
 const router = express.Router();
 
@@ -59,7 +45,10 @@ router.post("/verify-otp", verifyOtp);
  * @desc Change user password
  */
 router.post("/change-password", changePasswordValidation, changePassword);
-
-router.get("/users", getAllUsers); 
+/**
+ * @route POST /api/users/getAllUsers
+ * @desc Get Users
+ */
+router.get("/users", getAllUsers);
 
 export default router;

@@ -5,19 +5,19 @@ import { validationResult } from "express-validator";
 import nodemailer from "nodemailer";
 import logger from "../utils/logger.js";
 import jwt from "jsonwebtoken";
-import fetch from 'node-fetch'; 
+import fetch from "node-fetch";
 
 // Handle errors
 const handleError = (error, next, message) => {
     logger.error(message, { error: error.message, stack: error.stack });
-    return next({ status: 'error', message });
+    return next({ status: "error", message });
 };
 
 // Verify reCAPTCHA
 const verifyRecaptcha = async (token) => {
     const response = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
             secret: process.env.RECAPTCHA_SECRET_KEY,
             response: token,
@@ -119,15 +119,15 @@ export const verifyOtp = async (req, res, next) => {
     try {
         const user = await UserModel.findOne({ email });
         if (!user) {
-            return res.status(404).json({ status: 'error', message: 'User with this email does not exist.' });
+            return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
         if (user.resetPasswordOtp !== otp || Date.now() > user.resetPasswordOtpExpires) {
-            return res.status(400).json({ status: 'error', message: 'Invalid OTP or OTP expired.' });
+            return res.status(400).json({ status: "error", message: "Invalid OTP or OTP expired." });
         }
 
-        return res.status(200).json({ status: 'success', message: 'OTP verified successfully', email: user.email });
+        return res.status(200).json({ status: "success", message: "OTP verified successfully", email: user.email });
     } catch (error) {
-        handleError(error, next, 'Error during OTP verification');
+        handleError(error, next, "Error during OTP verification");
     }
 };
 
@@ -138,14 +138,14 @@ export const changePassword = async (req, res, next) => {
     try {
         const user = await UserModel.findOne({ email });
         if (!user) {
-            return res.status(404).json({ status: 'error', message: 'User with this email does not exist.' });
+            return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
         if (user.resetPasswordOtp !== otp || Date.now() > user.resetPasswordOtpExpires) {
-            return res.status(400).json({ status: 'error', message: 'Invalid OTP or OTP expired.' });
+            return res.status(400).json({ status: "error", message: "Invalid OTP or OTP expired." });
         }
 
         if (newPassword.length < 6) {
-            return res.status(400).json({ status: 'error', message: 'New password must be at least 6 characters long.' });
+            return res.status(400).json({ status: "error", message: "New password must be at least 6 characters long." });
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 12);
@@ -154,10 +154,10 @@ export const changePassword = async (req, res, next) => {
         user.resetPasswordOtpExpires = null;
         await user.save();
 
-        logger.info('Password changed successfully for user:', user._id);
-        return res.status(200).json({ status: 'success', message: 'Password changed successfully.' });
+        logger.info("Password changed successfully for user:", user._id);
+        return res.status(200).json({ status: "success", message: "Password changed successfully." });
     } catch (error) {
-        handleError(error, next, 'Error during password change');
+        handleError(error, next, "Error during password change");
     }
 };
 
@@ -220,7 +220,7 @@ export const loginUser = async (req, res, next) => {
 export const getAllUsers = async (req, res, next) => {
     try {
         const users = await UserModel.find(); // Fetch all users from the database
-        res.json({ status: "success", users }); // Return the users in the response
+        res.json({ status: "success", users });
     } catch (error) {
         logger.error("Failed to fetch users:", { message: error.message, stack: error.stack });
         return res.status(500).json({ message: "Internal server error" });
@@ -240,7 +240,6 @@ export const refreshToken = (req, res, next) => {
     });
 };
 
-
 export const logoutUser = (req, res) => {
     // Clear the tokens from cookies
     res.clearCookie("token", {
@@ -248,7 +247,7 @@ export const logoutUser = (req, res) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
     });
-    
+
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
