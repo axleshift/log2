@@ -44,7 +44,7 @@ const Services = () => {
                 enhance visibility and efficiency.
               </p>
             </CCol>
-          
+
             <CCol xs data-aos="zoom-out-up">
               <div className="mb-2 d-inline-block rounded-pill bg-primary bg-opacity-25 p-3">
                 <FontAwesomeIcon

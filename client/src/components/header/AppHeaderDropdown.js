@@ -12,41 +12,31 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilCreditCard,
-  cilCommentSquare,
-  cilEnvelopeOpen,
-  cilFile,
-  cilSettings,
-  cilTask,
-  cilUser,
-} from '@coreui/icons'
-import defaultAvatar from './../../assets/images/avatars/boy.jpg' // Default avatar image
+import { cilBell, cilEnvelopeOpen, cilSettings, cilTask, cilUser } from '@coreui/icons'
+import defaultAvatar from './../../assets/images/avatars/boy.jpg'
 import Cookies from 'js-cookie'
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [userName, setUserName] = useState('Anonymous') // Fallback to 'Anonymous'
-  const [userAvatar, setUserAvatar] = useState(defaultAvatar) // Default avatar if none is provided
+  const [userName, setUserName] = useState('Anonymous')
+  const [userAvatar, setUserAvatar] = useState(defaultAvatar)
 
   useEffect(() => {
-    // Retrieve user data from localStorage
     const userInfo = JSON.parse(localStorage.getItem('user') || '{}')
 
-    console.log('User Info:', userInfo) // Debugging line
+    console.log('User Info:', userInfo)
 
     if (userInfo && userInfo.name) {
       setUserName(userInfo.name)
     } else {
-      setUserName('Anonymous') // Fallback user name
+      setUserName('Anonymous')
     }
 
     if (userInfo && userInfo.avatar) {
       setUserAvatar(userInfo.avatar)
     } else {
-      setUserAvatar(defaultAvatar) // Fallback to default avatar
+      setUserAvatar(defaultAvatar)
     }
   }, [])
 
@@ -88,6 +78,7 @@ const AppHeaderDropdown = () => {
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
           {userName} {/* Display dynamic user name */}
         </CDropdownHeader>
+
         <CDropdownItem>
           <CIcon icon={cilBell} className="me-2" />
           Updates{' '}
@@ -95,6 +86,7 @@ const AppHeaderDropdown = () => {
             42
           </CBadge>
         </CDropdownItem>
+
         <CDropdownItem>
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
           Messages{' '}
@@ -102,17 +94,11 @@ const AppHeaderDropdown = () => {
             42
           </CBadge>
         </CDropdownItem>
+
         <CDropdownItem>
           <CIcon icon={cilTask} className="me-2" />
           Tasks{' '}
           <CBadge color="danger" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem>
-          <CIcon icon={cilCommentSquare} className="me-2" />
-          Comments{' '}
-          <CBadge color="warning" className="ms-2">
             42
           </CBadge>
         </CDropdownItem>
@@ -125,20 +111,6 @@ const AppHeaderDropdown = () => {
         <CDropdownItem>
           <CIcon icon={cilSettings} className="me-2" />
           Settings
-        </CDropdownItem>
-        <CDropdownItem>
-          <CIcon icon={cilCreditCard} className="me-2" />
-          Payments{' '}
-          <CBadge color="secondary" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem>
-          <CIcon icon={cilFile} className="me-2" />
-          Projects{' '}
-          <CBadge color="primary" className="ms-2">
-            42
-          </CBadge>
         </CDropdownItem>
 
         <CDropdownDivider />

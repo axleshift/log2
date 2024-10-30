@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import DOMPurify from 'dompurify'
@@ -18,7 +18,10 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import Cookies from 'js-cookie'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 function Login() {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -31,6 +34,9 @@ function Login() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [captchaValue, setCaptchaValue] = useState(null)
+  const recaptchaRef = useRef()
 
   const loginUser = async (data) => {
     const response = await fetch(`${USER_API_URL}/login`, {
@@ -49,26 +55,44 @@ function Login() {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
+    if (!captchaValue) {
+      setNotification({ message: 'Please complete the reCAPTCHA', type: 'danger' })
+      setLoading(false)
+      return
+    }
+
     try {
       const sanitizedData = {
         username: DOMPurify.sanitize(data.username),
         password: DOMPurify.sanitize(data.password),
+        recaptchaToken: captchaValue,
       }
       const response = await loginUser(sanitizedData)
 
+      // Store user info in localStorage
+      const { name, avatar, accessToken, refreshToken } = response
+      localStorage.setItem('user', JSON.stringify({ name, avatar }))
+
       // Store tokens in cookies
-      Cookies.set('token', response.accessToken, { expires: 1 })
-      Cookies.set('refreshToken', response.refreshToken, { expires: 1 })
+      Cookies.set('token', accessToken, { expires: 1 })
+      Cookies.set('refreshToken', refreshToken, { expires: 1 })
 
       setNotification({ message: 'Login Successful! Redirecting...', type: 'success' })
       reset()
       setTimeout(() => navigate('/dashboard'), 2000)
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
-      console.error('Login Error:', error.message)
     } finally {
       setLoading(false)
+      setCaptchaValue(null)
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset()
+      }
     }
+  }
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev)
   }
 
   return (
@@ -104,13 +128,31 @@ function Login() {
                         <CIcon icon={cilLockLocked} />
                       </CInputGroupText>
                       <CFormInput
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         placeholder="Password"
                         autoComplete="current-password"
                         {...register('password', { required: 'Password is required' })}
                       />
+                      <CButton
+                        color="secondary"
+                        variant="outline"
+                        onClick={togglePasswordVisibility}
+                        type="button"
+                      >
+                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                      </CButton>
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
+
+                    {/* ReCAPTCHA Component */}
+                    <div className="mb-3">
+                      <ReCAPTCHA
+                        ref={recaptchaRef}
+                        sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                        onChange={setCaptchaValue}
+                      />
+                    </div>
+
                     <CRow>
                       <CCol sm={5}>
                         <CButton

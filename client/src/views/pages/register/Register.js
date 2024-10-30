@@ -38,8 +38,11 @@ function Register() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
+
+    // Check for HTTP errors
     if (!response.ok) {
-      throw new Error('Registration failed. Please try again.')
+      const errorResponse = await response.json() // Parse JSON response for more details
+      throw new Error(errorResponse.message || 'Registration failed. Please try again.')
     }
     return response.json()
   }

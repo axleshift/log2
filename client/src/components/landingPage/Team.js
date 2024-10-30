@@ -18,7 +18,8 @@ const Team = () => {
     {
       name: 'Rona P. Irader',
       major: 'IM',
-      image: 'https://avatars.githubusercontent.com/u/126496983?s=400&u=22d294fa41d24060eba0b1b556cd84c01c293cd6&v=4',
+      image:
+        'https://avatars.githubusercontent.com/u/126496983?s=400&u=22d294fa41d24060eba0b1b556cd84c01c293cd6&v=4',
     },
     {
       name: 'Ma Angelica Olavidez',

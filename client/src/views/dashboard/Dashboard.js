@@ -53,7 +53,6 @@ const Dashboard = () => {
     { title: 'New Users', value: '22.123 Users', percent: 80, color: 'danger' },
     { title: 'Bounce Rate', value: 'Average Rate', percent: 40.15, color: 'primary' },
   ]
- 
 
   return (
     <>
@@ -111,7 +110,7 @@ const Dashboard = () => {
             ))}
           </CRow>
         </CCardFooter>
-      </CCard>            
+      </CCard>
     </>
   )
 }

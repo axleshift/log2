@@ -1,47 +1,77 @@
 import React from 'react'
-import { CNavItem } from '@coreui/react'
-
+import { CNavItem, CNavTitle, CNavGroup } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faClipboardList,
   faDashboard,
-  faFileInvoice,
-  faTruckMoving,
+  faWarehouse,
+  faSitemap,
+  faChartSimple,
 } from '@fortawesome/free-solid-svg-icons'
+
 const _nav = [
   {
     component: CNavItem,
-    name: ' Dashboard',
+    name: 'Dashboard',
     to: '/dashboard',
     icon: (
       <FontAwesomeIcon
         icon={faDashboard}
-        customClassName="nav-icon"
+        className="nav-icon"
         size="xl"
         style={{ marginRight: '10px' }}
+        aria-label="Dashboard Icon"
       />
     ),
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
   },
   {
-    component: CNavItem,
-    name: ' Inventory',
-    to: '/inventory',
+    component: CNavTitle,
+    name: 'SHIPMENT',
+  },
+  {
+    component: CNavGroup,
+    name: 'Management',
     icon: (
-      <FontAwesomeIcon
-        icon={faClipboardList}
-        customClassName="nav-icon"
-        size="xl"
-        style={{ marginRight: '13px' }}
-      />
+      <FontAwesomeIcon icon={faChartSimple} className="nav-icon" aria-label="Management Icon" />
     ),
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
+    items: [
+      {
+        component: CNavItem,
+        name: 'Logistics',
+        to: '/logistics',
+      },
+    ],
+  },
+  {
+    component: CNavTitle,
+    name: 'WAREHOUSE MANAGEMENT',
+  },
+  {
+    component: CNavGroup,
+    name: 'Warehouses',
+    icon: <FontAwesomeIcon icon={faWarehouse} className="nav-icon" aria-label="Warehouses Icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Warehouse Management',
+        to: '/warehouse',
+      },
+    ],
+  },
+  {
+    component: CNavTitle,
+    name: 'INVENTORY MANAGEMENT',
+  },
+  {
+    component: CNavGroup,
+    name: 'Inventory',
+    icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" aria-label="Inventory Icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Inventory',
+        to: '/inventory',
+      },
+    ],
   },
 ]
 

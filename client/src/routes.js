@@ -2,16 +2,26 @@ import { element, exact } from 'prop-types'
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-//const TrackingStatus = React.lazy(() => import('./views/tracking/TrackingStatus'))
-const Inventory = React.lazy(() => import('./views/inventory/Inventory.js'))
-//const InvoiceForm = React.lazy(() => import('./views/invoice/InvoiceForm.js'))
+const LogisticsDashboard = React.lazy(
+  () => import('./views/Management/logistics/LogisticsDashboard'),
+)
+const WarehouseManagement = React.lazy(
+  () => import('./views/Warehouses/warehouse/WarehouseManagement.js'),
+)
+const IncomingDetails = React.lazy(
+  () => import('./views/Management/logistics/incoming/IncomingDetails.js'),
+)
+const OutgoingDetails = React.lazy(
+  () => import('./views/Management/logistics/outgoing/OutgoingDetails.js'),
+)
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  //{ path: '/tracking', name: 'TrackingStatus', element: TrackingStatus, exact: true },
-  { path: '/inventory', name: 'Inventory', element: Inventory, exact: true },
-  //{ path: '/invoice', name: 'Invoice', element: InvoiceForm, exact: true },
+  { path: '/logistics', name: 'LogisticsDashboard', element: LogisticsDashboard, exact: true },
+  { path: '/warehouse', name: 'WarehouseManagement', element: WarehouseManagement, exact: true },
+  { path: '/incoming', name: 'IncomingDetails', element: IncomingDetails, exact: true },
+  { path: '/outgoing', name: 'OutgoingDetails', element: OutgoingDetails, exact: true },
 ]
 
 export default routes
