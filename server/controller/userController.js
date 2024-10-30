@@ -5,26 +5,11 @@ import { validationResult } from "express-validator";
 import nodemailer from "nodemailer";
 import logger from "../utils/logger.js";
 import jwt from "jsonwebtoken";
-import fetch from "node-fetch";
 
 // Handle errors
 const handleError = (error, next, message) => {
     logger.error(message, { error: error.message, stack: error.stack });
     return next({ status: "error", message });
-};
-
-// Verify reCAPTCHA
-const verifyRecaptcha = async (token) => {
-    const response = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-            secret: process.env.RECAPTCHA_SECRET_KEY,
-            response: token,
-        }),
-    });
-    const data = await response.json();
-    return data.success;
 };
 
 export const registerUser = async (req, res, next) => {
@@ -161,9 +146,9 @@ export const changePassword = async (req, res, next) => {
     }
 };
 
-// Login User
+// login user
 export const loginUser = async (req, res, next) => {
-    const { username, password, recaptchaToken } = req.body;
+    const { username, password } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -171,17 +156,7 @@ export const loginUser = async (req, res, next) => {
         return res.status(400).json({ status: "error", errors: errors.array() });
     }
 
-    if (!recaptchaToken) {
-        return res.status(400).json({ status: "error", message: "reCAPTCHA verification required." });
-    }
-
     try {
-        // Verify reCAPTCHA
-        const isCaptchaValid = await verifyRecaptcha(recaptchaToken);
-        if (!isCaptchaValid) {
-            return res.status(400).json({ status: "error", message: "reCAPTCHA verification failed." });
-        }
-
         const user = await UserModel.findOne({ username });
         if (!user) {
             logger.warn("User not found:", { username });

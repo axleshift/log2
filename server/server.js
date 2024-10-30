@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import session from "express-session";
-import APIv1 from "./routes/v1/indexRoute.js";
+import APIv1 from "./routes/v1/index.js";
 import connectWithRetry from "./utils/db.js";
 import logger from "./utils/logger.js";
 
@@ -77,3 +77,5 @@ process.on("unhandledRejection", (reason, promise) => {
     logger.error("Unhandled Rejection at:", promise, "reason:", reason);
     shutdown();
 });
+
+export default app;
