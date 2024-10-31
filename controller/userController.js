@@ -2,9 +2,9 @@ import UserModel from "../models/UserModel.js";
 import bcrypt from "bcryptjs";
 import { TokenService } from "../utils/tokenService.js";
 import { validationResult } from "express-validator";
-import nodemailer from "nodemailer";
 import logger from "../utils/logger.js";
 import jwt from "jsonwebtoken";
+import { generateOtp, sendOtpEmail, isOtpValid } from "../utils/otpStore.js";
 
 // Handle errors
 const handleError = (error, next, message) => {
@@ -67,30 +67,14 @@ export const forgotPassword = async (req, res, next) => {
             return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = generateOtp();
         const otpExpires = Date.now() + 10 * 60 * 1000;
 
         user.resetPasswordOtp = otp;
         user.resetPasswordOtpExpires = otpExpires;
         await user.save();
 
-        const transporter = nodemailer.createTransport({
-            service: "Gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        const mailOptions = {
-            to: user.email,
-            from: process.env.EMAIL_USER,
-            subject: "Password Reset OTP",
-            html: `<p>You requested a password reset</p><p>Your OTP is: <strong>${otp}</strong></p><p>This OTP is valid for 10 minutes.</p>`,
-        };
-
-        await transporter.sendMail(mailOptions);
-        logger.info("OTP sent to user:", { email });
+        await sendOtpEmail(user.email, otp);
         return res.json({ status: "success", message: "OTP sent to your email." });
     } catch (error) {
         handleError(error, next, "Error during OTP generation for password reset");
@@ -106,7 +90,8 @@ export const verifyOtp = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
-        if (user.resetPasswordOtp !== otp || Date.now() > user.resetPasswordOtpExpires) {
+
+        if (!isOtpValid(user, otp)) {
             return res.status(400).json({ status: "error", message: "Invalid OTP or OTP expired." });
         }
 
@@ -125,18 +110,25 @@ export const changePassword = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
+
+        // Validate OTP
         if (user.resetPasswordOtp !== otp || Date.now() > user.resetPasswordOtpExpires) {
             return res.status(400).json({ status: "error", message: "Invalid OTP or OTP expired." });
         }
 
+        // Validate new password length
         if (newPassword.length < 6) {
             return res.status(400).json({ status: "error", message: "New password must be at least 6 characters long." });
         }
 
+        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 12);
         user.password = hashedPassword;
-        user.resetPasswordOtp = null;
-        user.resetPasswordOtpExpires = null;
+
+        // Clear OTP fields
+        user.resetPasswordOtp = undefined;
+        user.resetPasswordOtpExpires = undefined;
+
         await user.save();
 
         logger.info("Password changed successfully for user:", user._id);
