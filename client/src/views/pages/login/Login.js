@@ -69,15 +69,18 @@ function Login() {
       }
       const response = await loginUser(sanitizedData)
 
-      // Store user info in localStorage
-      const { name, avatar, accessToken, refreshToken } = response
-      localStorage.setItem('user', JSON.stringify({ name, avatar }))
+      // Assuming the response contains tokens
+      const { accessToken, refreshToken } = response // Update as needed
 
       // Store tokens in cookies
       Cookies.set('token', accessToken, { expires: 1 })
       Cookies.set('refreshToken', refreshToken, { expires: 1 })
 
-      setNotification({ message: 'Login Successful! Redirecting...', type: 'success' })
+      // Set a custom success message here
+      setNotification({
+        message: 'Welcome back! Redirecting to your dashboard...',
+        type: 'success',
+      })
       reset()
       setTimeout(() => navigate('/dashboard'), 2000)
     } catch (error) {

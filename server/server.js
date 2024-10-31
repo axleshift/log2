@@ -1,56 +1,33 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
-import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import session from "express-session";
-import APIv1 from "./routes/v1/index.js";
 import connectWithRetry from "./utils/db.js";
-import logger from "./utils/logger.js";
+import APIv1 from "./routes/v1/index.js";
+import loggerMiddleware from "./middleware/loggerMiddleware.js";
+import corsMiddleware from "./middleware/corsMiddleware.js";
+import sessionMiddleware from "./middleware/session.js";
+import rateLimiter from "./middleware/rateLimiter.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware setup
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
-app.use(cookieParser());
+app.use(corsMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
-
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: true,
-        cookie: {
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: true,
-            sameSite: "Strict",
-        },
-    })
-);
-
-// Logging middleware
-app.use((req, res, next) => {
-    logger.info(`Incoming request: ${req.method} ${req.originalUrl}`);
-    next();
-});
+app.use(rateLimiter);
+app.use(sessionMiddleware);
+app.use(loggerMiddleware);
 
 // Routes for APIv1
 app.use("/api/v1/", APIv1);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-    logger.error(`Error ${err.status || 500}: ${err.message} at ${req.method} ${req.originalUrl}`);
-    res.status(err.status || 500).json({
-        message: process.env.NODE_ENV === "development" ? err.message : "Internal Server Error",
-    });
-});
+app.use(errorHandler);
 
 // Start the MongoDB connection
 connectWithRetry(app);

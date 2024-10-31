@@ -39,9 +39,8 @@ function Register() {
       body: JSON.stringify(data),
     })
 
-    // Check for HTTP errors
     if (!response.ok) {
-      const errorResponse = await response.json() // Parse JSON response for more details
+      const errorResponse = await response.json()
       throw new Error(errorResponse.message || 'Registration failed. Please try again.')
     }
     return response.json()

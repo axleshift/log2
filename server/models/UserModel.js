@@ -23,9 +23,7 @@ const userSchema = new mongoose.Schema(
             default: "admin", // Default role is admin
         },
         resetPasswordOtp: {
-            // This stores the OTP in the database
             type: String,
-            default: null, // Initialize with null
         },
         resetPasswordOtpExpires: {
             // Stores OTP expires time
