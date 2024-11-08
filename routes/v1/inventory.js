@@ -1,21 +1,13 @@
 import express from "express";
-import { getInventories, getInventoryById, createInventory, updateInventory, deleteInventory } from "../../controllers/inventoryController.js";
+import { deleteMultipleInventories, getInventories, getInventory, createInventory, updateInventory, deleteInventory } from "../../controller/inventoryController.js";
 
 const router = express.Router();
 
-// GET all inventories
-router.get("/inventories", getInventories);
-
-// GET a single inventory by tracking_id
-router.get("/inventories/:id", getInventoryById);
-
-// POST a new inventory
-router.post("/inventories", createInventory);
-
-// PUT update an inventory by tracking_id
-router.put("/inventories/:id", updateInventory);
-
-// DELETE an inventory by tracking_id
-router.delete("/inventories/:id", deleteInventory);
+router.get("/", getInventories);
+router.get("/:tracking_id", getInventory);
+router.post("/", createInventory);
+router.put("/:tracking_id", updateInventory);
+router.delete("/:tracking_id", deleteInventory);
+router.delete("/bulk-delete", deleteMultipleInventories);
 
 export default router;

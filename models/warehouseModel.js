@@ -7,7 +7,7 @@ const warehouseSchema = new mongoose.Schema(
         location: { type: String, required: true },
         capacity_total: { type: Number, required: true },
         capacity_available: { type: Number, required: true },
-        status: { type: String, required: true }, // e.g., 'Full', 'Available', etc.
+        status: { type: String, required: true, enum: ["Full", "Available", "Under Maintenance"], default: "Available" }, // added enum for more control
         shipments_stored: { type: Number, required: true },
         types_of_goods: { type: [String], required: true },
         shipment_ids: { type: [String], required: true },
@@ -19,8 +19,8 @@ const warehouseSchema = new mongoose.Schema(
         },
         number_of_staff: { type: Number, required: true },
         geolocation: {
-            latitude: { type: Number, required: true },
-            longitude: { type: Number, required: true },
+            latitude: { type: Number, required: true, min: -90, max: 90 },
+            longitude: { type: Number, required: true, min: -180, max: 180 },
         },
         dock_bays: { type: Number, required: true },
         storage_conditions: { type: [String], required: true },
@@ -31,5 +31,9 @@ const warehouseSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+warehouseSchema.index({ name: 1 });
+warehouseSchema.index({ location: 1 });
+warehouseSchema.index({ warehouse_id: 1 });
 
 export default mongoose.model("Warehouse", warehouseSchema);
