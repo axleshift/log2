@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react'
 import {
   CCard,
   CRow,
@@ -14,20 +14,20 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
-} from "@coreui/react"; // Import from @coreui/react
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock, faUser, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+} from '@coreui/react' // Import from @coreui/react
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEnvelope, faLock, faUser, faUserAlt } from '@fortawesome/free-solid-svg-icons'
 const profile = () => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
   return (
     <CRow className="justify-content-center">
       {/* Center the card horizontally */}
       <CCol md={12}>
         {/* Adjust the column width as needed */}
-        <CCard style={{ width: "60rem", height:"18rem" }}>
+        <CCard style={{ width: '60rem', height: '18rem' }}>
           <CCardHeader as="h5">Account Details</CCardHeader>
           <CCardBody>
-            <CInputGroup className="mb-3" style={{ textAlign: "center" }}>
+            <CInputGroup className="mb-3" style={{ textAlign: 'center' }}>
               <CInputGroupText id="basic-addon1">
                 <FontAwesomeIcon icon={faUser} />
                 &nbsp; Fullname
@@ -38,7 +38,7 @@ const profile = () => {
                 aria-describedby="basic-addon1"
               />
             </CInputGroup>
-            <CInputGroup className="mb-3" style={{ textAlign: "center" }}>
+            <CInputGroup className="mb-3" style={{ textAlign: 'center' }}>
               <CInputGroupText id="basic-addon1">
                 <FontAwesomeIcon icon={faUser} />
                 &nbsp; UserName
@@ -49,7 +49,7 @@ const profile = () => {
                 aria-describedby="basic-addon1"
               />
             </CInputGroup>
-            <CInputGroup className="mb-3" style={{ textAlign: "center" }}>
+            <CInputGroup className="mb-3" style={{ textAlign: 'center' }}>
               <CInputGroupText id="basic-addon1">
                 <FontAwesomeIcon icon={faEnvelope} />
                 &nbsp; Email
@@ -60,8 +60,7 @@ const profile = () => {
                 aria-describedby="basic-addon1"
               />
             </CInputGroup>
-            &nbsp;
-            &nbsp;
+            &nbsp; &nbsp;
             <div className="d-grid gap-2 d-md-block">
               <CButton color="primary">Save Changes</CButton>
               &nbsp;&nbsp;
@@ -75,33 +74,24 @@ const profile = () => {
               aria-labelledby="LiveDemoExampleLabel"
             >
               <CModalHeader>
-                <CModalTitle id="LiveDemoExampleLabel">
-                  Change Password
-                </CModalTitle>
+                <CModalTitle id="LiveDemoExampleLabel">Change Password</CModalTitle>
               </CModalHeader>
               <CModalBody>
+                <CInputGroup className="mb-3" style={{ textAlign: 'center' }}>
+                  <CInputGroupText id="basic-addon1">
+                    <FontAwesomeIcon icon={faLock} />
+                    &nbsp; New Password
+                  </CInputGroupText>
+                  <CFormInput placeholder="New Passoword" aria-describedby="basic-addon1" />
+                </CInputGroup>
 
-              <CInputGroup className="mb-3" style={{ textAlign: "center" }}>
-              <CInputGroupText id="basic-addon1">
-                <FontAwesomeIcon icon={faLock} />
-                &nbsp; New Password
-              </CInputGroupText>
-              <CFormInput
-                placeholder="New Passoword"
-                aria-describedby="basic-addon1"
-              />
-            </CInputGroup>
-
-            <CInputGroup className="mb-3" style={{ textAlign: "center" }}>
-              <CInputGroupText id="basic-addon1">
-                <FontAwesomeIcon icon={faLock} />
-                &nbsp; Confirm Password
-              </CInputGroupText>
-              <CFormInput
-                placeholder="Confirm Passoword"
-                aria-describedby="basic-addon1"
-              />
-            </CInputGroup>
+                <CInputGroup className="mb-3" style={{ textAlign: 'center' }}>
+                  <CInputGroupText id="basic-addon1">
+                    <FontAwesomeIcon icon={faLock} />
+                    &nbsp; Confirm Password
+                  </CInputGroupText>
+                  <CFormInput placeholder="Confirm Passoword" aria-describedby="basic-addon1" />
+                </CInputGroup>
               </CModalBody>
               <CModalFooter>
                 <CButton color="secondary" onClick={() => setVisible(false)}>
@@ -114,7 +104,7 @@ const profile = () => {
         </CCard>
       </CCol>
     </CRow>
-  );
-};
+  )
+}
 
-export default profile;
+export default profile

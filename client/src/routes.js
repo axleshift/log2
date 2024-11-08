@@ -14,12 +14,9 @@ const IncomingDetails = React.lazy(
 const OutgoingDetails = React.lazy(
   () => import('./views/Management/logistics/outgoing/OutgoingDetails.js'),
 )
-const Profile = React.lazy(
-  () => import('./views/pages/profile/profile.js'),
-)
-const Inventory = React.lazy(
-  () => import('./views/inventory/Inventory.js'),
-)
+const Profile = React.lazy(() => import('./views/pages/profile/profile.js'))
+const WH1 = React.lazy(() => import('./views/inventory/WHInventory/WH1.js'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -28,7 +25,7 @@ const routes = [
   { path: '/incoming', name: 'IncomingDetails', element: IncomingDetails, exact: true },
   { path: '/outgoing', name: 'OutgoingDetails', element: OutgoingDetails, exact: true },
   { path: '/profile', name: 'Profile', element: Profile, exact: true },
-  { path: '/inventory', name: 'Inventory', element: Inventory, exact: true},
+  { path: '/WH1', name: 'Inventory', element: WH1, exact: true },
 ]
 
 export default routes

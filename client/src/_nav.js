@@ -68,8 +68,8 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Inventory',
-        to: '/inventory',
+        name: 'WH1',
+        to: '/WH1',
       },
     ],
   },

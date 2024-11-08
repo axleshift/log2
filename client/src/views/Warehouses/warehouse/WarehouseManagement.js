@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import {
   CCard,
   CCardBody,
@@ -15,25 +16,7 @@ import {
 } from '@coreui/react'
 
 const WarehouseManagement = () => {
-  const [warehouses, setWarehouses] = useState([
-    {
-      id: 1,
-      name: 'Warehouse 1',
-      location: 'North Zone',
-      goods: 'Electronics',
-      capacity: 'Full',
-      shipments: 30,
-    },
-    {
-      id: 2,
-      name: 'Warehouse 2',
-      location: 'South Zone',
-      goods: 'Furniture',
-      capacity: 'Available',
-      shipments: 15,
-    },
-  ])
-
+  const [warehouses, setWarehouses] = useState([])
   const [modal, setModal] = useState(false)
   const [currentWarehouse, setCurrentWarehouse] = useState(null)
   const [warehouseName, setWarehouseName] = useState('')
@@ -41,6 +24,19 @@ const WarehouseManagement = () => {
   const [goodsToBeStored, setGoodsToBeStored] = useState('')
   const [warehouseCapacity, setWarehouseCapacity] = useState('')
   const [alert, setAlert] = useState('')
+
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      try {
+        const response = await axios.get('http://localhost:5058/api/v1/warehouse')
+        setWarehouses(response.data)
+      } catch (error) {
+        console.error('Error fetching warehouse data:', error)
+        setAlert('Failed to fetch warehouse data.')
+      }
+    }
+    fetchWarehouses()
+  }, [])
 
   const toggleModal = () => {
     setModal(!modal)
@@ -51,7 +47,8 @@ const WarehouseManagement = () => {
     setCurrentWarehouse(null)
   }
 
-  const handleSubmit = () => {
+  // Handle warehouse creation and update
+  const handleSubmit = async () => {
     if (!warehouseName || !warehouseLocation || !goodsToBeStored || !warehouseCapacity) {
       setAlert('Please fill out all fields.')
       return
@@ -59,32 +56,45 @@ const WarehouseManagement = () => {
 
     setAlert('')
 
-    if (currentWarehouse) {
-      setWarehouses(
-        warehouses.map((warehouse) =>
-          warehouse.id === currentWarehouse.id
-            ? {
-                ...warehouse,
-                name: warehouseName,
-                location: warehouseLocation,
-                goods: goodsToBeStored,
-                capacity: warehouseCapacity,
-              }
-            : warehouse,
-        ),
-      )
-    } else {
-      const newWarehouse = {
-        id: warehouses.length + 1,
-        name: warehouseName,
-        location: warehouseLocation,
-        goods: goodsToBeStored,
-        capacity: warehouseCapacity,
-        shipments: 0,
-      }
-      setWarehouses([...warehouses, newWarehouse])
+    const warehouseData = {
+      name: warehouseName,
+      location: warehouseLocation,
+      goods: goodsToBeStored,
+      capacity: warehouseCapacity,
     }
-    toggleModal()
+
+    try {
+      if (currentWarehouse) {
+        // Update existing warehouse
+        const updatedWarehouse = await axios.put(
+          `http://localhost:5058/api/v1/warehouse/${currentWarehouse.warehouse_id}`,
+          warehouseData,
+        )
+        setWarehouses((prevWarehouses) =>
+          prevWarehouses.map((warehouse) =>
+            warehouse.warehouse_id === currentWarehouse.warehouse_id
+              ? updatedWarehouse.data
+              : warehouse,
+          ),
+        )
+        setAlert('Warehouse updated successfully.')
+      } else {
+        // Create new warehouse
+        const response = await axios.post('http://localhost:5058/api/v1/warehouse', warehouseData)
+
+        if (response.data && response.data.warehouse) {
+          setWarehouses([...warehouses, response.data.warehouse])
+          setAlert('Warehouse created successfully.')
+        } else {
+          setAlert('Failed to create warehouse. Please try again.')
+        }
+      }
+
+      toggleModal()
+    } catch (error) {
+      console.error('Error creating/updating warehouse:', error)
+      setAlert('Failed to save warehouse data.')
+    }
   }
 
   const editWarehouse = (warehouse) => {
@@ -96,10 +106,19 @@ const WarehouseManagement = () => {
     setModal(true)
   }
 
-  const deleteWarehouse = (id) => {
-    const updatedWarehouses = warehouses.filter((warehouse) => warehouse.id !== id)
-    setWarehouses(updatedWarehouses)
-    setAlert('Warehouse deleted successfully.')
+  const deleteWarehouse = async (id) => {
+    if (window.confirm('Are you sure you want to delete this warehouse?')) {
+      try {
+        await axios.delete(`http://localhost:5058/api/v1/warehouse/${id}`)
+        setWarehouses((prevWarehouses) =>
+          prevWarehouses.filter((warehouse) => warehouse.warehouse_id !== id),
+        )
+        setAlert('Warehouse deleted successfully.')
+      } catch (error) {
+        console.error('Error deleting warehouse:', error)
+        setAlert('Failed to delete warehouse.')
+      }
+    }
   }
 
   return (
@@ -108,9 +127,10 @@ const WarehouseManagement = () => {
         Add Warehouse
       </CButton>
       {alert && <CAlert color="danger">{alert}</CAlert>}
+
       <CRow>
         {warehouses.map((warehouse) => (
-          <CCol sm="6" key={warehouse.id}>
+          <CCol sm="6" key={warehouse.warehouse_id}>
             <CCard>
               <CCardHeader>
                 <h5>{warehouse.name}</h5>
@@ -119,11 +139,10 @@ const WarehouseManagement = () => {
                 <p>Location: {warehouse.location}</p>
                 <p>Goods Stored: {warehouse.goods}</p>
                 <p>Capacity: {warehouse.capacity}</p>
-                <p>Shipments Stored: {warehouse.shipments}</p>
                 <CButton color="warning" onClick={() => editWarehouse(warehouse)} className="me-2">
                   Edit
                 </CButton>
-                <CButton color="danger" onClick={() => deleteWarehouse(warehouse.id)}>
+                <CButton color="danger" onClick={() => deleteWarehouse(warehouse.warehouse_id)}>
                   Delete
                 </CButton>
               </CCardBody>
@@ -132,6 +151,7 @@ const WarehouseManagement = () => {
         ))}
       </CRow>
 
+      {/* Modal for Add/Edit Warehouse */}
       <CModal show={modal} onClose={toggleModal}>
         <CModalHeader closeButton>
           <CModalTitle>{currentWarehouse ? 'Edit Warehouse' : 'Add Warehouse'}</CModalTitle>

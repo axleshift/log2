@@ -104,7 +104,7 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
 
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem onClick={handleProfileClick} style={{ cursor: 'pointer' }} >
+        <CDropdownItem onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem>
