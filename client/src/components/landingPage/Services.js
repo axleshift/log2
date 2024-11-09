@@ -17,14 +17,14 @@ const Services = () => {
     <CContainer fluid className="h-100">
       <CRow className="h-100 justify-content-center align-items-center p-5">
         <CCol xs={12} lg={5} className="order-md-1 mb-4">
-          <span data-aos="fade-up">OUR SERVICES</span>
-          <h1 className="text-primary" data-aos="fade-up">
-            We Provide Businesses with cutting-edge platform
-          </h1>
+          <span data-aos="fade-up">
+            <h1>OUR SERVICES</h1>
+          </span>
+
           <p className="lead" data-aos="fade-up">
-            With advanced cybersecurity measures in place, businesses can trust that their data is
-            protected while simplifying the complexities of management. Experience seamless
-            logistics and improved operational performance with our state-of-the-art platform.
+            Our Freight Management System offers a robust Vendor Portal with advanced document
+            tracking, automated alerts, real-time analytics, and customizable reporting, empowering
+            you to streamline operations and make data-driven decisions with ease.
           </p>
         </CCol>
         <CCol xs={12} lg={7} className="order-md-2 mb-4">

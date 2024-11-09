@@ -50,8 +50,9 @@ const Landing = () => {
                   Where Freight Meets Efficiency
                 </h1>
                 <p className="lead text-white" data-aos="fade-up" data-aos-duration="1000">
-                  Our cutting-edge platform empowers businesses to improve their shipping
-                  strategies. Experience optimized routing without the complexities of tracking.
+                  our Freight Management System empowers vendors with a seamless portal featuring
+                  advanced document tracking, automated alerts, real-time analytics, and
+                  customizable reporting for streamlined logistics and optimized performance
                 </p>
                 <CButton
                   to="/register"

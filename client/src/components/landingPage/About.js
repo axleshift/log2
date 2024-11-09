@@ -16,11 +16,11 @@ const About = () => {
             Axleshift Logistics 2
           </h1>
           <p className="lead text-white" data-aos="zoom-out-up">
-            We focus on enhancing the safety and efficiency of freight management systems. Our
-            innovative solutions integrate advanced cybersecurity measures to protect sensitive data
-            while providing efficient and better freight services. By leveraging cutting-edge
-            technology, we ensure that businesses can confidently manage their freight operations in
-            an increasingly complex digital landscape.
+            Welcome to our Freight Management System – an advanced vendor portal designed to
+            streamline logistics with robust document tracking, automated alerts, real-time
+            analytics, and custom reporting. Our platform empowers businesses to manage freight
+            operations more efficiently, ensuring seamless collaboration, enhanced visibility, and
+            informed decision-making every step of the way.
           </p>
         </CCol>
       </CRow>

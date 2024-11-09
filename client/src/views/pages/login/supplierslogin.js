@@ -23,7 +23,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import Cookies from 'js-cookie'
 import ReCAPTCHA from 'react-google-recaptcha'
 
-function Login() {
+function SupplierLogin() {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
   const {
     register,
@@ -82,7 +82,7 @@ function Login() {
         type: 'success',
       })
       reset()
-      setTimeout(() => navigate('/dashboard'), 2000)
+      setTimeout(() => navigate('/supplier'), 2000)
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
@@ -107,13 +107,10 @@ function Login() {
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
           >
-            <h2>Vendor Portal</h2>
+            <h2>Supplier Login</h2>
             <p>Logistic Management System</p>
-            <Link to="/" className="text-white">
-              Landing page →
-            </Link>
-            <Link to="/supplierslogin" className="text-white">
-              Supplier Login →
+            <Link to="/Login" className="text-white">
+              Vendor Portal →
             </Link>
           </CCol>
 
@@ -215,4 +212,4 @@ function Login() {
   )
 }
 
-export default Login
+export default SupplierLogin
