@@ -34,13 +34,12 @@ const Inventory = () => {
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState(false)
 
-  // Fetch inventory data based on search query
   useEffect(() => {
     const fetchInventoryData = async () => {
       setLoading(true)
       try {
         const response = await axios.get('http://localhost:5058/api/v1/inventory', {
-          params: { search: searchQuery }, // Passing search query (tracking_id) to backend
+          params: { search: searchQuery },
         })
         console.log(response)
         if (Array.isArray(response.data)) {
@@ -62,7 +61,6 @@ const Inventory = () => {
     fetchInventoryData()
   }, [searchQuery])
 
-  // Filter the data based on the search query
   const filteredInventory = useMemo(() => {
     return Array.isArray(inventoryData)
       ? inventoryData.filter((item) =>
@@ -76,7 +74,7 @@ const Inventory = () => {
     setSelectAll(isChecked)
 
     if (isChecked) {
-      setSelectedRows(new Set(inventoryData.map((item) => item.tracking_id))) // Store tracking_id
+      setSelectedRows(new Set(inventoryData.map((item) => item.tracking_id)))
     } else {
       setSelectedRows(new Set())
     }
@@ -85,7 +83,7 @@ const Inventory = () => {
   const handleRowCheckChange = (e, tracking_id) => {
     const newSelectedRows = new Set(selectedRows)
     if (e.target.checked) {
-      newSelectedRows.add(tracking_id) // Add tracking_id to selectedRows
+      newSelectedRows.add(tracking_id)
     } else {
       newSelectedRows.delete(tracking_id)
     }
@@ -98,12 +96,10 @@ const Inventory = () => {
       return
     }
 
-    // Check if we are deleting a single item or multiple items
     const idsToDelete = Array.from(selectedRows)
 
     try {
       if (idsToDelete.length === 1) {
-        // Single item delete
         const trackingId = idsToDelete[0]
         console.log('Deleting single item with ID:', trackingId)
         const response = await axios.delete(`http://localhost:5058/api/v1/inventory/${trackingId}`)
@@ -117,7 +113,6 @@ const Inventory = () => {
         console.log('Delete response:', response.data)
       }
 
-      // Reset selections and fetch updated data
       setMessage('Selected items deleted successfully.')
       setSelectedRows(new Set())
       setSelectAll(false)
@@ -190,7 +185,7 @@ const Inventory = () => {
                 <CTableHeaderCell scope="col">Dimensions</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Volume</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Value</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Warehouse Location</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Warehouse Destination</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Action</CTableHeaderCell>
               </CTableRow>
             </CTableHead>

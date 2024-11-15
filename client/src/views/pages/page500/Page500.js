@@ -12,25 +12,49 @@ import CIcon from '@coreui/icons-react'
 import { cilMagnifyingGlass } from '@coreui/icons'
 
 const Page500 = () => {
+  const handleBackToHome = () => {
+    window.location.href = '/'
+  }
+
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
-      <CContainer>
+    <div className="bg-light min-vh-100 d-flex flex-column justify-content-center align-items-center">
+      <CContainer className="text-center">
         <CRow className="justify-content-center">
-          <CCol md={6}>
-            <span className="clearfix">
-              <h1 className="float-start display-3 me-4">500</h1>
-              <h4 className="pt-3">Houston, we have a problem!</h4>
-              <p className="text-body-secondary float-start">
-                The page you are looking for is temporarily unavailable.
+          <CCol md={8} lg={6}>
+            <div className="mb-4">
+              <h1 className="display-1 fw-bold text-danger">500</h1>
+              <h2 className="pt-3">Uh-oh! Something went wrong.</h2>
+              <p className="lead text-muted">
+                We&apos;re experiencing technical difficulties. Please try again later or contact
+                support.
               </p>
-            </span>
-            <CInputGroup className="input-prepend">
+            </div>
+            <CInputGroup className="mb-4">
               <CInputGroupText>
-                <CIcon icon={cilMagnifyingGlass} />
+                <CIcon icon={cilMagnifyingGlass} aria-label="Search Icon" />
               </CInputGroupText>
-              <CFormInput type="text" placeholder="What are you looking for?" />
-              <CButton color="info">Search</CButton>
+              <CFormInput
+                type="text"
+                placeholder="What are you looking for?"
+                aria-label="Search Input"
+              />
+              <CButton color="primary" className="ms-2" aria-label="Search Button">
+                Search
+              </CButton>
             </CInputGroup>
+            <p className="text-muted">
+              You can also{' '}
+              <a href="/" className="text-primary fw-bold">
+                return to the Homepage
+              </a>{' '}
+              or try navigating back.
+            </p>
+            <CButton color="secondary" className="mt-3" onClick={() => window.history.back()}>
+              Go Back
+            </CButton>
+            <CButton color="primary" className="mt-3 ms-3" onClick={handleBackToHome}>
+              Go to Homepage
+            </CButton>
           </CCol>
         </CRow>
       </CContainer>
@@ -39,3 +63,7 @@ const Page500 = () => {
 }
 
 export default Page500
+
+{
+  /*** theme is missing need to fix*/
+}

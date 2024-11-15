@@ -73,6 +73,22 @@ const _nav = [
       },
     ],
   },
+  {
+    component: CNavTitle,
+    name: 'Sorting Management',
+  },
+  {
+    component: CNavGroup,
+    name: 'Sorting',
+    icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" aria-label="Inventory Icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Sorting',
+        to: '/sorting',
+      },
+    ],
+  },
 ]
 
 export default _nav
