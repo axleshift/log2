@@ -39,7 +39,7 @@ const inventorySchema = new mongoose.Schema({
     },
     tracking_id: { type: String, required: true, unique: true },
     warehouse: {
-        warehouse_id: { type: String, required: true, unique: true },
+        warehouse_id: { type: String, required: false },
         destination: { type: String, required: true },
         date_time_release: { type: Date, required: true },
         estimated_date_time_received: { type: Date, required: true },

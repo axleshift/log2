@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema(
             type: String,
         },
         resetPasswordOtpExpires: {
-            // Stores OTP expires time
             type: Date,
         },
     },
