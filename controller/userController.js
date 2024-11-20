@@ -32,7 +32,7 @@ export const registerUser = async (req, res, next) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
-        const newUser = new UserModel({ email, username, password: hashedPassword, role: "admin" }); // Set role to admin
+        const newUser = new UserModel({ email, username, password: hashedPassword, role: "admin" });
         await newUser.save();
         logger.info("User created successfully:", newUser._id);
 
@@ -111,21 +111,17 @@ export const changePassword = async (req, res, next) => {
             return res.status(404).json({ status: "error", message: "User with this email does not exist." });
         }
 
-        // Validate OTP
         if (user.resetPasswordOtp !== otp || Date.now() > user.resetPasswordOtpExpires) {
             return res.status(400).json({ status: "error", message: "Invalid OTP or OTP expired." });
         }
 
-        // Validate new password length
         if (newPassword.length < 6) {
             return res.status(400).json({ status: "error", message: "New password must be at least 6 characters long." });
         }
 
-        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 12);
         user.password = hashedPassword;
 
-        // Clear OTP fields
         user.resetPasswordOtp = undefined;
         user.resetPasswordOtpExpires = undefined;
 

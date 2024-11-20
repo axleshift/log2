@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: ["admin"],
-            default: "admin", // Default role is admin
+            default: "admin",
         },
         resetPasswordOtp: {
             type: String,

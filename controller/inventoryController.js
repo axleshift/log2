@@ -1,17 +1,18 @@
 import Inventory from "../models/inventoryModel.js";
+import Warehouse from "../models/warehouseModel.js";
 
-// Get all inventories
+// Fetch all inventories (with optional search)
 export const getInventories = async (req, res) => {
-    try {
-        const { search } = req.query;
+    const { search } = req.query;
 
+    try {
         const query = search
             ? {
                   $or: [{ "shipment.shipment_description": { $regex: search, $options: "i" } }, { tracking_id: { $regex: search, $options: "i" } }],
               }
             : {};
 
-        const inventories = await Inventory.find(query);
+        const inventories = await Inventory.find(query).populate("warehouse");
 
         if (inventories.length === 0) {
             return res.status(200).json({ message: "No inventories found." });
@@ -20,113 +21,107 @@ export const getInventories = async (req, res) => {
         res.status(200).json(inventories);
     } catch (error) {
         console.error("Error fetching inventories:", error);
-        res.status(500).json({ message: "Error fetching inventories." });
+        return res.status(500).json({ message: "Server error.", error });
     }
 };
 
-// Get a specific inventory by tracking_id
-export const getInventory = async (req, res) => {
-    try {
-        const { tracking_id } = req.params; // Use tracking_id from params
-        console.log("Fetching inventory for tracking_id:", tracking_id);
+// Fetch a specific inventory by tracking_id
+export const getInventoryByTrackingId = async (req, res) => {
+    const { tracking_id } = req.params;
 
-        const inventory = await Inventory.findOne({ tracking_id });
+    try {
+        const inventory = await Inventory.findOne({ tracking_id }).populate("warehouse");
 
         if (!inventory) {
-            console.log("Inventory not found:", tracking_id);
-            return res.status(404).json({ message: "Inventory not found." });
+            return res.status(404).json({ message: `Inventory with tracking ID '${tracking_id}' not found.` });
         }
 
         res.status(200).json(inventory);
     } catch (error) {
-        console.error("Error fetching inventory data:", error);
-        res.status(500).json({ message: "Error fetching inventory data." });
+        console.error("Error fetching inventory by tracking ID:", error);
+        return res.status(500).json({ message: "Server error.", error });
     }
 };
 
 // Create a new inventory
 export const createInventory = async (req, res) => {
-    try {
-        const newInventory = new Inventory(req.body);
+    const { tracking_id, warehouse_id, shipment } = req.body;
 
-        // Optional: Validate the body content before saving
-        if (!newInventory.tracking_id || !newInventory.shipment) {
-            return res.status(400).json({ message: "Missing required fields: tracking_id or shipment data." });
+    if (!tracking_id || !shipment || !warehouse_id) {
+        return res.status(400).json({ message: "Missing required fields: tracking_id, shipment, or warehouse_id." });
+    }
+
+    try {
+        const existingInventory = await Inventory.findOne({ tracking_id });
+        if (existingInventory) {
+            return res.status(400).json({ message: "Inventory with this tracking ID already exists." });
         }
 
+        const newInventory = new Inventory({
+            tracking_id,
+            warehouse: warehouse_id, // Linking inventory to warehouse
+            shipment,
+        });
+
         await newInventory.save();
+
+        const warehouse = await Warehouse.findOneAndUpdate(
+            { warehouse_id },
+            { $push: { inventory: newInventory._id } }, // Add the new inventory to warehouse's inventory array
+            { new: true }
+        );
+
+        if (!warehouse) {
+            return res.status(404).json({ message: "Warehouse not found to link inventory." });
+        }
+
         res.status(201).json(newInventory);
     } catch (error) {
         console.error("Error creating inventory:", error);
-        res.status(400).json({ message: error.message });
+        return res.status(500).json({ message: "Server error.", error });
     }
 };
 
 // Update an inventory by tracking_id
-export const updateInventory = async (req, res) => {
+export const updateInventoryByTrackingId = async (req, res) => {
+    const { tracking_id } = req.params;
+    const { shipment, warehouse_id } = req.body;
+
+    if (!shipment || !warehouse_id) {
+        return res.status(400).json({ message: "Missing required fields: shipment or warehouse_id." });
+    }
+
     try {
-        const { tracking_id } = req.params;
-        const updatedInventory = await Inventory.findOneAndUpdate(
-            { tracking_id }, // Use tracking_id to search for inventory
-            req.body,
-            { new: true }
-        );
+        const updatedInventory = await Inventory.findOneAndUpdate({ tracking_id }, { shipment, warehouse: warehouse_id }, { new: true, runValidators: true });
 
         if (!updatedInventory) {
-            return res.status(404).json({ message: "Inventory not found." });
+            return res.status(404).json({ message: `Inventory with tracking ID '${tracking_id}' not found.` });
         }
 
         res.status(200).json(updatedInventory);
     } catch (error) {
-        console.error("Error updating inventory:", error);
-        res.status(400).json({ message: error.message });
+        console.error("Error updating inventory by tracking ID:", error);
+        return res.status(500).json({ message: "Server error.", error });
     }
 };
 
 // Delete a single inventory by tracking_id
-export const deleteInventory = async (req, res) => {
+export const deleteInventoryByTrackingId = async (req, res) => {
+    const { tracking_id } = req.params;
+
     try {
-        const { tracking_id } = req.params;
-        const deletedInventory = await Inventory.findOneAndDelete({ tracking_id });
+        const inventory = await Inventory.findOneAndDelete({ tracking_id });
 
-        if (!deletedInventory) {
-            return res.status(404).json({ message: "Inventory not found." });
+        if (!inventory) {
+            return res.status(404).json({ message: "Inventory not found" });
         }
 
-        res.status(200).json({ message: "Inventory deleted successfully." });
-    } catch (error) {
-        console.error("Error deleting inventory:", error);
-        res.status(500).json({ message: "Error deleting inventory." });
-    }
-};
+        // Remove the inventory from the warehouse's inventory list
+        await Warehouse.findOneAndUpdate({ _id: inventory.warehouse }, { $pull: { inventory: inventory._id } });
 
-// Delete multiple inventories
-export const deleteMultipleInventories = async (req, res) => {
-    try {
-        const { ids } = req.body;
-
-        console.log("Received IDs for deletion:", ids);
-
-        if (!Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ message: "No valid IDs provided for deletion." });
-        }
-
-        // Ensure the IDs are strings and valid
-        const validIds = ids.map((id) => String(id));
-
-        const result = await Inventory.deleteMany({
-            tracking_id: { $in: validIds },
-        });
-
-        console.log("Deleted Count:", result.deletedCount);
-
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ message: "No inventories found with the provided IDs." });
-        }
-
-        res.status(200).json({ message: `${result.deletedCount} inventories deleted successfully.` });
-    } catch (error) {
-        console.error("Error deleting selected inventories:", error);
-        res.status(500).json({ message: "Error deleting selected inventories." });
+        res.status(200).json({ message: "Inventory deleted successfully" });
+    } catch (err) {
+        console.error("Error deleting inventory:", err.message);
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 };

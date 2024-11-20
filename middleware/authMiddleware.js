@@ -19,7 +19,7 @@ export const tokenMiddleware = (req, res, next) => {
             return res.status(401).json({ error: message });
         }
 
-        req.userId = decoded.userId; // Attach user ID to request
+        req.userId = decoded.userId;
         next();
     });
 };
