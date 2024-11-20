@@ -14,6 +14,9 @@ dotenv.config();
 
 const app = express();
 
+// Enable 'trust proxy' to handle X-Forwarded-For headers
+app.set("trust proxy", true);
+
 // Middleware setup
 app.use(corsMiddleware);
 app.use(express.json());
