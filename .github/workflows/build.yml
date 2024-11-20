@@ -24,7 +24,7 @@ jobs:
           echo "VITE_APP_NODE_ENV=${{ secrets.APP_NODE_ENV }}" >> .env
           echo "VITE_APP_SECRET_KEY=${{ secrets.APP_SECRET_KEY }}" >> .env
           echo "VITE_APP_API_KEY=${{ secrets.APP_API_KEY }}" >> .env
-          echo "VITE_APP_RECATPCHA_KEY=${{ secrets.APP_RECATPCHA_KEY }}" >> .env
+          echo "VITE_APP_RECATPCHA_SITE_KEY=${{ secrets.APP_RECATPCHA_SITE_KEY }}" >> .env
           npm i
           npm run lint
           npm run build
