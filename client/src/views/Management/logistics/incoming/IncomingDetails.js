@@ -1,6 +1,17 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CCard, CCardBody, CCardHeader, CRow, CCol, CButton } from '@coreui/react'
+import {
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CForm,
+  CFormLabel,
+  CFormInput,
+  CButton,
+  CContainer,
+  CRow,
+  CCol,
+} from '@coreui/react'
 
 const IncomingDetails = () => {
   const { trackingId } = useParams()
@@ -12,47 +23,60 @@ const IncomingDetails = () => {
   }
 
   return (
-    <CRow className="justify-content-center">
-      <CButton color="secondary" onClick={handleBack} className="mb-3">
-        Back to Logistics
-      </CButton>
+    <CContainer className="mt-4">
+      <CRow className="justify-content-center">
+        <CCol md="8">
+          <CCard>
+            <CCardHeader>
+              <h1>Incoming Shipment Details</h1>
+            </CCardHeader>
+            <CCardBody>
+              <CForm>
+                {/* Display Shipment Details */}
+                <div className="mb-3">
+                  <CFormLabel htmlFor="trackingId">Tracking ID</CFormLabel>
+                  <CFormInput type="text" id="trackingId" value={trackingId} readOnly />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Currently At</CFormLabel>
+                  <CFormInput type="text" value="Warehouse 1" readOnly />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Estimated Arrival</CFormLabel>
+                  <CFormInput type="text" value="2 hours from now" readOnly />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Courier</CFormLabel>
+                  <CFormInput type="text" value="FedEx" readOnly />
+                </div>
 
-      <CCol xs="12" md="8">
-        <CCard className="mt-3">
-          <CCardHeader>
-            <h2>Incoming Shipment Details</h2>
-          </CCardHeader>
-          <CCardBody>
-            <p>
-              <strong>Tracking ID:</strong> {trackingId}
-            </p>
-            <p>
-              <strong>Currently At:</strong> Warehouse 1
-            </p>
-            <p>
-              <strong>Estimated Arrival:</strong> 2 hours from now
-            </p>
-            <p>
-              <strong>Courier:</strong> FedEx
-            </p>
+                {/* Action Buttons */}
+                <div className="d-flex justify-content-between mt-4">
+                  <CButton color="info" onClick={() => setDetailsVisible(!detailsVisible)}>
+                    {detailsVisible ? 'Hide Additional Info' : 'Show Additional Info'}
+                  </CButton>
+                  <CButton
+                    color="primary"
+                    onClick={() =>
+                      window.open(`https://tracking.example.com/${trackingId}`, '_blank')
+                    }
+                  >
+                    Track Shipment
+                  </CButton>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="mt-4 d-flex justify-content-between">
-              <CButton color="info" onClick={() => setDetailsVisible(!detailsVisible)}>
-                {detailsVisible ? 'Hide Additional Info' : 'Show Additional Info'}
-              </CButton>
-
-              <CButton
-                color="primary"
-                onClick={() => window.open(`https://tracking.example.com/${trackingId}`, '_blank')}
-              >
-                Track Shipment
-              </CButton>
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+                {/* Back Button */}
+                <div className="mt-4">
+                  <CButton color="secondary" onClick={handleBack}>
+                    Back to Logistics
+                  </CButton>
+                </div>
+              </CForm>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </CContainer>
   )
 }
 

@@ -81,13 +81,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Sorting',
     icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" aria-label="Inventory Icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Sorting',
-        to: '/sorting',
-      },
-    ],
+    items: [],
   },
 ]
 

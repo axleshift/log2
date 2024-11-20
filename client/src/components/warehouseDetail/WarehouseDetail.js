@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CContainer, CRow, CCol, CCard, CCardBody, CSpinner, CAlert } from '@coreui/react'
+import { CContainer, CRow, CCol, CSpinner, CAlert, CButton } from '@coreui/react'
+import axios from 'axios'
 import WarehouseInfo from '../warehouseDetail/WarehouseInfo'
-import WarehouseActions from '../warehouseDetail/WarehouseActions'
 
 const WAREHOUSE_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/warehouse`
 
@@ -15,59 +15,78 @@ const WarehouseDetail = () => {
 
   useEffect(() => {
     const fetchWarehouseDetails = async () => {
-      setLoading(true)
+      if (!warehouse_id) {
+        setError('Invalid warehouse ID')
+        setLoading(false)
+        return
+      }
+
       try {
-        const response = await fetch(`${WAREHOUSE_API_URL}/${warehouse_id}`)
-        if (!response.ok) throw new Error('Failed to fetch warehouse details')
-        const data = await response.json()
-        setWarehouse(data)
+        setLoading(true)
         setError(null)
+
+        const response = await axios.get(`${WAREHOUSE_API_URL}/${warehouse_id}`)
+        const warehouseData = response.data
+
+        if (warehouseData) {
+          setWarehouse(warehouseData)
+        } else {
+          setError('Warehouse not found')
+        }
       } catch (err) {
-        setError('Failed to load warehouse details')
+        console.error('Error fetching warehouse details:', err)
+        setError('Failed to load warehouse data. Please try again.')
       } finally {
         setLoading(false)
       }
     }
+
     fetchWarehouseDetails()
   }, [warehouse_id])
+
+  if (loading) {
+    return (
+      <CContainer>
+        <CSpinner color="primary" />
+      </CContainer>
+    )
+  }
+
+  if (error) {
+    return (
+      <CContainer>
+        <CAlert color="danger">{error}</CAlert>
+      </CContainer>
+    )
+  }
 
   return (
     <CContainer>
       <h1>Warehouse Details</h1>
+      <CRow>
+        {/* Left Column: Warehouse Information */}
+        <CCol lg={8}>
+          {warehouse ? (
+            <WarehouseInfo warehouse={warehouse} />
+          ) : (
+            <p>No warehouse data available.</p>
+          )}
+        </CCol>
 
-      {/* Loading state */}
-      {loading && (
-        <CRow className="justify-content-center">
-          <CCol md="4" className="text-center">
-            <CSpinner color="primary" />
-            <p>Loading...</p>
-          </CCol>
-        </CRow>
-      )}
-
-      {/* Error message */}
-      {error && (
-        <CRow className="justify-content-center">
-          <CCol md="8">
-            <CAlert color="danger">{error}</CAlert>
-          </CCol>
-        </CRow>
-      )}
-
-      {/* Render WarehouseInfo and WarehouseActions components */}
-      {warehouse && !loading && !error && (
-        <CRow className="justify-content-center">
-          <CCol md="8">
-            <CCard>
-              <CCardBody>
-                <WarehouseInfo warehouse={warehouse} />
-
-                <WarehouseActions warehouse={warehouse} />
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-      )}
+        {/* Right Column: Actions and Navigation */}
+        <CCol lg={4}>
+          <CButton
+            color="info"
+            className="mt-3"
+            onClick={() => navigate(`/inventory/${warehouse_id}`)}
+          >
+            View Inventory
+          </CButton>
+          <CButton color="secondary" className="mt-3" onClick={() => navigate(-1)}>
+            Back to List
+          </CButton>
+        </CCol>
+      </CRow>
     </CContainer>
   )
 }

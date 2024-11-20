@@ -10,7 +10,6 @@ import {
   CTable,
   CTableHead,
   CTableHeaderCell,
-  CFormCheck,
   CTableRow,
   CTableBody,
   CTableDataCell,
@@ -19,10 +18,13 @@ import {
   CModalBody,
   CModalFooter,
   CModalTitle,
+  CFormCheck,
 } from '@coreui/react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Inventory = () => {
+  const navigate = useNavigate()
   const [selectAll, setSelectAll] = useState(false)
   const [selectedRows, setSelectedRows] = useState(new Set())
   const [inventoryData, setInventoryData] = useState([])
@@ -41,7 +43,6 @@ const Inventory = () => {
         const response = await axios.get('http://localhost:5058/api/v1/inventory', {
           params: { search: searchQuery },
         })
-        console.log(response)
         if (Array.isArray(response.data)) {
           setInventoryData(response.data)
         } else {
@@ -50,9 +51,6 @@ const Inventory = () => {
       } catch (error) {
         setMessage('Error fetching inventory data.')
         console.error('Error fetching inventory data:', error)
-        if (error.response) {
-          console.error('Backend error:', error.response.data)
-        }
       } finally {
         setLoading(false)
       }
@@ -101,16 +99,11 @@ const Inventory = () => {
     try {
       if (idsToDelete.length === 1) {
         const trackingId = idsToDelete[0]
-        console.log('Deleting single item with ID:', trackingId)
-        const response = await axios.delete(`http://localhost:5058/api/v1/inventory/${trackingId}`)
-        console.log('Delete response:', response.data)
+        await axios.delete(`http://localhost:5058/api/v1/inventory/${trackingId}`)
       } else {
-        // Bulk delete
-        console.log('Deleting items with IDs:', idsToDelete)
-        const response = await axios.delete('http://localhost:5058/api/v1/inventory/bulk-delete', {
+        await axios.delete('http://localhost:5058/api/v1/inventory/bulk-delete', {
           data: { ids: idsToDelete },
         })
-        console.log('Delete response:', response.data)
       }
 
       setMessage('Selected items deleted successfully.')
@@ -120,23 +113,12 @@ const Inventory = () => {
       setInventoryData(inventoryResponse.data)
       setDeleteConfirmation(false)
     } catch (error) {
-      console.error('Error deleting items:', error)
       setMessage('Error deleting selected items.')
     }
   }
 
-  const handleViewDetails = async (tracking_id) => {
-    setLoadingDetails(true)
-    try {
-      const response = await axios.get(`http://localhost:5058/api/v1/inventory/${tracking_id}`)
-      setSelectedItem(response.data)
-      setViewDetailsModal(true)
-    } catch (error) {
-      setMessage('Error fetching inventory data.')
-      console.error('Error fetching inventory data:', error)
-    } finally {
-      setLoadingDetails(false)
-    }
+  const handleViewDetails = (tracking_id) => {
+    navigate(`/warehouse/${tracking_id}`)
   }
 
   const handleCloseModal = () => {
@@ -180,12 +162,9 @@ const Inventory = () => {
                   <CFormCheck id="selectAll" checked={selectAll} onChange={handleSelectAllChange} />
                 </CTableHeaderCell>
                 <CTableHeaderCell scope="col">Tracking ID</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Shipment Description</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Weight</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Dimensions</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Volume</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Value</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Warehouse Destination</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Description</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Warehouse Location</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Action</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -201,16 +180,13 @@ const Inventory = () => {
                       />
                     </CTableDataCell>
                     <CTableDataCell>{item.tracking_id}</CTableDataCell>
-                    <CTableDataCell>{item.shipment.shipment_description}</CTableDataCell>
-                    <CTableDataCell>{item.shipment.shipment_weight} kg</CTableDataCell>
                     <CTableDataCell>
-                      {item.shipment.shipment_dimension_length} x{' '}
-                      {item.shipment.shipment_dimension_width} x{' '}
-                      {item.shipment.shipment_dimension_height} m
+                      {item.shipment?.shipment_description || 'No description'}
                     </CTableDataCell>
-                    <CTableDataCell>{item.shipment.shipment_volume} m³</CTableDataCell>
-                    <CTableDataCell>${item.shipment.shipment_value}</CTableDataCell>
-                    <CTableDataCell>{item.warehouse.destination}</CTableDataCell>
+                    <CTableDataCell>
+                      {item.warehouse?.destination || 'No destination available'}
+                    </CTableDataCell>
+                    <CTableDataCell>{item.status || 'Unknown'}</CTableDataCell>
                     <CTableDataCell>
                       <CButton color="info" onClick={() => handleViewDetails(item.tracking_id)}>
                         View Details
@@ -220,7 +196,7 @@ const Inventory = () => {
                 ))
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan="8" style={{ textAlign: 'center' }}>
+                  <CTableDataCell colSpan="6" style={{ textAlign: 'center' }}>
                     No inventory records found.
                   </CTableDataCell>
                 </CTableRow>
@@ -239,148 +215,12 @@ const Inventory = () => {
           {loadingDetails ? (
             <div>Loading details...</div>
           ) : (
-            selectedItem && (
-              <div>
-                <h5>Shipment Details</h5>
-                <p>
-                  <strong>Tracking ID:</strong> {selectedItem.tracking_id}
-                </p>
-                <p>
-                  <strong>Shipment Description:</strong>{' '}
-                  {selectedItem.shipment.shipment_description}
-                </p>
-                <p>
-                  <strong>Weight:</strong> {selectedItem.shipment.shipment_weight} kg
-                </p>
-                <p>
-                  <strong>Dimensions:</strong> {selectedItem.shipment.shipment_dimension_length} x{' '}
-                  {selectedItem.shipment.shipment_dimension_width} x{' '}
-                  {selectedItem.shipment.shipment_dimension_height} m
-                </p>
-                <p>
-                  <strong>Volume:</strong> {selectedItem.shipment.shipment_volume} m³
-                </p>
-                <p>
-                  <strong>Value:</strong> ${selectedItem.shipment.shipment_value}
-                </p>
-                <p>
-                  <strong>Instructions:</strong> {selectedItem.shipment.shipment_instructions}
-                </p>
-
-                <h5>Shipping Details</h5>
-                <p>
-                  <strong>Shipping Method:</strong> {selectedItem.shipping.shipping_type}
-                </p>
-
-                {/* Display shipping-specific details */}
-                {selectedItem.shipping.shipping_type === 'air' && (
-                  <div>
-                    <h6>Air Shipping</h6>
-                    <p>
-                      <strong>Origin Airport:</strong>{' '}
-                      {selectedItem.shipping.details.air.origin_airport}
-                    </p>
-                    <p>
-                      <strong>Destination Airport:</strong>{' '}
-                      {selectedItem.shipping.details.air.destination_airport}
-                    </p>
-                    <p>
-                      <strong>Preferred Departure Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.air.preferred_departure_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Preferred Arrival Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.air.preferred_arrival_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Flight Type:</strong> {selectedItem.shipping.details.air.flight_type}
-                    </p>
-                  </div>
-                )}
-
-                {selectedItem.shipping.shipping_type === 'land' && (
-                  <div>
-                    <h6>Land Shipping</h6>
-                    <p>
-                      <strong>Origin Address:</strong>{' '}
-                      {selectedItem.shipping.details.land.origin_address}
-                    </p>
-                    <p>
-                      <strong>Destination Address:</strong>{' '}
-                      {selectedItem.shipping.details.land.destination_address}
-                    </p>
-                    <p>
-                      <strong>Pickup Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.land.pickup_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Delivery Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.land.delivery_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Vehicle Type:</strong>{' '}
-                      {selectedItem.shipping.details.land.vehicle_type}
-                    </p>
-                  </div>
-                )}
-
-                {selectedItem.shipping.shipping_type === 'sea' && (
-                  <div>
-                    <h6>Sea Shipping</h6>
-                    <p>
-                      <strong>Loading Port:</strong>{' '}
-                      {selectedItem.shipping.details.sea.loading_port}
-                    </p>
-                    <p>
-                      <strong>Discharge Port:</strong>{' '}
-                      {selectedItem.shipping.details.sea.discharge_port}
-                    </p>
-                    <p>
-                      <strong>Sailing Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.sea.sailing_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Estimated Arrival Date:</strong>{' '}
-                      {new Date(
-                        selectedItem.shipping.details.sea.estimated_arrival_date,
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Cargo Type:</strong> {selectedItem.shipping.details.sea.cargo_type}
-                    </p>
-                  </div>
-                )}
-
-                <h5>Warehouse Details</h5>
-                <p>
-                  <strong>Warehouse ID:</strong> {selectedItem.warehouse.warehouse_id}
-                </p>
-                <p>
-                  <strong>Warehouse Destination:</strong> {selectedItem.warehouse.destination}
-                </p>
-                <p>
-                  <strong>Release Date/Time:</strong>{' '}
-                  {new Date(selectedItem.warehouse.date_time_release).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Estimated Received Date/Time:</strong>{' '}
-                  {new Date(selectedItem.warehouse.estimated_date_time_received).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Courier:</strong> {selectedItem.warehouse.courier}
-                </p>
-              </div>
-            )
+            <div>
+              <h6>Tracking ID: {selectedItem?.tracking_id}</h6>
+              <p>Shipment Description: {selectedItem?.shipment?.shipment_description}</p>
+              <p>Warehouse Location: {selectedItem?.warehouse?.destination || 'Not assigned'}</p>
+              <p>Status: {selectedItem?.status || 'Unknown'}</p>
+            </div>
           )}
         </CModalBody>
         <CModalFooter>
@@ -393,9 +233,9 @@ const Inventory = () => {
       {/* Delete Confirmation Modal */}
       <CModal visible={deleteConfirmation} onClose={() => setDeleteConfirmation(false)}>
         <CModalHeader>
-          <CModalTitle>Confirm Deletion</CModalTitle>
+          <CModalTitle>Confirm Delete</CModalTitle>
         </CModalHeader>
-        <CModalBody>Are you sure you want to delete the selected items?</CModalBody>
+        <CModalBody>Are you sure you want to delete the selected item(s)?</CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setDeleteConfirmation(false)}>
             Cancel

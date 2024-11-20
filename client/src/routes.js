@@ -18,13 +18,7 @@ const OutgoingDetails = React.lazy(
 const Profile = React.lazy(() => import('./views/pages/profile/profile.js'))
 const WH1 = React.lazy(() => import('./views/inventory/WHInventory/WH1.js'))
 const WarehouseDetail = React.lazy(() => import('./components/warehouseDetail/WarehouseDetail.js'))
-const WarehouseHInventory = React.lazy(
-  () => import('./components/warehouseInventory/WarehouseHInventory.js'),
-)
-const WarehouseIInventory = React.lazy(
-  () => import('./components/warehouseInventory/WarehouseIInventory.js'),
-)
-const SortingPage = React.lazy(() => import('./views/sorting/SortingPage'))
+const InventoryDetail = React.lazy(() => import('./components/warehouseInventory/InventoryDetail'))
 
 const routes = [
   { path: '/', name: 'Home', element: Dashboard },
@@ -36,9 +30,7 @@ const routes = [
   { path: '/profile', name: 'Profile', element: Profile },
   { path: '/WH1', name: 'Inventory', element: WH1 },
   { path: '/warehouseDetail/:warehouse_id', name: 'Warehouse Detail', element: WarehouseDetail },
-  { path: '/warehouse-h-inventory', name: 'Warehouse H Inventory', element: WarehouseHInventory },
-  { path: '/warehouse-i-inventory', name: 'Warehouse I Inventory', element: WarehouseIInventory },
-  { path: '/sorting', name: 'Sorting Page', element: SortingPage },
+  { path: '/inventory/:warehouse_id', name: 'Inventory Detail', element: InventoryDetail },
 ]
 
 export default routes

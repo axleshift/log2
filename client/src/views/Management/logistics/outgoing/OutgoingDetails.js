@@ -7,8 +7,12 @@ import {
   CRow,
   CCol,
   CButton,
+  CForm,
+  CFormLabel,
+  CFormInput,
   CCollapse,
   CSpinner,
+  CContainer,
 } from '@coreui/react'
 
 const OutgoingDetails = () => {
@@ -61,60 +65,80 @@ const OutgoingDetails = () => {
   }
 
   return (
-    <CRow className="justify-content-center">
-      <CButton color="secondary" onClick={handleBack} className="mb-3">
-        Back to Logistics
-      </CButton>
+    <CContainer className="mt-4">
+      <CRow className="justify-content-center">
+        <CCol xs="12" md="8">
+          <CCard>
+            <CCardHeader>
+              <h2>Outgoing Shipment Details</h2>
+            </CCardHeader>
+            <CCardBody>
+              <CForm>
+                {/* Display Shipment Details */}
+                <div className="mb-3">
+                  <CFormLabel htmlFor="trackingId">Tracking ID</CFormLabel>
+                  <CFormInput
+                    type="text"
+                    id="trackingId"
+                    value={shipmentData.trackingId}
+                    readOnly
+                  />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Next Destination</CFormLabel>
+                  <CFormInput type="text" value={shipmentData.nextDestination} readOnly />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Estimated Delivery Time</CFormLabel>
+                  <CFormInput type="text" value={shipmentData.estimatedDeliveryTime} readOnly />
+                </div>
+                <div className="mb-3">
+                  <CFormLabel>Courier</CFormLabel>
+                  <CFormInput type="text" value={shipmentData.courier} readOnly />
+                </div>
 
-      <CCol xs="12" md="8">
-        <CCard>
-          <CCardHeader>
-            <h2>Outgoing Shipment Details</h2>
-          </CCardHeader>
-          <CCardBody>
-            <p>
-              <strong>Tracking ID:</strong> {shipmentData.trackingId}
-            </p>
-            <p>
-              <strong>Next Destination:</strong> {shipmentData.nextDestination}
-            </p>
-            <p>
-              <strong>Estimated Delivery Time:</strong> {shipmentData.estimatedDeliveryTime}
-            </p>
-            <p>
-              <strong>Courier:</strong> {shipmentData.courier}
-            </p>
+                {/* Show/Hide Additional Info */}
+                <CButton
+                  color="info"
+                  onClick={() => setDetailsVisible(!detailsVisible)}
+                  className="mt-3"
+                >
+                  {detailsVisible ? 'Hide Additional Info' : 'Show Additional Info'}
+                </CButton>
 
-            <CButton
-              color="info"
-              onClick={() => setDetailsVisible(!detailsVisible)}
-              className="mt-3"
-            >
-              {detailsVisible ? 'Hide Additional Info' : 'Show Additional Info'}
-            </CButton>
+                <CCollapse show={detailsVisible ? 'true' : undefined}>
+                  <div className="mt-3">
+                    <p>
+                      <strong>Additional Information:</strong>
+                    </p>
+                    <p>{shipmentData.additionalInfo}</p>
+                  </div>
+                </CCollapse>
 
-            <CCollapse show={detailsVisible}>
-              <div className="mt-3">
-                <p>
-                  <strong>Additional Information:</strong>
-                </p>
-                <p>{shipmentData.additionalInfo}</p>
-              </div>
-            </CCollapse>
+                {/* Action Buttons */}
+                <div className="mt-4 d-flex justify-content-between">
+                  <CButton
+                    color="primary"
+                    onClick={() =>
+                      window.open(`https://tracking.example.com/${trackingId}`, '_blank')
+                    }
+                  >
+                    Track Shipment
+                  </CButton>
+                </div>
 
-            {/* Action Buttons Container */}
-            <div className="mt-4 d-flex justify-content-between">
-              <CButton
-                color="primary"
-                onClick={() => window.open(`https://tracking.example.com/${trackingId}`, '_blank')}
-              >
-                Track Shipment
-              </CButton>
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+                {/* Back Button */}
+                <div className="mt-4">
+                  <CButton color="secondary" onClick={handleBack}>
+                    Back to Logistics
+                  </CButton>
+                </div>
+              </CForm>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </CContainer>
   )
 }
 

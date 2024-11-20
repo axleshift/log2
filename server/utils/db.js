@@ -4,6 +4,11 @@ dotenv.config();
 
 const dbURI = process.env.DB_URI;
 
+if (!dbURI) {
+    console.error("DB_URI is not defined in the .env file!");
+    process.exit(1);
+}
+
 const connectWithRetry = (app) => {
     mongoose
         .connect(dbURI)

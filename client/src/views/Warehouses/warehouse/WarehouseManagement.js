@@ -12,6 +12,11 @@ import {
   CListGroup,
   CListGroupItem,
   CFormSelect,
+  CModal,
+  CModalBody,
+  CModalHeader,
+  CModalTitle,
+  CModalFooter,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 
@@ -20,7 +25,6 @@ const WAREHOUSE_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/warehouse`
 const WarehouseManagement = () => {
   const [warehouses, setWarehouses] = useState([])
   const [warehouseData, setWarehouseData] = useState({
-    warehouse_id: '',
     name: '',
     location: '',
     capacity: '',
@@ -30,6 +34,7 @@ const WarehouseManagement = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editingWarehouse, setEditingWarehouse] = useState(null)
+  const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
 
   const capacityOptions = ['Low', 'Medium', 'Full', 'Custom']
@@ -57,22 +62,25 @@ const WarehouseManagement = () => {
     setWarehouseData({ ...warehouseData, [name]: value })
   }
 
+  const generateWarehouseId = () => {
+    const lastWarehouse = warehouses[warehouses.length - 1]
+    let lastNumber = lastWarehouse ? parseInt(lastWarehouse.warehouse_id.replace('WH', ''), 10) : 0
+    let newNumber = lastNumber + 1
+    return `WH${newNumber.toString().padStart(3, '0')}`
+  }
+
   const handleSubmitWarehouse = async (e) => {
     e.preventDefault()
 
     const formData = {
-      ...warehouseData,
+      warehouse_id: generateWarehouseId(),
+      name: warehouseData.name,
+      location: warehouseData.location,
+      capacity: warehouseData.capacity,
       goods_stored: String(warehouseData.goods_stored),
-      capacity: String(warehouseData.capacity),
     }
 
-    if (
-      !formData.warehouse_id ||
-      !formData.name ||
-      !formData.location ||
-      !formData.capacity ||
-      !formData.goods_stored
-    ) {
+    if (!formData.name || !formData.location || !formData.capacity || !formData.goods_stored) {
       setError('Please fill all fields to create a new warehouse.')
       return
     }
@@ -94,13 +102,13 @@ const WarehouseManagement = () => {
       const newWarehouse = await response.json()
       setWarehouses((prevWarehouses) => [...prevWarehouses, newWarehouse])
       setWarehouseData({
-        warehouse_id: '',
         name: '',
         location: '',
         capacity: '',
         goods_stored: '',
         customCapacity: '',
       })
+      setShowModal(false)
       setError(null)
     } catch (err) {
       setError('Failed to create warehouse: ' + err.message)
@@ -131,91 +139,26 @@ const WarehouseManagement = () => {
     }
   }
 
-  const handleEditWarehouse = (warehouse) => {
-    setEditingWarehouse(warehouse)
-    setWarehouseData({
-      warehouse_id: warehouse.warehouse_id,
-      name: warehouse.name,
-      location: warehouse.location,
-      capacity: warehouse.capacity,
-      goods_stored: warehouse.goods_stored,
-      customCapacity: warehouse.customCapacity || '',
-    })
-  }
-
-  const handleUpdateWarehouse = async (e) => {
-    e.preventDefault()
-
-    const formData = {
-      name: warehouseData.name,
-      location: warehouseData.location,
-      capacity: warehouseData.capacity,
-      goods_stored: String(warehouseData.goods_stored),
-    }
-
-    try {
-      const response = await fetch(`${WAREHOUSE_API_URL}/${warehouseData.warehouse_id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const errorDetails = await response.text()
-        throw new Error(errorDetails || 'Failed to update warehouse')
-      }
-
-      const updatedWarehouse = await response.json()
-      setWarehouses((prevWarehouses) =>
-        prevWarehouses.map((warehouse) =>
-          warehouse.warehouse_id === updatedWarehouse.warehouse_id ? updatedWarehouse : warehouse,
-        ),
-      )
-
-      setEditingWarehouse(null)
-      setWarehouseData({
-        warehouse_id: '',
-        name: '',
-        location: '',
-        capacity: '',
-        goods_stored: '',
-        customCapacity: '',
-      })
-      setError(null)
-    } catch (err) {
-      setError('Failed to update warehouse: ' + err.message)
-    }
-  }
-
   const handleGoToWarehouse = (warehouse_id) => {
     navigate(`/warehouseDetail/${warehouse_id}`)
   }
 
   return (
     <CContainer>
-      <h1>Warehouse Management</h1>
+      <h1 className="mb-4">Warehouse Management</h1>
 
-      {/* Warehouse Form */}
-      <CRow className="mb-4">
-        <CCol md="8">
-          <h2>{editingWarehouse ? 'Edit Warehouse' : 'Create New Warehouse'}</h2>
-          <CForm onSubmit={editingWarehouse ? handleUpdateWarehouse : handleSubmitWarehouse}>
-            <div className="mb-3">
-              <CFormLabel htmlFor="warehouse_id">Warehouse ID</CFormLabel>
-              <CFormInput
-                id="warehouse_id"
-                name="warehouse_id"
-                type="text"
-                placeholder="Enter warehouse ID"
-                value={warehouseData.warehouse_id}
-                onChange={handleChange}
-                required
-                disabled={editingWarehouse}
-              />
-            </div>
+      {/* Create Warehouse Button */}
+      <CButton color="primary" onClick={() => setShowModal(true)} className="mb-4">
+        Create Warehouse
+      </CButton>
 
+      {/* Warehouse Form Modal */}
+      <CModal visible={showModal} onClose={() => setShowModal(false)}>
+        <CModalHeader onClose={() => setShowModal(false)}>
+          <CModalTitle>{editingWarehouse ? 'Edit Warehouse' : 'Create New Warehouse'}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CForm onSubmit={handleSubmitWarehouse}>
             <div className="mb-3">
               <CFormLabel htmlFor="name">Warehouse Name</CFormLabel>
               <CFormInput
@@ -238,6 +181,7 @@ const WarehouseManagement = () => {
                 placeholder="Enter warehouse location"
                 value={warehouseData.location}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -282,18 +226,23 @@ const WarehouseManagement = () => {
                 placeholder="Enter goods stored"
                 value={warehouseData.goods_stored}
                 onChange={handleChange}
+                required
               />
             </div>
-
-            <CButton type="submit" color="primary" className="mt-3">
-              {editingWarehouse ? 'Update Warehouse' : 'Create Warehouse'}
-            </CButton>
           </CForm>
-        </CCol>
-      </CRow>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </CButton>
+          <CButton type="submit" color="primary" onClick={handleSubmitWarehouse}>
+            {editingWarehouse ? 'Update Warehouse' : 'Create Warehouse'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
       {/* Warehouse List */}
-      <h2>Warehouse List</h2>
+      <h2 className="mt-4">Warehouse List</h2>
       {loading && <CSpinner />}
       {error && <CAlert color="danger">{error}</CAlert>}
 
@@ -303,15 +252,14 @@ const WarehouseManagement = () => {
             <h4>{warehouse.name}</h4>
             <p>{warehouse.location}</p>
             <p>Capacity: {warehouse.capacity}</p>
-            <CButton color="info" onClick={() => handleEditWarehouse(warehouse)}>
-              Edit
-            </CButton>
-            <CButton color="danger" onClick={() => handleDeleteWarehouse(warehouse.warehouse_id)}>
-              Delete
-            </CButton>
-            <CButton color="secondary" onClick={() => handleGoToWarehouse(warehouse.warehouse_id)}>
-              Go to Details
-            </CButton>
+            <div className="d-flex gap-2">
+              <CButton color="info" onClick={() => handleGoToWarehouse(warehouse.warehouse_id)}>
+                View Details
+              </CButton>
+              <CButton color="danger" onClick={() => handleDeleteWarehouse(warehouse.warehouse_id)}>
+                Delete
+              </CButton>
+            </div>
           </CListGroupItem>
         ))}
       </CListGroup>

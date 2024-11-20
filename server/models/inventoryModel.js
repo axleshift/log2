@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 
 const inventorySchema = new mongoose.Schema({
+    shipper: {
+        shipper_company_name: { type: String, required: true },
+        shipper_contact_name: { type: String, required: true },
+        shipper_contact_email_address: { type: String, required: true },
+        shipper_contact_phone_number: { type: String, required: true },
+        shipper_company_address: { type: String, required: true },
+    },
+    consignee: {
+        consignee_company_name: { type: String, required: true },
+        consignee_contact_name: { type: String, required: true },
+        consignee_contact_email_address: { type: String, required: true },
+        consignee_contact_phone_number: { type: String, required: true },
+        consignee_company_address: { type: String, required: true },
+    },
     shipment: {
         shipment_description: { type: String, required: true },
         shipment_weight: { type: Number, required: true },
@@ -12,7 +26,11 @@ const inventorySchema = new mongoose.Schema({
         shipment_instructions: { type: String, required: true },
     },
     shipping: {
-        shipping_type: { type: String, required: true }, // 'air', 'land', or 'sea'
+        shipping_type: {
+            type: String,
+            required: true,
+            enum: ["air", "land", "sea"],
+        },
         details: {
             air: {
                 origin_airport: { type: String },
@@ -39,11 +57,8 @@ const inventorySchema = new mongoose.Schema({
     },
     tracking_id: { type: String, required: true, unique: true },
     warehouse: {
-        warehouse_id: { type: String, required: false },
-        destination: { type: String, required: true },
-        date_time_release: { type: Date, required: true },
-        estimated_date_time_received: { type: Date, required: true },
-        courier: { type: String, required: true },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Warehouse",
     },
 });
 
