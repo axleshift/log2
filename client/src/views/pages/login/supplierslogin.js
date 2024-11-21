@@ -78,11 +78,11 @@ function SupplierLogin() {
 
       // Set a custom success message here
       setNotification({
-        message: 'Welcome back! Redirecting to your dashboard...',
+        message: 'Welcome back! Redirecting to your SupplierPage...',
         type: 'success',
       })
       reset()
-      setTimeout(() => navigate('/supplier'), 2000)
+      setTimeout(() => navigate('/supplierspage'), 2000)
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
     } finally {

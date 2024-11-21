@@ -16,6 +16,7 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'))
 const Landing = React.lazy(() => import('./views/pages/landing/Landing.js'))
 const SuppliersLogin = React.lazy(() => import('./views/pages/login/supplierslogin.js'))
+const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpage.js'))
 
 function ProtectedRoute({ children }) {
   const isUserLogin = document.cookie.split('; ').some((row) => row.startsWith('token='))
@@ -91,6 +92,7 @@ const App = () => {
             <Route path="/forgotPass" element={<ForgotPass />} />
             <Route path="/supplierslogin" element={<SuppliersLogin />} />
             <Route path="/" element={<Landing />} />
+            <Route path='/supplierspage/*' element={<SuppliersPage/>}/>
 
             <Route
               path="*"
