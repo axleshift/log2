@@ -6,7 +6,6 @@ import APIv1 from "./routes/v1/index.js";
 import loggerMiddleware from "./middleware/loggerMiddleware.js";
 import corsMiddleware from "./middleware/corsMiddleware.js";
 import sessionMiddleware from "./middleware/session.js";
-import rateLimiter from "./middleware/rateLimiter.js";
 import errorHandler from "./middleware/errorHandler.js";
 import connectDB from "./utils/db.js";
 
@@ -19,7 +18,6 @@ app.use(corsMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
-app.use(rateLimiter);
 app.use(sessionMiddleware);
 app.use(loggerMiddleware);
 
@@ -36,3 +34,6 @@ app.listen(PORT, async () => {
     await connectDB();
     console.log("Server started at http://localhost:" + PORT);
 });
+process.on("uncaughtException", (err, origin) => console.error(err));
+
+process.on("unhandledRejection", (reason, promise) => console.error(reason));
