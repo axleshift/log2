@@ -64,7 +64,6 @@ const WarehouseDetail = () => {
     <CContainer>
       <h1>Warehouse Details</h1>
       <CRow>
-        {/* Left Column: Warehouse Information */}
         <CCol lg={8}>
           {warehouse ? (
             <WarehouseInfo warehouse={warehouse} />
@@ -73,7 +72,6 @@ const WarehouseDetail = () => {
           )}
         </CCol>
 
-        {/* Right Column: Actions and Navigation */}
         <CCol lg={4}>
           <CButton
             color="info"

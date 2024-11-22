@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CContainer, CSpinner, CAlert, CButton } from '@coreui/react'
+import { CContainer, CSpinner, CAlert, CCard, CCardHeader, CCardBody, CButton } from '@coreui/react'
 import axios from 'axios'
 import InventoryItem from './InventoryItem'
 
-const WAREHOUSE_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/warehouse`
+const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
 
 const InventoryDetail = () => {
   const { warehouse_id } = useParams()
+  const navigate = useNavigate()
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const navigate = useNavigate()
 
-  // Handle updating an inventory item
-  const handleUpdateItem = (updatedItem) => {
-    setInventory((prevItems) =>
-      prevItems.map((item) => (item.tracking_id === updatedItem.tracking_id ? updatedItem : item)),
-    )
+  const handleBack = () => {
+    navigate(-1)
   }
 
   useEffect(() => {
-    const fetchInventoryByWarehouse = async () => {
+    const fetchInventory = async () => {
       if (!warehouse_id) {
         setError('Invalid warehouse ID')
         setLoading(false)
@@ -32,29 +29,34 @@ const InventoryDetail = () => {
         setLoading(true)
         setError(null)
 
-        // Fetch the inventory linked to the warehouse
-        const response = await axios.get(`${WAREHOUSE_API_URL}/${warehouse_id}/inventory`)
-        const inventoryData = response.data
+        const response = await axios.get(`${INVENTORY_API_URL}/warehouse/${warehouse_id}`)
+        const data = response.data
 
-        if (inventoryData.length === 0) {
-          setError('No inventory linked to this warehouse.')
+        if (Array.isArray(data)) {
+          setInventory(data)
+          if (data.length === 0) {
+            setError('No inventory available for this warehouse')
+          }
         } else {
-          setInventory(inventoryData)
+          setError('Inventory data is missing or malformed')
         }
       } catch (err) {
-        console.error(err)
+        console.error('Error fetching inventory:', err)
         setError('Failed to load inventory. Please try again.')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchInventoryByWarehouse()
+    fetchInventory()
   }, [warehouse_id])
 
   if (loading) {
     return (
-      <CContainer>
+      <CContainer
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: '100vh' }}
+      >
         <CSpinner color="primary" />
       </CContainer>
     )
@@ -62,25 +64,34 @@ const InventoryDetail = () => {
 
   if (error) {
     return (
-      <CContainer>
-        <CAlert color="danger">{error}</CAlert>
+      <CContainer className="py-4">
+        <CAlert color="danger" className="text-center">
+          {error}
+        </CAlert>
       </CContainer>
     )
   }
 
   return (
-    <CContainer>
-      <CButton color="secondary" onClick={() => navigate(-1)} className="mb-3">
+    <CContainer className="py-4">
+      <CButton color="secondary" size="sm" onClick={handleBack} className="mb-3">
         Back
       </CButton>
-      <h1>Inventory for Warehouse {warehouse_id}</h1>
-      {inventory.length > 0 ? (
-        inventory.map((item) => (
-          <InventoryItem key={item.tracking_id} item={item} onUpdateItem={handleUpdateItem} />
-        ))
-      ) : (
-        <CAlert color="info">No inventory available for this warehouse</CAlert>
-      )}
+
+      <CCard>
+        <CCardHeader>
+          <h3 className="text-center">Inventory for Warehouse {warehouse_id}</h3>
+        </CCardHeader>
+        <CCardBody>
+          {inventory.length > 0 ? (
+            inventory.map((item, index) => <InventoryItem key={index} item={item} />)
+          ) : (
+            <CAlert color="info" className="text-center">
+              No inventory available for this warehouse
+            </CAlert>
+          )}
+        </CCardBody>
+      </CCard>
     </CContainer>
   )
 }

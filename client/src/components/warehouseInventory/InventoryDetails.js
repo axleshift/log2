@@ -5,12 +5,13 @@ const InfoBlock = ({ title, fields }) => (
   <div className="info-block">
     <strong>{title}</strong>
     <br />
-    {fields.map(({ label, value }) => (
-      <div key={label}>
-        <strong>{label}:</strong> {value || 'N/A'}
-        <br />
-      </div>
-    ))}
+    {fields &&
+      fields.map(({ label, value }) => (
+        <div key={label}>
+          <strong>{label}:</strong> {value || 'N/A'}
+          <br />
+        </div>
+      ))}
     <br />
   </div>
 )
@@ -20,7 +21,7 @@ InfoBlock.propTypes = {
   fields: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,
-      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      value: PropTypes.string,
     }),
   ).isRequired,
 }
@@ -30,16 +31,16 @@ const ShippingDetails = ({ type, details }) => {
 
   const renderAirDetails = () => (
     <>
-      <strong>Origin Airport:</strong> {details.origin_airport || 'N/A'} <br />
-      <strong>Destination Airport:</strong> {details.destination_airport || 'N/A'} <br />
+      <strong>Origin Airport:</strong> {details.air?.origin_airport || 'N/A'} <br />
+      <strong>Destination Airport:</strong> {details.air?.destination_airport || 'N/A'} <br />
       <strong>Departure Date:</strong>{' '}
-      {details.preferred_departure_date
-        ? new Date(details.preferred_departure_date).toLocaleDateString()
+      {details.air?.preferred_departure_date
+        ? new Date(details.air.preferred_departure_date).toLocaleDateString()
         : 'Unknown'}{' '}
       <br />
       <strong>Arrival Date:</strong>{' '}
-      {details.preferred_arrival_date
-        ? new Date(details.preferred_arrival_date).toLocaleDateString()
+      {details.air?.preferred_arrival_date
+        ? new Date(details.air.preferred_arrival_date).toLocaleDateString()
         : 'Unknown'}{' '}
       <br />
     </>
@@ -47,26 +48,33 @@ const ShippingDetails = ({ type, details }) => {
 
   const renderLandDetails = () => (
     <>
-      <strong>Origin Address:</strong> {details.origin_address || 'N/A'} <br />
-      <strong>Destination Address:</strong> {details.destination_address || 'N/A'} <br />
+      <strong>Origin Address:</strong> {details.land?.origin_address || 'N/A'} <br />
+      <strong>Destination Address:</strong> {details.land?.destination_address || 'N/A'} <br />
       <strong>Pickup Date:</strong>{' '}
-      {details.pickup_date ? new Date(details.pickup_date).toLocaleDateString() : 'Unknown'} <br />
+      {details.land?.pickup_date
+        ? new Date(details.land.pickup_date).toLocaleDateString()
+        : 'Unknown'}{' '}
+      <br />
       <strong>Delivery Date:</strong>{' '}
-      {details.delivery_date ? new Date(details.delivery_date).toLocaleDateString() : 'Unknown'}{' '}
+      {details.land?.delivery_date
+        ? new Date(details.land.delivery_date).toLocaleDateString()
+        : 'Unknown'}{' '}
       <br />
     </>
   )
 
   const renderSeaDetails = () => (
     <>
-      <strong>Loading Port:</strong> {details.loading_port || 'N/A'} <br />
-      <strong>Discharge Port:</strong> {details.discharge_port || 'N/A'} <br />
+      <strong>Loading Port:</strong> {details.sea?.loading_port || 'N/A'} <br />
+      <strong>Discharge Port:</strong> {details.sea?.discharge_port || 'N/A'} <br />
       <strong>Sailing Date:</strong>{' '}
-      {details.sailing_date ? new Date(details.sailing_date).toLocaleDateString() : 'Unknown'}{' '}
+      {details.sea?.sailing_date
+        ? new Date(details.sea.sailing_date).toLocaleDateString()
+        : 'Unknown'}{' '}
       <br />
       <strong>Estimated Arrival Date:</strong>{' '}
-      {details.estimated_arrival_date
-        ? new Date(details.estimated_arrival_date).toLocaleDateString()
+      {details.sea?.estimated_arrival_date
+        ? new Date(details.sea.estimated_arrival_date).toLocaleDateString()
         : 'Unknown'}{' '}
       <br />
     </>
@@ -90,18 +98,24 @@ const ShippingDetails = ({ type, details }) => {
 ShippingDetails.propTypes = {
   type: PropTypes.string.isRequired,
   details: PropTypes.shape({
-    origin_airport: PropTypes.string,
-    destination_airport: PropTypes.string,
-    preferred_departure_date: PropTypes.string,
-    preferred_arrival_date: PropTypes.string,
-    origin_address: PropTypes.string,
-    destination_address: PropTypes.string,
-    pickup_date: PropTypes.string,
-    delivery_date: PropTypes.string,
-    loading_port: PropTypes.string,
-    discharge_port: PropTypes.string,
-    sailing_date: PropTypes.string,
-    estimated_arrival_date: PropTypes.string,
+    air: PropTypes.shape({
+      origin_airport: PropTypes.string,
+      destination_airport: PropTypes.string,
+      preferred_departure_date: PropTypes.string,
+      preferred_arrival_date: PropTypes.string,
+    }),
+    land: PropTypes.shape({
+      origin_address: PropTypes.string,
+      destination_address: PropTypes.string,
+      pickup_date: PropTypes.string,
+      delivery_date: PropTypes.string,
+    }),
+    sea: PropTypes.shape({
+      loading_port: PropTypes.string,
+      discharge_port: PropTypes.string,
+      sailing_date: PropTypes.string,
+      estimated_arrival_date: PropTypes.string,
+    }),
   }).isRequired,
 }
 
@@ -133,13 +147,15 @@ const InventoryDetails = ({ item }) => {
       <InfoBlock
         title="Shipment Information"
         fields={[
+          { label: 'Description', value: item.shipment?.shipment_description },
+          { label: 'Weight', value: item.shipment?.shipment_weight },
           {
             label: 'Dimensions (LxWxH)',
             value: `${item.shipment?.shipment_dimension_length || 'N/A'} x ${item.shipment?.shipment_dimension_width || 'N/A'} x ${item.shipment?.shipment_dimension_height || 'N/A'}`,
           },
-          { label: 'Volume', value: item.shipment?.shipment_volume || 'N/A' },
-          { label: 'Value', value: item.shipment?.shipment_value || 'N/A' },
-          { label: 'Instructions', value: item.shipment?.shipment_instructions || 'N/A' },
+          { label: 'Volume', value: item.shipment?.shipment_volume },
+          { label: 'Value', value: item.shipment?.shipment_value },
+          { label: 'Instructions', value: item.shipment?.shipment_instructions },
         ]}
       />
       <ShippingDetails type={item.shipping?.shipping_type} details={item.shipping?.details} />
@@ -164,17 +180,40 @@ InventoryDetails.propTypes = {
       consignee_company_address: PropTypes.string,
     }),
     shipment: PropTypes.shape({
-      shipment_dimension_length: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      shipment_dimension_width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      shipment_dimension_height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      shipment_volume: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      shipment_value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      shipment_description: PropTypes.string,
+      shipment_weight: PropTypes.number,
+      shipment_dimension_length: PropTypes.number,
+      shipment_dimension_width: PropTypes.number,
+      shipment_dimension_height: PropTypes.number,
+      shipment_volume: PropTypes.number,
+      shipment_value: PropTypes.number,
       shipment_instructions: PropTypes.string,
     }),
     shipping: PropTypes.shape({
       shipping_type: PropTypes.string,
-      details: PropTypes.object,
+      details: PropTypes.shape({
+        air: PropTypes.shape({
+          origin_airport: PropTypes.string,
+          destination_airport: PropTypes.string,
+          preferred_departure_date: PropTypes.string,
+          preferred_arrival_date: PropTypes.string,
+        }),
+        land: PropTypes.shape({
+          origin_address: PropTypes.string,
+          destination_address: PropTypes.string,
+          pickup_date: PropTypes.string,
+          delivery_date: PropTypes.string,
+        }),
+        sea: PropTypes.shape({
+          loading_port: PropTypes.string,
+          discharge_port: PropTypes.string,
+          sailing_date: PropTypes.string,
+          estimated_arrival_date: PropTypes.string,
+        }),
+      }).isRequired,
     }),
+    tracking_id: PropTypes.string,
+    warehouse_id: PropTypes.string,
   }).isRequired,
 }
 

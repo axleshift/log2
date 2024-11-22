@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   CCard,
   CCardBody,
@@ -16,24 +16,24 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableDataCell,
-} from '@coreui/react';
+} from '@coreui/react'
 
 const OrdersSection = () => {
   // State to manage active tab
-  const [activeTab, setActiveTab] = useState(1);
+  const [activeTab, setActiveTab] = useState(1)
 
   // Sample Data
   const currentOrders = [
     { id: '12345', quantity: '500 Units', deliveryDate: '2024-01-20', status: 'Processing' },
     { id: '12346', quantity: '300 Units', deliveryDate: '2024-01-30', status: 'Shipped' },
     { id: '12347', quantity: '200 Units', deliveryDate: '2024-02-10', status: 'Pending' }, // Example extra data
-  ];
+  ]
 
   const pastOrders = [
     { id: '12234', quantity: '400 Units', deliveryDate: '2023-10-15', feedback: 'Good' },
     { id: '12235', quantity: '600 Units', deliveryDate: '2023-11-05', feedback: 'Excellent' },
     { id: '12236', quantity: '700 Units', deliveryDate: '2023-12-01', feedback: 'Satisfactory' }, // Example extra data
-  ];
+  ]
 
   return (
     <CRow>
@@ -46,20 +46,12 @@ const OrdersSection = () => {
             {/* Navigation Tabs */}
             <CNav variant="tabs" role="tablist">
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 1}
-                  onClick={() => setActiveTab(1)}
-                  role="tab"
-                >
+                <CNavLink active={activeTab === 1} onClick={() => setActiveTab(1)} role="tab">
                   Current Orders
                 </CNavLink>
               </CNavItem>
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 2}
-                  onClick={() => setActiveTab(2)}
-                  role="tab"
-                >
+                <CNavLink active={activeTab === 2} onClick={() => setActiveTab(2)} role="tab">
                   Past Orders
                 </CNavLink>
               </CNavItem>
@@ -125,7 +117,7 @@ const OrdersSection = () => {
         </CCard>
       </CCol>
     </CRow>
-  );
-};
+  )
+}
 
-export default OrdersSection;
+export default OrdersSection

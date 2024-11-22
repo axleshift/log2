@@ -58,8 +58,8 @@ function Register() {
       }
       const response = await registerUser(sanitizedData)
 
-      Cookies.set('token', response.accessToken, { expires: 1 }) // Set cookie for 1 day
-      Cookies.set('refreshToken', response.refreshToken, { expires: 1 }) // Set refresh token in cookies
+      Cookies.set('token', response.accessToken, { expires: 1 })
+      Cookies.set('refreshToken', response.refreshToken, { expires: 1 })
 
       setNotification({ message: 'Registration Successful! Redirecting...', type: 'success' })
       reset()

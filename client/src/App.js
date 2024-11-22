@@ -20,10 +20,14 @@ const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpa
 
 function ProtectedRoute({ children }) {
   const isUserLogin = document.cookie.split('; ').some((row) => row.startsWith('token='))
-  const isDevMode = process.env.NODE_ENV === 'development' // MAKE SURE TO UNCOMMENT PROCESS TO BYPASS LOGIN :D
+  const isDevMode = false // Make sure this is false for production
 
-  // Allow access if in development mode
-  return isDevMode || isUserLogin ? children : <Navigate to="/login" />
+  // Allow access only if logged in, or in development mode
+  if (isDevMode || isUserLogin) {
+    return children
+  }
+
+  return <Navigate to="/login" />
 }
 
 ProtectedRoute.propTypes = {
@@ -92,7 +96,7 @@ const App = () => {
             <Route path="/forgotPass" element={<ForgotPass />} />
             <Route path="/supplierslogin" element={<SuppliersLogin />} />
             <Route path="/" element={<Landing />} />
-            <Route path='/supplierspage/*' element={<SuppliersPage/>}/>
+            <Route path="/supplierspage/*" element={<SuppliersPage />} />
 
             <Route
               path="*"

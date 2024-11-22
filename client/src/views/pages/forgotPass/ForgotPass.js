@@ -33,7 +33,6 @@ const ForgotPass = () => {
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
-  // API calls
   const forgotPassUser = async (data) => {
     return await axios.post(`${USER_API_URL}/forgot-password`, data)
   }
@@ -46,7 +45,6 @@ const ForgotPass = () => {
     return await axios.post(`${USER_API_URL}/change-password`, data)
   }
 
-  // Handle form submission for sending OTP
   const handleSubmit = async (event) => {
     event.preventDefault()
     setLoading(true)
@@ -79,7 +77,6 @@ const ForgotPass = () => {
     }
   }
 
-  // Handle OTP verification
   const handleOtpSubmit = async (event) => {
     event.preventDefault()
     setLoading(true)

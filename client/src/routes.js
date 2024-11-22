@@ -16,7 +16,7 @@ const OutgoingDetails = React.lazy(
   () => import('./views/Management/logistics/outgoing/OutgoingDetails.js'),
 )
 const Profile = React.lazy(() => import('./views/pages/profile/profile.js'))
-const WH1 = React.lazy(() => import('./views/inventory/WHInventory/WH1.js'))
+const Inventory = React.lazy(() => import('./views/inventory/Inventory.js'))
 const WarehouseDetail = React.lazy(() => import('./components/warehouseDetail/WarehouseDetail.js'))
 const InventoryDetail = React.lazy(() => import('./components/warehouseInventory/InventoryDetail'))
 
@@ -28,9 +28,9 @@ const routes = [
   { path: '/incoming', name: 'Incoming Details', element: IncomingDetails },
   { path: '/outgoing', name: 'Outgoing Details', element: OutgoingDetails },
   { path: '/profile', name: 'Profile', element: Profile },
-  { path: '/WH1', name: 'Inventory', element: WH1 },
   { path: '/warehouseDetail/:warehouse_id', name: 'Warehouse Detail', element: WarehouseDetail },
   { path: '/inventory/:warehouse_id', name: 'Inventory Detail', element: InventoryDetail },
+  { path: '/inventory', name: 'Inventory', element: Inventory },
 ]
 
 export default routes

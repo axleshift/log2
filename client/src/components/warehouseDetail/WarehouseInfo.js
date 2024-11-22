@@ -2,14 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 const WarehouseInfo = ({ warehouse }) => {
-  const goodsStored = Array.isArray(warehouse.goods_stored)
-    ? warehouse.goods_stored
-    : warehouse.goods_stored
-      ? warehouse.goods_stored.split(',').map((item) => item.trim())
-      : []
-
   const capacity = warehouse.capacity || 'Not available'
   const location = warehouse.location || 'Unknown location'
+  const customCapacity = warehouse.customCapacity || null
 
   return (
     <div>
@@ -21,11 +16,10 @@ const WarehouseInfo = ({ warehouse }) => {
         <strong>Location:</strong> {location}
       </p>
       <p>
-        <strong>Capacity:</strong> {capacity} units
+        <strong>Capacity:</strong> {capacity} {customCapacity && `(Custom: ${customCapacity})`}
       </p>
       <p>
-        <strong>Goods Stored:</strong>{' '}
-        {goodsStored.length > 0 ? goodsStored.join(', ') : 'No goods stored'}
+        <strong>Type of Goods:</strong> {warehouse.type_of_goods || 'Not specified'}
       </p>
     </div>
   )
@@ -35,8 +29,9 @@ WarehouseInfo.propTypes = {
   warehouse: PropTypes.shape({
     warehouse_id: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
-    capacity: PropTypes.string,
-    goods_stored: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
+    capacity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    customCapacity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    type_of_goods: PropTypes.string,
   }).isRequired,
 }
 

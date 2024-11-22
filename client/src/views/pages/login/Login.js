@@ -69,14 +69,11 @@ function Login() {
       }
       const response = await loginUser(sanitizedData)
 
-      // Assuming the response contains tokens
-      const { accessToken, refreshToken } = response // Update as needed
+      const { accessToken, refreshToken } = response
 
-      // Store tokens in cookies
       Cookies.set('token', accessToken, { expires: 1 })
       Cookies.set('refreshToken', refreshToken, { expires: 1 })
 
-      // Set a custom success message here
       setNotification({
         message: 'Welcome back! Redirecting to your dashboard...',
         type: 'success',

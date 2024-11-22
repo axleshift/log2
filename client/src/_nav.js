@@ -68,20 +68,10 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'WH1',
-        to: '/WH1',
+        name: 'Inventories',
+        to: '/inventory',
       },
     ],
-  },
-  {
-    component: CNavTitle,
-    name: 'Sorting Management',
-  },
-  {
-    component: CNavGroup,
-    name: 'Sorting',
-    icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" aria-label="Inventory Icon" />,
-    items: [],
   },
 ]
 

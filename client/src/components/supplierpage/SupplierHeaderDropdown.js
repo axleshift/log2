@@ -64,9 +64,7 @@ const SupplierHeaderDropdown = () => {
         <CAvatar src={userAvatar} size="lg" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
-          {userName}
-        </CDropdownHeader>
+        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">{userName}</CDropdownHeader>
 
         <CDropdownItem>
           <CIcon icon={cilBell} className="me-2" />

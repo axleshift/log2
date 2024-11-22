@@ -10,7 +10,7 @@ import {
   faUser,
   faClipboard,
   faFileLines,
-  faQuestionCircle
+  faQuestionCircle,
 } from '@fortawesome/free-solid-svg-icons'
 
 const _nav = [
@@ -33,44 +33,43 @@ const _nav = [
     name: 'OrdersSection',
     to: './orderssection',
     icon: (
-    <FontAwesomeIcon 
-    icon={faClipboard} 
-    className="nav-icon"
+      <FontAwesomeIcon
+        icon={faClipboard}
+        className="nav-icon"
         size="xl"
         style={{ marginRight: '10px' }}
         aria-label="faClipboard Icon"
-    />
-  ),
+      />
+    ),
   },
   {
     component: CNavItem,
     name: 'Invoice and Payment Status',
     to: './status',
     icon: (
-    <FontAwesomeIcon 
-    icon={faFileLines} 
-    className="nav-icon"
+      <FontAwesomeIcon
+        icon={faFileLines}
+        className="nav-icon"
         size="xl"
         style={{ marginRight: '10px' }}
         aria-label="FileLines Icon"
-    />
-  ),
+      />
+    ),
   },
   {
     component: CNavItem,
     name: 'Support/HelpDesk',
     to: './support',
     icon: (
-    <FontAwesomeIcon 
-    icon={faQuestionCircle} 
-    className="nav-icon"
+      <FontAwesomeIcon
+        icon={faQuestionCircle}
+        className="nav-icon"
         size="xl"
         style={{ marginRight: '10px' }}
         aria-label="faQuestionCircle Icon"
-    />
-  ),
+      />
+    ),
   },
-  
 ]
 
 export default _nav

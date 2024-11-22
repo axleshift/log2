@@ -182,7 +182,7 @@ export const loginUser = async (req, res, next) => {
 // Get all users
 export const getAllUsers = async (req, res, next) => {
     try {
-        const users = await UserModel.find(); // Fetch all users from the database
+        const users = await UserModel.find();
         res.json({ status: "success", users });
     } catch (error) {
         logger.error("Failed to fetch users:", { message: error.message, stack: error.stack });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   CButton,
   CCard,
@@ -14,19 +14,16 @@ import {
   CTableHeaderCell,
   CTableRow,
   CAlert,
-} from '@coreui/react';
-import { SupplierFooter } from '../../../components/supplierpage';
-import DefaultLayout from '../../../components/supplierpage/layout/DefaultLayout'; 
+} from '@coreui/react'
+import { SupplierFooter } from '../../../components/supplierpage'
+import DefaultLayout from '../../../components/supplierpage/layout/DefaultLayout'
 
 function SupplierPage() {
-
   return (
     <DefaultLayout>
-    
-        <SupplierFooter />
-      
+      <SupplierFooter />
     </DefaultLayout>
-  );
+  )
 }
 
-export default SupplierPage;
+export default SupplierPage

@@ -28,7 +28,7 @@ const WarehouseManagement = () => {
     name: '',
     location: '',
     capacity: '',
-    goods_stored: '',
+    type_of_goods: '',
     customCapacity: '',
   })
   const [loading, setLoading] = useState(true)
@@ -38,6 +38,13 @@ const WarehouseManagement = () => {
   const navigate = useNavigate()
 
   const capacityOptions = ['Low', 'Medium', 'Full', 'Custom']
+
+  const capacityMapping = {
+    Low: 10,
+    Medium: 50,
+    Full: 100,
+    Custom: (customCapacity) => (customCapacity ? parseInt(customCapacity, 10) : 0), // Handle custom capacity
+  }
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -64,7 +71,15 @@ const WarehouseManagement = () => {
 
   const generateWarehouseId = () => {
     const lastWarehouse = warehouses[warehouses.length - 1]
-    let lastNumber = lastWarehouse ? parseInt(lastWarehouse.warehouse_id.replace('WH', ''), 10) : 0
+    let lastNumber = 0
+
+    if (lastWarehouse) {
+      const parsedId = parseInt(lastWarehouse.warehouse_id.replace('WH', ''), 10)
+      if (!isNaN(parsedId)) {
+        lastNumber = parsedId
+      }
+    }
+
     let newNumber = lastNumber + 1
     return `WH${newNumber.toString().padStart(3, '0')}`
   }
@@ -72,15 +87,26 @@ const WarehouseManagement = () => {
   const handleSubmitWarehouse = async (e) => {
     e.preventDefault()
 
+    // If the capacity is Custom, handle it separately
+    let capacity = 0
+    if (warehouseData.capacity === 'Custom') {
+      // Handle the custom capacity logic
+      capacity = warehouseData.customCapacity ? parseInt(warehouseData.customCapacity, 10) : 0
+    } else {
+      // Use the predefined mapping for Low, Medium, Full
+      capacity = capacityMapping[warehouseData.capacity] || 0
+    }
+
     const formData = {
       warehouse_id: generateWarehouseId(),
       name: warehouseData.name,
       location: warehouseData.location,
-      capacity: warehouseData.capacity,
-      goods_stored: String(warehouseData.goods_stored),
+      capacity: capacity,
+      type_of_goods: warehouseData.type_of_goods,
     }
 
-    if (!formData.name || !formData.location || !formData.capacity || !formData.goods_stored) {
+    // Validation check
+    if (!formData.name || !formData.location || !formData.capacity || !formData.type_of_goods) {
       setError('Please fill all fields to create a new warehouse.')
       return
     }
@@ -105,7 +131,7 @@ const WarehouseManagement = () => {
         name: '',
         location: '',
         capacity: '',
-        goods_stored: '',
+        type_of_goods: '',
         customCapacity: '',
       })
       setShowModal(false)
@@ -218,27 +244,28 @@ const WarehouseManagement = () => {
             )}
 
             <div className="mb-3">
-              <CFormLabel htmlFor="goods_stored">Goods Stored</CFormLabel>
+              <CFormLabel htmlFor="type_of_goods">Type of Goods</CFormLabel>
               <CFormInput
-                id="goods_stored"
-                name="goods_stored"
+                id="type_of_goods"
+                name="type_of_goods"
                 type="text"
-                placeholder="Enter goods stored"
-                value={warehouseData.goods_stored}
+                placeholder="Enter type of goods stored"
+                value={warehouseData.type_of_goods}
                 onChange={handleChange}
                 required
               />
             </div>
+
+            <CModalFooter>
+              <CButton color="secondary" onClick={() => setShowModal(false)}>
+                Close
+              </CButton>
+              <CButton type="submit" color="primary">
+                {editingWarehouse ? 'Update Warehouse' : 'Create Warehouse'}
+              </CButton>
+            </CModalFooter>
           </CForm>
         </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
-            Close
-          </CButton>
-          <CButton type="submit" color="primary" onClick={handleSubmitWarehouse}>
-            {editingWarehouse ? 'Update Warehouse' : 'Create Warehouse'}
-          </CButton>
-        </CModalFooter>
       </CModal>
 
       {/* Warehouse List */}
@@ -252,6 +279,7 @@ const WarehouseManagement = () => {
             <h4>{warehouse.name}</h4>
             <p>{warehouse.location}</p>
             <p>Capacity: {warehouse.capacity}</p>
+            <p>Type of Goods: {warehouse.type_of_goods}</p>
             <div className="d-flex gap-2">
               <CButton color="info" onClick={() => handleGoToWarehouse(warehouse.warehouse_id)}>
                 View Details

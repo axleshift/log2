@@ -1,5 +1,10 @@
 import React from 'react'
-import { SupplierContent, SupplierSidebar, SupplierFooter, SupplierHeader } from '../../../components/supplierpage/index'
+import {
+  SupplierContent,
+  SupplierSidebar,
+  SupplierFooter,
+  SupplierHeader,
+} from '../../../components/supplierpage/index'
 
 const DefaultLayout = () => {
   return (

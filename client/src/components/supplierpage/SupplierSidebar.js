@@ -49,19 +49,13 @@ const SupplierSidebar = () => {
             height={30}
           />
         </CSidebarBrand>
-        <CCloseButton
-          className="d-lg-none"
-          dark
-          onClick={() => handleSidebarVisibility(false)}
-        />
+        <CCloseButton className="d-lg-none" dark onClick={() => handleSidebarVisibility(false)} />
       </CSidebarHeader>
 
       <SupplierSidebarNav items={navigation} />
 
       <CSidebarFooter className="border-top d-none d-lg-flex">
-        <CSidebarToggler
-          onClick={toggleSidebarUnfoldable}
-        />
+        <CSidebarToggler onClick={toggleSidebarUnfoldable} />
       </CSidebarFooter>
     </CSidebar>
   )

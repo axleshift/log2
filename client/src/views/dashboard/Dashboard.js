@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import { CContainer, CRow, CCol, CSpinner } from '@coreui/react'
+import { CContainer, CRow, CCol, CSpinner, CAlert } from '@coreui/react'
 import axios from 'axios'
 import { CWidgetStatsA } from '@coreui/react'
+import { useNavigate } from 'react-router-dom'
 import WidgetComponent from '../widgets/WidgetComponent'
 
 const Dashboard = () => {
   const [warehouse, setWarehouse] = useState([])
-  const [inventoryCount, setInventoryCount] = useState(0)
+  const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
+
   const WAREHOUSE_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/warehouse`
+  const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     axios
@@ -17,20 +23,23 @@ const Dashboard = () => {
       .then((response) => {
         const fetchedWarehouses = response.data
         setWarehouse(fetchedWarehouses)
-        setInventoryCount(
-          fetchedWarehouses.reduce(
-            (acc, warehouse) =>
-              acc + (Array.isArray(warehouse.inventory) ? warehouse.inventory.length : 0),
-            0,
-          ),
-        )
-        setLoading(false)
       })
       .catch((error) => {
         setError('There was an error fetching warehouses!')
+      })
+
+    axios
+      .get(INVENTORY_API_URL)
+      .then((response) => {
+        const fetchedInventory = response.data
+        setInventory(fetchedInventory)
         setLoading(false)
       })
-  }, [WAREHOUSE_API_URL])
+      .catch((error) => {
+        setError('There was an error fetching inventory!')
+        setLoading(false)
+      })
+  }, [WAREHOUSE_API_URL, INVENTORY_API_URL])
 
   if (loading) {
     return (
@@ -65,7 +74,10 @@ const Dashboard = () => {
             value={warehouse.length}
             title="Warehouses"
             icon={<i className="cil-building" />}
-            onClick={() => alert('Redirect to warehouse details')}
+            onClick={() => {
+              navigate('/warehouse')
+              setSuccessMessage('Redirecting to warehouse details')
+            }}
             style={{ cursor: 'pointer', padding: '3rem' }}
           />
         </CCol>
@@ -75,14 +87,24 @@ const Dashboard = () => {
           <CWidgetStatsA
             className="mb-4"
             color="info"
-            value={inventoryCount}
+            value={inventory.length}
             title="Inventory Items"
             icon={<i className="cil-cube" />}
-            onClick={() => alert('Redirect to inventory details')}
+            onClick={() => {
+              navigate('/inventory')
+              setSuccessMessage('Redirecting to inventory details')
+            }}
             style={{ cursor: 'pointer', padding: '3rem' }}
           />
         </CCol>
       </CRow>
+
+      {/* Success Message Display */}
+      {successMessage && (
+        <CAlert color="success" onClose={() => setSuccessMessage(null)} dismissible>
+          {successMessage}
+        </CAlert>
+      )}
 
       {/* Widget Section for Incoming and Outgoing Shipments */}
       <CRow className="mt-4">

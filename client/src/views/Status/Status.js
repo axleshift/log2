@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   CButton,
   CCard,
@@ -21,7 +21,7 @@ import {
   CForm,
   CFormLabel,
   CFormInput,
-} from '@coreui/react';
+} from '@coreui/react'
 
 const InvoiceAndPaymentStatus = () => {
   const [pendingInvoices, setPendingInvoices] = useState([
@@ -29,31 +29,31 @@ const InvoiceAndPaymentStatus = () => {
     { id: 'INV002', amount: '$2000', dueDate: '2024-12-20' },
     { id: 'INV003', amount: '$1800', dueDate: '2024-12-25' }, // Example additional data
     { id: 'INV004', amount: '$2200', dueDate: '2024-12-30' }, // Example additional data
-  ]);
+  ])
 
   const [paidInvoices, setPaidInvoices] = useState([
     { id: 'INV100', amount: '$5000', paidDate: '2024-11-01' },
     { id: 'INV101', amount: '$3000', paidDate: '2024-11-15' },
     { id: 'INV102', amount: '$2500', paidDate: '2024-10-20' }, // Example additional data
     { id: 'INV103', amount: '$4000', paidDate: '2024-10-25' }, // Example additional data
-  ]);
+  ])
 
-  const [createInvoiceModal, setCreateInvoiceModal] = useState(false);
+  const [createInvoiceModal, setCreateInvoiceModal] = useState(false)
   const [newInvoice, setNewInvoice] = useState({
     id: '',
     amount: '',
     dueDate: '',
-  });
+  })
 
   const toggleCreateInvoiceModal = () => {
-    setCreateInvoiceModal(!createInvoiceModal);
-  };
+    setCreateInvoiceModal(!createInvoiceModal)
+  }
 
   const handleInvoiceSubmit = () => {
-    setPendingInvoices([...pendingInvoices, { ...newInvoice }]);
-    setNewInvoice({ id: '', amount: '', dueDate: '' });
-    setCreateInvoiceModal(false);
-  };
+    setPendingInvoices([...pendingInvoices, { ...newInvoice }])
+    setNewInvoice({ id: '', amount: '', dueDate: '' })
+    setCreateInvoiceModal(false)
+  }
 
   return (
     <CContainer fluid>
@@ -174,7 +174,7 @@ const InvoiceAndPaymentStatus = () => {
         </CModalFooter>
       </CModal>
     </CContainer>
-  );
-};
+  )
+}
 
-export default InvoiceAndPaymentStatus;
+export default InvoiceAndPaymentStatus

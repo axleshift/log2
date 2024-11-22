@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useRef } from 'react'
+import { NavLink } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import {
   CContainer,
   CDropdown,
@@ -13,8 +13,8 @@ import {
   CNavLink,
   CNavItem,
   useColorModes,
-} from '@coreui/react';
-import CIcon from '@coreui/icons-react';
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
 import {
   cilBell,
   cilContrast,
@@ -23,38 +23,39 @@ import {
   cilMenu,
   cilMoon,
   cilSun,
-} from '@coreui/icons';
+} from '@coreui/icons'
 
-import { SupplierBreadcrumb } from './index';
-import { SupplierHeaderDropdown } from './index';
+import { SupplierBreadcrumb } from './index'
+import { SupplierHeaderDropdown } from './index'
 
 const SupplierHeader = () => {
-  const headerRef = useRef();
-  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
+  const headerRef = useRef()
+  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
-  const dispatch = useDispatch();
-  const sidebarShow = useSelector((state) => state.sidebarShow);
+  const dispatch = useDispatch()
+  const sidebarShow = useSelector((state) => state.sidebarShow)
 
   useEffect(() => {
     const handleScroll = () => {
       if (headerRef.current) {
-        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0);
+        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
       }
-    };
+    }
 
-    document.addEventListener('scroll', handleScroll);
+    document.addEventListener('scroll', handleScroll)
     return () => {
-      document.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+      document.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
-      <CContainer className="border-bottom px-4 d-flex align-items-center justify-content-between" fluid>
+      <CContainer
+        className="border-bottom px-4 d-flex align-items-center justify-content-between"
+        fluid
+      >
         {/* Sidebar Toggle */}
-        <CHeaderToggler
-          onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
-        >
+        <CHeaderToggler onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}>
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
 
@@ -123,7 +124,7 @@ const SupplierHeader = () => {
         <SupplierBreadcrumb />
       </CContainer>
     </CHeader>
-  );
-};
+  )
+}
 
-export default SupplierHeader;
+export default SupplierHeader

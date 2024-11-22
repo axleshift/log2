@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   CContainer,
   CCard,
@@ -19,37 +19,34 @@ import {
   CCollapse,
   CListGroup,
   CListGroupItem,
-
-} from '@coreui/react';
-import { CIcon } from '@coreui/icons-react';
-import { cilChevronBottom } from '@coreui/icons';
+} from '@coreui/react'
+import { CIcon } from '@coreui/icons-react'
+import { cilChevronBottom } from '@coreui/icons'
 
 const SupportHelpdesk = () => {
-  const [contactModal, setContactModal] = useState(false);
-  const [contactDetails, setContactDetails] = useState({ name: '', email: '', message: '' });
-  const [faqCollapse, setFaqCollapse] = useState([false, false, false]);
+  const [contactModal, setContactModal] = useState(false)
+  const [contactDetails, setContactDetails] = useState({ name: '', email: '', message: '' })
+  const [faqCollapse, setFaqCollapse] = useState([false, false, false])
 
   // Toggle for Contact Form Modal
-  const toggleContactModal = () => setContactModal(!contactModal);
+  const toggleContactModal = () => setContactModal(!contactModal)
 
   // Handle change in contact form inputs
   const handleContactChange = (e) => {
-    setContactDetails({ ...contactDetails, [e.target.name]: e.target.value });
-  };
+    setContactDetails({ ...contactDetails, [e.target.name]: e.target.value })
+  }
 
   // Handle contact form submission
   const handleContactSubmit = () => {
-    console.log('Contact Form Submitted:', contactDetails);
-    setContactDetails({ name: '', email: '', message: '' });
-    setContactModal(false);
-  };
+    console.log('Contact Form Submitted:', contactDetails)
+    setContactDetails({ name: '', email: '', message: '' })
+    setContactModal(false)
+  }
 
   // Toggle FAQ item
   const toggleFAQ = (index) => {
-    setFaqCollapse((prevState) =>
-      prevState.map((item, i) => (i === index ? !item : item))
-    );
-  };
+    setFaqCollapse((prevState) => prevState.map((item, i) => (i === index ? !item : item)))
+  }
 
   return (
     <CContainer fluid>
@@ -136,7 +133,8 @@ const SupportHelpdesk = () => {
                 </CListGroupItem>
                 <CCollapse visible={faqCollapse[0]}>
                   <CListGroupItem>
-                    To place an order, go to the 'Orders' section and select the product. Then, fill in the order details.
+                    To place an order, go to the &apos;Orders&apos; section and select the product.
+                    Then, fill in the order details.
                   </CListGroupItem>
                 </CCollapse>
 
@@ -149,7 +147,8 @@ const SupportHelpdesk = () => {
                 </CListGroupItem>
                 <CCollapse visible={faqCollapse[1]}>
                   <CListGroupItem>
-                    We accept various payment methods, including bank transfer, credit card, and PayPal.
+                    We accept various payment methods, including bank transfer, credit card, and
+                    PayPal.
                   </CListGroupItem>
                 </CCollapse>
 
@@ -162,7 +161,8 @@ const SupportHelpdesk = () => {
                 </CListGroupItem>
                 <CCollapse visible={faqCollapse[2]}>
                   <CListGroupItem>
-                    You can track your order status in the 'Orders' section. Once your order is shipped, tracking details will be provided.
+                    You can track your order status in the &apos;Orders&apos; section. Once your
+                    order is shipped, tracking details will be provided.
                   </CListGroupItem>
                 </CCollapse>
               </CListGroup>
@@ -171,7 +171,7 @@ const SupportHelpdesk = () => {
         </CCol>
       </CRow>
     </CContainer>
-  );
-};
+  )
+}
 
-export default SupportHelpdesk;
+export default SupportHelpdesk

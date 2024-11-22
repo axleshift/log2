@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   CCard,
   CCardBody,
@@ -22,7 +22,7 @@ import {
   CModalFooter,
   CForm,
   CFormLabel,
-} from '@coreui/react';
+} from '@coreui/react'
 
 const SupplierProfile = () => {
   const [suppliers, setSuppliers] = useState([
@@ -41,10 +41,10 @@ const SupplierProfile = () => {
         { id: '002', quantity: '300 Units', dueDate: '2024-03-05' },
       ],
     },
-  ]);
+  ])
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [addSupplierModal, setAddSupplierModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [addSupplierModal, setAddSupplierModal] = useState(false)
   const [newSupplier, setNewSupplier] = useState({
     companyName: '',
     contactPerson: '',
@@ -53,19 +53,19 @@ const SupplierProfile = () => {
     address: '',
     complianceDocuments: [],
     activeOrders: [],
-  });
-  const [newDocument, setNewDocument] = useState({ name: '', expiry: '' });
+  })
+  const [newDocument, setNewDocument] = useState({ name: '', expiry: '' })
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+    setSearchQuery(e.target.value)
+  }
 
   const toggleAddSupplierModal = () => {
-    setAddSupplierModal(!addSupplierModal);
-  };
+    setAddSupplierModal(!addSupplierModal)
+  }
 
   const handleAddSupplier = () => {
-    setSuppliers([...suppliers, { ...newSupplier }]);
+    setSuppliers([...suppliers, { ...newSupplier }])
     setNewSupplier({
       companyName: '',
       contactPerson: '',
@@ -74,34 +74,36 @@ const SupplierProfile = () => {
       address: '',
       complianceDocuments: [],
       activeOrders: [],
-    });
-    setAddSupplierModal(false);
-  };
+    })
+    setAddSupplierModal(false)
+  }
 
   const handleAddDocument = () => {
     if (newDocument.name && newDocument.expiry) {
       setNewSupplier({
         ...newSupplier,
         complianceDocuments: [...newSupplier.complianceDocuments, newDocument],
-      });
-      setNewDocument({ name: '', expiry: '' });
+      })
+      setNewDocument({ name: '', expiry: '' })
     }
-  };
+  }
 
   const handleDeleteSupplier = (index) => {
-    const updatedSuppliers = suppliers.filter((_, i) => i !== index);
-    setSuppliers(updatedSuppliers);
-  };
+    const updatedSuppliers = suppliers.filter((_, i) => i !== index)
+    setSuppliers(updatedSuppliers)
+  }
 
   const handleDeleteDocument = (supplierIndex, docIndex) => {
-    const updatedSuppliers = [...suppliers];
-    updatedSuppliers[supplierIndex].complianceDocuments = updatedSuppliers[supplierIndex].complianceDocuments.filter((_, i) => i !== docIndex);
-    setSuppliers(updatedSuppliers);
-  };
+    const updatedSuppliers = [...suppliers]
+    updatedSuppliers[supplierIndex].complianceDocuments = updatedSuppliers[
+      supplierIndex
+    ].complianceDocuments.filter((_, i) => i !== docIndex)
+    setSuppliers(updatedSuppliers)
+  }
 
   const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.companyName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    supplier.companyName.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   return (
     <CContainer fluid>
@@ -210,9 +212,7 @@ const SupplierProfile = () => {
               <CFormInput
                 type="text"
                 value={newSupplier.companyName}
-                onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, companyName: e.target.value })
-                }
+                onChange={(e) => setNewSupplier({ ...newSupplier, companyName: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -220,9 +220,7 @@ const SupplierProfile = () => {
               <CFormInput
                 type="text"
                 value={newSupplier.contactPerson}
-                onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, contactPerson: e.target.value })
-                }
+                onChange={(e) => setNewSupplier({ ...newSupplier, contactPerson: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -230,9 +228,7 @@ const SupplierProfile = () => {
               <CFormInput
                 type="email"
                 value={newSupplier.email}
-                onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, email: e.target.value })
-                }
+                onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -240,9 +236,7 @@ const SupplierProfile = () => {
               <CFormInput
                 type="text"
                 value={newSupplier.phone}
-                onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, phone: e.target.value })
-                }
+                onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -250,9 +244,7 @@ const SupplierProfile = () => {
               <CFormInput
                 type="text"
                 value={newSupplier.address}
-                onChange={(e) =>
-                  setNewSupplier({ ...newSupplier, address: e.target.value })
-                }
+                onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -261,24 +253,16 @@ const SupplierProfile = () => {
                 type="text"
                 placeholder="Document Name"
                 value={newDocument.name}
-                onChange={(e) =>
-                  setNewDocument({ ...newDocument, name: e.target.value })
-                }
+                onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
               />
               <CFormInput
                 type="date"
                 placeholder="Expiry Date"
                 value={newDocument.expiry}
-                onChange={(e) =>
-                  setNewDocument({ ...newDocument, expiry: e.target.value })
-                }
+                onChange={(e) => setNewDocument({ ...newDocument, expiry: e.target.value })}
                 className="mt-2"
               />
-              <CButton
-                color="info"
-                className="mt-2"
-                onClick={handleAddDocument}
-              >
+              <CButton color="info" className="mt-2" onClick={handleAddDocument}>
                 Add Document
               </CButton>
             </div>
@@ -302,7 +286,7 @@ const SupplierProfile = () => {
         </CModalFooter>
       </CModal>
     </CContainer>
-  );
-};
+  )
+}
 
-export default SupplierProfile;
+export default SupplierProfile
