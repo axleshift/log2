@@ -56,10 +56,7 @@ const inventorySchema = new mongoose.Schema({
         },
     },
     tracking_id: { type: String, required: true, unique: true },
-    warehouse: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Warehouse",
-    },
+    warehouse_id: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse" }, // New reference
 });
 
 const Inventory = mongoose.model("Inventory", inventorySchema);

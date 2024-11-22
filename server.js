@@ -14,9 +14,6 @@ dotenv.config();
 
 const app = express();
 
-// Enable 'trust proxy' to handle X-Forwarded-For headers
-app.set("trust proxy", true);
-
 // Middleware setup
 app.use(corsMiddleware);
 app.use(express.json());
@@ -37,11 +34,11 @@ connectWithRetry(app);
 
 // Graceful shutdown
 const shutdown = async () => {
-    logger.info("Shutting down gracefully...");
+    console.log("Shutting down gracefully...");
     await mongoose.connection.close();
-    logger.info("MongoDB connection closed");
+    console.log("MongoDB connection closed");
     server.close(() => {
-        logger.info("HTTP server closed");
+        console.log("HTTP server closed");
         process.exit(0);
     });
 };
@@ -50,11 +47,11 @@ const shutdown = async () => {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 process.on("uncaughtException", (err) => {
-    logger.error("Uncaught Exception:", err);
+    console.error("Uncaught Exception:", err);
     shutdown();
 });
 process.on("unhandledRejection", (reason, promise) => {
-    logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
     shutdown();
 });
 
