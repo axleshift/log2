@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import DOMPurify from 'dompurify'
 import {
   CButton,
   CCard,
@@ -21,7 +20,6 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import Cookies from 'js-cookie'
-import ReCAPTCHA from 'react-google-recaptcha'
 
 function Login() {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -35,8 +33,6 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [captchaValue, setCaptchaValue] = useState(null)
-  const recaptchaRef = useRef()
 
   const loginUser = async (data) => {
     const response = await fetch(`${USER_API_URL}/login`, {
@@ -55,19 +51,19 @@ function Login() {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
-    if (!captchaValue) {
-      setNotification({ message: 'Please complete the reCAPTCHA', type: 'danger' })
-      setLoading(false)
-      return
-    }
-
     try {
-      const sanitizedData = {
-        username: DOMPurify.sanitize(data.username),
-        password: DOMPurify.sanitize(data.password),
-        recaptchaToken: captchaValue,
+      // Generate reCAPTCHA token
+      const recaptchaToken = await window.grecaptcha.execute(
+        import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+        { action: 'login' },
+      )
+
+      const requestData = {
+        username: data.username,
+        password: data.password,
+        recaptchaToken,
       }
-      const response = await loginUser(sanitizedData)
+      const response = await loginUser(requestData)
 
       const { accessToken, refreshToken } = response
 
@@ -84,10 +80,6 @@ function Login() {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
       setLoading(false)
-      setCaptchaValue(null)
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset()
-      }
     }
   }
 
@@ -159,15 +151,6 @@ function Login() {
                       </CButton>
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
-
-                    {/* ReCAPTCHA Component */}
-                    <div className="mb-3">
-                      <ReCAPTCHA
-                        ref={recaptchaRef}
-                        sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                        onChange={setCaptchaValue}
-                      />
-                    </div>
 
                     <CRow>
                       <CCol sm={5}>

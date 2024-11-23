@@ -8,11 +8,11 @@ import { Link } from 'react-router-dom'
 const WidgetComponent = () => {
   const [incomingShipments, setIncomingShipments] = useState(0)
   const [outgoingShipments, setOutgoingShipments] = useState(0)
-
+  /** 
   useEffect(() => {
     const fetchShipmentData = async () => {
-      const incomingData = await fetch('/api/incoming-shipments')
-      const outgoingData = await fetch('/api/outgoing-shipments')
+      const incomingData = await fetch('')
+      const outgoingData = await fetch('')
 
       const incomingCount = await incomingData.json()
       const outgoingCount = await outgoingData.json()
@@ -23,7 +23,7 @@ const WidgetComponent = () => {
 
     fetchShipmentData()
   }, [])
-
+*/
   return (
     <>
       <CRow>
