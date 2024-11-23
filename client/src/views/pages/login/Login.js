@@ -52,7 +52,6 @@ function Login() {
     setNotification({ message: '', type: '' })
 
     try {
-      // Generate reCAPTCHA token
       const recaptchaToken = await window.grecaptcha.execute(
         import.meta.env.VITE_RECAPTCHA_SITE_KEY,
         { action: 'login' },
