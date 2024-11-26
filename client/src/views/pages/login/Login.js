@@ -36,7 +36,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
 
-  
   const executeRecaptcha = useCallback(async () => {
     try {
       const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
