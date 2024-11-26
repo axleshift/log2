@@ -30,8 +30,8 @@ export const verifyRecaptcha = async (req, res, next) => {
         }
 
         const data = await response.json();
+        console.log("reCAPTCHA response:", data);
 
-        // Check if the score is above a certain threshold (e.g., 0.5)
         if (!data.success || data.score < 0.5) {
             logger.warn("reCAPTCHA verification failed", { errorCodes: data["error-codes"], score: data.score });
             return res.status(400).json({ status: "error", message: "reCAPTCHA verification failed." });
