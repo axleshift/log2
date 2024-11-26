@@ -1,6 +1,5 @@
 import TrackingModel from "../models/trackingModel.js";
 
-// Create a new tracking record
 export const createTracking = async (req, res) => {
     try {
         const tracking = new TrackingModel(req.body);

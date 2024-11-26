@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import {
@@ -33,39 +33,52 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(null)
 
-  const loginUser = async (data) => {
-    const response = await fetch(`${USER_API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) {
-      const responseData = await response.json()
-      throw new Error(responseData.message || 'Login failed')
+  const executeRecaptcha = async () => {
+    try {
+      const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
+        action: 'login',
+      })
+      setCaptchaToken(token)
+    } catch (error) {
+      console.error('Error executing reCAPTCHA:', error)
     }
-    return response.json()
   }
+
+  useEffect(() => {
+    if (window.grecaptcha) {
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, { action: 'login' })
+          .then(executeRecaptcha)
+      })
+    }
+  }, [])
 
   const onSubmit = async (data) => {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
+    if (!captchaToken) {
+      setNotification({ message: 'Please complete the reCAPTCHA', type: 'danger' })
+      setLoading(false)
+      return
+    }
+
     try {
-      const recaptchaToken = await window.grecaptcha.execute(
-        import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-        { action: 'login' },
-      )
+      const response = await fetch(`${USER_API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, recaptchaToken: captchaToken }),
+      })
 
-      const requestData = {
-        username: data.username,
-        password: data.password,
-        recaptchaToken,
+      if (!response.ok) {
+        const responseData = await response.json()
+        throw new Error(responseData.message || 'Login failed')
       }
-      const response = await loginUser(requestData)
 
-      const { accessToken, refreshToken } = response
-
+      const { accessToken, refreshToken } = await response.json()
       Cookies.set('token', accessToken, { expires: 1 })
       Cookies.set('refreshToken', refreshToken, { expires: 1 })
 
@@ -73,12 +86,14 @@ function Login() {
         message: 'Welcome back! Redirecting to your dashboard...',
         type: 'success',
       })
+
       reset()
       setTimeout(() => navigate('/dashboard'), 2000)
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
       setLoading(false)
+      setCaptchaToken(null)
     }
   }
 
@@ -118,6 +133,8 @@ function Login() {
                   <CForm onSubmit={handleSubmit(onSubmit)}>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
+
+                    {/* Username Input */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -130,6 +147,8 @@ function Login() {
                       />
                     </CInputGroup>
                     {errors.username && <p className="text-danger">{errors.username.message}</p>}
+
+                    {/* Password Input */}
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
@@ -151,6 +170,15 @@ function Login() {
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
+                    {/* reCAPTCHA */}
+                    <div className="mb-3">
+                      <div
+                        className="g-recaptcha"
+                        data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                      ></div>
+                    </div>
+
+                    {/* Submit and Forgot Password Buttons */}
                     <CRow>
                       <CCol sm={5}>
                         <CButton
@@ -158,7 +186,7 @@ function Login() {
                           variant="outline"
                           className="px-4"
                           type="submit"
-                          disabled={loading}
+                          disabled={loading || !captchaToken}
                         >
                           {loading ? 'Logging in...' : 'LOGIN'}
                         </CButton>

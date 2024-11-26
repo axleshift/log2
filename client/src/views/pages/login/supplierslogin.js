@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import DOMPurify from 'dompurify'
 import {
   CButton,
   CCard,
@@ -21,7 +20,6 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import Cookies from 'js-cookie'
-import ReCAPTCHA from 'react-google-recaptcha'
 
 function SupplierLogin() {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -35,8 +33,26 @@ function SupplierLogin() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [captchaValue, setCaptchaValue] = useState(null)
-  const recaptchaRef = useRef()
+  const [captchaToken, setCaptchaToken] = useState(null)
+
+  const executeRecaptcha = async () => {
+    try {
+      const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
+        action: 'login',
+      })
+      setCaptchaToken(token)
+    } catch (error) {
+      console.error('Error executing reCAPTCHA:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (window.grecaptcha) {
+      window.grecaptcha.ready(() => {
+        executeRecaptcha()
+      })
+    }
+  }, [])
 
   const loginUser = async (data) => {
     const response = await fetch(`${USER_API_URL}/login`, {
@@ -55,30 +71,22 @@ function SupplierLogin() {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
-    if (!captchaValue) {
+    if (!captchaToken) {
       setNotification({ message: 'Please complete the reCAPTCHA', type: 'danger' })
       setLoading(false)
       return
     }
 
     try {
-      const sanitizedData = {
-        username: DOMPurify.sanitize(data.username),
-        password: DOMPurify.sanitize(data.password),
-        recaptchaToken: captchaValue,
-      }
-      const response = await loginUser(sanitizedData)
+      const response = await loginUser({ ...data, recaptchaToken: captchaToken })
 
-      // Assuming the response contains tokens
-      const { accessToken, refreshToken } = response // Update as needed
+      const { accessToken, refreshToken } = response
 
-      // Store tokens in cookies
       Cookies.set('token', accessToken, { expires: 1 })
       Cookies.set('refreshToken', refreshToken, { expires: 1 })
 
-      // Set a custom success message here
       setNotification({
-        message: 'Welcome back! Redirecting to your SupplierPage...',
+        message: 'Welcome back! Redirecting to your Supplier Page...',
         type: 'success',
       })
       reset()
@@ -87,10 +95,7 @@ function SupplierLogin() {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
       setLoading(false)
-      setCaptchaValue(null)
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset()
-      }
+      setCaptchaToken(null)
     }
   }
 
@@ -102,7 +107,7 @@ function SupplierLogin() {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          {/* Left side - Vendor Portal */}
+          {/* Left side - Supplier Portal */}
           <CCol
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
@@ -125,7 +130,7 @@ function SupplierLogin() {
                     </CAlert>
                   )}
                   <CForm onSubmit={handleSubmit(onSubmit)}>
-                    <h1>Login</h1>
+                    <h1> Supplier Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
@@ -160,13 +165,13 @@ function SupplierLogin() {
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
-                    {/* ReCAPTCHA Component */}
+                    {/* Invisible reCAPTCHA */}
                     <div className="mb-3">
-                      <ReCAPTCHA
-                        ref={recaptchaRef}
-                        sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                        onChange={setCaptchaValue}
-                      />
+                      <div
+                        className="g-recaptcha"
+                        data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                        data-size="invisible"
+                      ></div>
                     </div>
 
                     <CRow>
