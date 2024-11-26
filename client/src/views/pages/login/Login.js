@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import {
@@ -30,12 +30,14 @@ function Login() {
     reset,
   } = useForm()
   const navigate = useNavigate()
+  const usernameRef = useRef(null)
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
 
-  const executeRecaptcha = async () => {
+  
+  const executeRecaptcha = useCallback(async () => {
     try {
       const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
         action: 'login',
@@ -44,20 +46,21 @@ function Login() {
     } catch (error) {
       console.error('Error executing reCAPTCHA:', error)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (window.grecaptcha) {
       window.grecaptcha.ready(() => {
-        window.grecaptcha
-          .execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, { action: 'login' })
-          .then(executeRecaptcha)
+        executeRecaptcha()
       })
     } else {
       console.error('reCAPTCHA is not loaded properly.')
     }
-  }, [])
 
+    usernameRef.current?.focus()
+  }, [executeRecaptcha])
+
+  // Handle form submission
   const onSubmit = async (data) => {
     setLoading(true)
     setNotification({ message: '', type: '' })
@@ -81,8 +84,8 @@ function Login() {
       }
 
       const { accessToken, refreshToken } = await response.json()
-      Cookies.set('token', accessToken, { expires: 1 })
-      Cookies.set('refreshToken', refreshToken, { expires: 1 })
+      Cookies.set('token', accessToken, { expires: 1, secure: true })
+      Cookies.set('refreshToken', refreshToken, { expires: 1, secure: true })
 
       setNotification({
         message: 'Welcome back! Redirecting to your dashboard...',
@@ -99,6 +102,7 @@ function Login() {
     }
   }
 
+  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev)
   }
@@ -107,7 +111,7 @@ function Login() {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          {/* Left side - Vendor Portal */}
+          {/* Left side - Vendor Portal Info */}
           <CCol
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
@@ -142,6 +146,7 @@ function Login() {
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
                       <CFormInput
+                        ref={usernameRef}
                         type="text"
                         placeholder="Username"
                         autoComplete="username"
@@ -172,15 +177,7 @@ function Login() {
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
-                    {/* reCAPTCHA */}
-                    <div className="mb-3">
-                      <div
-                        className="g-recaptcha"
-                        data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                      ></div>
-                    </div>
-
-                    {/* Submit and Forgot Password Buttons */}
+                    {/* Submit Button & Other Links */}
                     <CRow>
                       <CCol sm={5}>
                         <CButton

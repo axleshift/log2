@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import {
@@ -30,12 +30,14 @@ function SupplierLogin() {
     reset,
   } = useForm()
   const navigate = useNavigate()
+  const usernameRef = useRef(null)
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
 
-  const executeRecaptcha = async () => {
+  // reCAPTCHA Execution
+  const executeRecaptcha = useCallback(async () => {
     try {
       const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
         action: 'login',
@@ -44,28 +46,17 @@ function SupplierLogin() {
     } catch (error) {
       console.error('Error executing reCAPTCHA:', error)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        executeRecaptcha()
-      })
+      window.grecaptcha.ready(executeRecaptcha)
+    } else {
+      console.error('reCAPTCHA is not loaded properly.')
     }
-  }, [])
 
-  const loginUser = async (data) => {
-    const response = await fetch(`${USER_API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) {
-      const responseData = await response.json()
-      throw new Error(responseData.message || 'Login failed')
-    }
-    return response.json()
-  }
+    usernameRef.current?.focus()
+  }, [executeRecaptcha])
 
   const onSubmit = async (data) => {
     setLoading(true)
@@ -78,17 +69,26 @@ function SupplierLogin() {
     }
 
     try {
-      const response = await loginUser({ ...data, recaptchaToken: captchaToken })
+      const response = await fetch(`${USER_API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, recaptchaToken: captchaToken }),
+      })
 
-      const { accessToken, refreshToken } = response
+      if (!response.ok) {
+        const responseData = await response.json()
+        throw new Error(responseData.message || 'Login failed')
+      }
 
-      Cookies.set('token', accessToken, { expires: 1 })
-      Cookies.set('refreshToken', refreshToken, { expires: 1 })
+      const { accessToken, refreshToken } = await response.json()
+      Cookies.set('token', accessToken, { expires: 1, secure: true })
+      Cookies.set('refreshToken', refreshToken, { expires: 1, secure: true })
 
       setNotification({
         message: 'Welcome back! Redirecting to your Supplier Page...',
         type: 'success',
       })
+
       reset()
       setTimeout(() => navigate('/supplierspage'), 2000)
     } catch (error) {
@@ -114,7 +114,7 @@ function SupplierLogin() {
           >
             <h2>Supplier Login</h2>
             <p>Logistic Management System</p>
-            <Link to="/Login" className="text-white">
+            <Link to="/login" className="text-white">
               Vendor Portal →
             </Link>
           </CCol>
@@ -130,13 +130,16 @@ function SupplierLogin() {
                     </CAlert>
                   )}
                   <CForm onSubmit={handleSubmit(onSubmit)}>
-                    <h1> Supplier Login</h1>
+                    <h1>Supplier Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
+
+                    {/* Username Input */}
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
                       <CFormInput
+                        ref={usernameRef}
                         type="text"
                         placeholder="Username"
                         autoComplete="username"
@@ -144,6 +147,8 @@ function SupplierLogin() {
                       />
                     </CInputGroup>
                     {errors.username && <p className="text-danger">{errors.username.message}</p>}
+
+                    {/* Password Input */}
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
@@ -165,8 +170,8 @@ function SupplierLogin() {
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
-                    {/* Invisible reCAPTCHA */}
-                    <div className="mb-3">
+                    {/* reCAPTCHA (invisible) */}
+                    <div className="mb-3" style={{ display: 'none' }}>
                       <div
                         className="g-recaptcha"
                         data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
@@ -181,7 +186,7 @@ function SupplierLogin() {
                           variant="outline"
                           className="px-4"
                           type="submit"
-                          disabled={loading}
+                          disabled={loading || !captchaToken}
                         >
                           {loading ? 'Logging in...' : 'LOGIN'}
                         </CButton>
