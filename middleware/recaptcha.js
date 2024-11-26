@@ -9,6 +9,11 @@ export const verifyRecaptcha = async (req, res, next) => {
         return res.status(400).json({ status: "error", message: "reCAPTCHA verification required." });
     }
 
+    if (!process.env.RECAPTCHA_SECRET_KEY) {
+        logger.error("RECAPTCHA_SECRET_KEY is not set");
+        return res.status(500).json({ status: "error", message: "Server configuration error." });
+    }
+
     try {
         const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
             method: "POST",
@@ -19,17 +24,23 @@ export const verifyRecaptcha = async (req, res, next) => {
             }),
         });
 
+        if (!response.ok) {
+            logger.warn("Failed to verify reCAPTCHA", { status: response.status });
+            return res.status(500).json({ status: "error", message: "Error verifying reCAPTCHA" });
+        }
+
         const data = await response.json();
 
+        // Check if the score is above a certain threshold (e.g., 0.5)
         if (!data.success || data.score < 0.5) {
             logger.warn("reCAPTCHA verification failed", { errorCodes: data["error-codes"], score: data.score });
             return res.status(400).json({ status: "error", message: "reCAPTCHA verification failed." });
         }
 
-        logger.info("reCAPTCHA verification successful");
+        logger.info("reCAPTCHA verification successful", { score: data.score });
         next();
     } catch (error) {
         logger.error("Error during reCAPTCHA verification", { message: error.message });
-        return res.status(500).json({ status: "error", message: "Error verifying reCAPTCHA." });
+        return res.status(500).json({ status: "error", message: "Error verifying reCAPTCHA" });
     }
 };

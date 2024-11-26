@@ -1,6 +1,5 @@
 import Logistics from "../models/logisticsModel.js";
 
-// Create a new logistics entry
 export const createLogistics = async (req, res) => {
     try {
         const logistics = new Logistics(req.body);
