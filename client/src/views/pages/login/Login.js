@@ -53,6 +53,8 @@ function Login() {
           .execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, { action: 'login' })
           .then(executeRecaptcha)
       })
+    } else {
+      console.error('reCAPTCHA is not loaded properly.')
     }
   }, [])
 
