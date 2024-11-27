@@ -62,7 +62,7 @@ const SupplierHeader = () => {
         {/* Navigation Menu */}
         <CHeaderNav className="d-flex align-items-center flex-grow-1">
           <CNavItem>
-            <CNavLink to="/dashboard" as={NavLink} aria-label="Go to Dashboard">
+            <CNavLink to="" as={NavLink} aria-label="Go to Dashboard">
               Dashboard
             </CNavLink>
           </CNavItem>

@@ -21,16 +21,15 @@ const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpa
 
 function ProtectedRoute({ children }) {
   const isDev = import.meta.env.VITE_APP_NODE_ENV === 'development'
-  const isUserLogin = Cookies.get('token')
-    ? Cookies.get('token').split(';')[0].startsWith('token=')
-    : isDev
+  const isUserLogin = Boolean(Cookies.get('token')) || isDev
+
   const isDevMode = false
 
   if (isDevMode || isUserLogin) {
     return children
+  } else {
+    return <Navigate to="/login" replace />
   }
-
-  return <Navigate to="/login" />
 }
 
 ProtectedRoute.propTypes = {

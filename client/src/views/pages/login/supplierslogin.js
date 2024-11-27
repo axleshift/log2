@@ -21,7 +21,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import ReCAPTCHA from 'react-google-recaptcha'
 import Cookies from 'js-cookie'
 import { Link, useNavigate } from 'react-router-dom'
-import { VITE_APP_RECAPTCHA_SITE_KEY } from '../../../config.js'
+import { VITE_RECAPTCHA_SITE_KEY } from '../../../config.js'
 
 const SupplierLogin = () => {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -94,7 +94,7 @@ const SupplierLogin = () => {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         {/* Invisible reCAPTCHA */}
-        <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_APP_RECAPTCHA_SITE_KEY} />
+        <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_RECAPTCHA_SITE_KEY} />
 
         <CRow className="justify-content-center">
           {/* Left side - Supplier Portal Info */}

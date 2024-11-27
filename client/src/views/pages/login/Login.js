@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   CButton,
@@ -19,9 +19,9 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import ReCAPTCHA from 'react-google-recaptcha'
-import Cookies from 'js-cookie'
 import { Link, useNavigate } from 'react-router-dom'
-import { VITE_APP_RECAPTCHA_SITE_KEY } from '../../../config.js'
+import Cookies from 'js-cookie'
+import { VITE_RECAPTCHA_SITE_KEY } from '../../../config.js'
 
 const Login = () => {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -33,22 +33,29 @@ const Login = () => {
   } = useForm()
   const navigate = useNavigate()
   const usernameRef = useRef(null)
-  const recaptchaRef = useRef()
+  const recaptchaRef = useRef(null)
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    if (usernameRef.current) {
+      usernameRef.current.focus()
+    }
+  }, [])
 
   const onSubmit = async (data) => {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
     try {
-      const recaptcha_ref = await recaptchaRef.current.executeAsync()
+      const recaptchaToken = await recaptchaRef.current.executeAsync()
+      recaptchaRef.current.reset()
 
       const response = await fetch(`${USER_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, recaptcha_ref }),
+        body: JSON.stringify({ ...data, recaptcha_ref: recaptchaToken }),
       })
 
       const responseData = await response.json()
@@ -59,24 +66,21 @@ const Login = () => {
       }
 
       const { accessToken, refreshToken } = responseData
+
       Cookies.set('token', accessToken, {
         expires: 1,
         secure: true,
-        httpOnly: true,
         sameSite: 'Strict',
       })
       Cookies.set('refreshToken', refreshToken, {
-        expires: 1,
+        expires: 30,
         secure: true,
-        httpOnly: true,
-        sameSite: 'Strict',
       })
 
       setNotification({
         message: 'Welcome back! Redirecting to your dashboard...',
         type: 'success',
       })
-
       reset()
       setTimeout(() => navigate('/dashboard'), 2000)
     } catch (error) {
@@ -94,7 +98,7 @@ const Login = () => {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         {/* Invisible reCAPTCHA */}
-        <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_APP_RECAPTCHA_SITE_KEY} />
+        <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_RECAPTCHA_SITE_KEY} />
         <CRow className="justify-content-center">
           {/* Left side - Vendor Portal Info */}
           <CCol
