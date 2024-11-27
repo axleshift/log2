@@ -1,46 +1,29 @@
-import fetch from "node-fetch";
+import axios from "axios";
 import logger from "../utils/logger.js";
+import { RECAPTCHA_SECRET_KEY } from "../utils/config.js";
 
-export const verifyRecaptcha = async (req, res, next) => {
-    const { recaptchaToken } = req.body;
+const verifyRecaptcha = async (req, res, next) => {
+    const { recaptcha_ref } = req.body;
 
-    if (!recaptchaToken) {
-        logger.warn("reCAPTCHA token missing");
-        return res.status(400).json({ status: "error", message: "reCAPTCHA verification required." });
-    }
-
-    if (!process.env.RECAPTCHA_SECRET_KEY) {
-        logger.error("RECAPTCHA_SECRET_KEY is not set");
-        return res.status(500).json({ status: "error", message: "Server configuration error." });
+    if (!recaptcha_ref) {
+        return res.status(400).json({ message: "reCAPTCHA token is required." });
     }
 
     try {
-        const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                secret: process.env.RECAPTCHA_SECRET_KEY,
-                response: recaptchaToken,
-            }),
+        const response = await axios.post("https://www.google.com/recaptcha/api/siteverify", null, {
+            params: {
+                secret: RECAPTCHA_SECRET_KEY,
+                response: recaptcha_ref,
+            },
         });
+        const { success, score } = response.data;
+        if (!success || score < 0.5) return res.status(403).send();
 
-        if (!response.ok) {
-            logger.warn("Failed to verify reCAPTCHA", { status: response.status });
-            return res.status(500).json({ status: "error", message: "Error verifying reCAPTCHA" });
-        }
-
-        const data = await response.json();
-        console.log("reCAPTCHA response:", data);
-
-        if (!data.success || data.score < 0.5) {
-            logger.warn("reCAPTCHA verification failed", { errorCodes: data["error-codes"], score: data.score });
-            return res.status(400).json({ status: "error", message: "reCAPTCHA verification failed." });
-        }
-
-        logger.info("reCAPTCHA verification successful", { score: data.score });
-        next();
-    } catch (error) {
-        logger.error("Error during reCAPTCHA verification", { message: error.message });
-        return res.status(500).json({ status: "error", message: "Error verifying reCAPTCHA" });
+        return next();
+    } catch (err) {
+        logger.error(err);
     }
+    res.status(401).send();
 };
+
+export { verifyRecaptcha };
