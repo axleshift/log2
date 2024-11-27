@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import PropTypes from 'prop-types'
 import './scss/style.scss'
+import Cookies from 'js-cookie'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -19,10 +20,12 @@ const SuppliersLogin = React.lazy(() => import('./views/pages/login/supplierslog
 const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpage.js'))
 
 function ProtectedRoute({ children }) {
-  const isUserLogin = document.cookie.split('; ').some((row) => row.startsWith('token='))
-  const isDevMode = false // Make sure this is false for production
+  const isDev = import.meta.env.VITE_APP_NODE_ENV === 'development'
+  const isUserLogin = Cookies.get('token')
+    ? Cookies.get('token').split(';')[0].startsWith('token=')
+    : isDev
+  const isDevMode = false
 
-  // Allow access only if logged in, or in development mode
   if (isDevMode || isUserLogin) {
     return children
   }

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   CButton,
@@ -19,9 +18,12 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import ReCAPTCHA from 'react-google-recaptcha'
 import Cookies from 'js-cookie'
+import { Link, useNavigate } from 'react-router-dom'
+import { VITE_APP_RECAPTCHA_SITE_KEY } from '../../../config.js'
 
-function Login() {
+const Login = () => {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
   const {
     register,
@@ -31,60 +33,44 @@ function Login() {
   } = useForm()
   const navigate = useNavigate()
   const usernameRef = useRef(null)
+  const recaptchaRef = useRef()
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState(null)
 
-  const executeRecaptcha = useCallback(async () => {
-    try {
-      const token = await window.grecaptcha.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {
-        action: 'login',
-      })
-      setCaptchaToken(token)
-    } catch (error) {
-      console.error('Error executing reCAPTCHA:', error)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        executeRecaptcha()
-      })
-    } else {
-      console.error('reCAPTCHA is not loaded properly.')
-    }
-
-    usernameRef.current?.focus()
-  }, [executeRecaptcha])
-
-  // Handle form submission
   const onSubmit = async (data) => {
     setLoading(true)
     setNotification({ message: '', type: '' })
 
-    if (!captchaToken) {
-      setNotification({ message: 'Please complete the reCAPTCHA', type: 'danger' })
-      setLoading(false)
-      return
-    }
-
     try {
+      const recaptcha_ref = await recaptchaRef.current.executeAsync()
+
       const response = await fetch(`${USER_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, recaptchaToken: captchaToken }),
+        body: JSON.stringify({ ...data, recaptcha_ref }),
       })
 
+      const responseData = await response.json()
+      console.log('Response Data:', responseData)
+
       if (!response.ok) {
-        const responseData = await response.json()
         throw new Error(responseData.message || 'Login failed')
       }
 
-      const { accessToken, refreshToken } = await response.json()
-      Cookies.set('token', accessToken, { expires: 1, secure: true })
-      Cookies.set('refreshToken', refreshToken, { expires: 1, secure: true })
+      const { accessToken, refreshToken } = responseData
+      Cookies.set('token', accessToken, {
+        expires: 1,
+        secure: true,
+        httpOnly: true,
+        sameSite: 'Strict',
+      })
+      Cookies.set('refreshToken', refreshToken, {
+        expires: 1,
+        secure: true,
+        httpOnly: true,
+        sameSite: 'Strict',
+      })
 
       setNotification({
         message: 'Welcome back! Redirecting to your dashboard...',
@@ -97,11 +83,9 @@ function Login() {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
       setLoading(false)
-      setCaptchaToken(null)
     }
   }
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev)
   }
@@ -109,6 +93,8 @@ function Login() {
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
+        {/* Invisible reCAPTCHA */}
+        <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_APP_RECAPTCHA_SITE_KEY} />
         <CRow className="justify-content-center">
           {/* Left side - Vendor Portal Info */}
           <CCol
@@ -117,11 +103,11 @@ function Login() {
           >
             <h2>Vendor Portal</h2>
             <p>Logistic Management System</p>
-            <Link to="/" className="text-white">
-              Landing page →
-            </Link>
             <Link to="/supplierslogin" className="text-white">
-              Supplier Login →
+              Supplier Page →
+            </Link>
+            <Link to="/" className="text-white">
+              Landing Page →
             </Link>
           </CCol>
 
@@ -176,7 +162,6 @@ function Login() {
                     </CInputGroup>
                     {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
-                    {/* Submit Button & Other Links */}
                     <CRow>
                       <CCol sm={5}>
                         <CButton
@@ -184,7 +169,7 @@ function Login() {
                           variant="outline"
                           className="px-4"
                           type="submit"
-                          disabled={loading || !captchaToken}
+                          disabled={loading}
                         >
                           {loading ? 'Logging in...' : 'LOGIN'}
                         </CButton>
@@ -198,13 +183,6 @@ function Login() {
                             disabled={loading}
                           >
                             {loading ? 'Processing...' : 'FORGOT PASSWORD'}
-                          </CButton>
-                        </Link>
-                      </CCol>
-                      <CCol xs={4}>
-                        <Link to="/register">
-                          <CButton color="link" className="px-0">
-                            Register Now!
                           </CButton>
                         </Link>
                       </CCol>
