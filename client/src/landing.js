@@ -20,7 +20,7 @@ const Landing = () => {
   AOS.init()
   const [loading, setLoading] = useState(false)
   // TODO: replace this with your own background images max 1080p <1MB
-  const images = ['images/freight-land.jpg', 'images/freight-sea.jpg', 'images/freight-air.jpg']
+  const images = ['image/Freight-Land.jpg', 'image/Freight-Sea.jpg', 'image/Freight-Air.png']
 
   const [backgroundImage, setBackgroundImage] = useState('')
 
@@ -71,14 +71,6 @@ const Landing = () => {
         <About />
         <Team />
         <Newsletter setLoading={setLoading} />
-
-        <CContainer fluid className="h-100 text-center bg-secondary p-5 shadow" data-aos="fade-up">
-          <div className="mt-5" />
-          <h1 className="text-white">SPECIAL THANKS TO</h1>
-          <p className="lead text-white">We cant do it without you as our inspiration.</p>
-          <h1 className="text-white">Beyoncé</h1>
-          <div className="mb-5" />
-        </CContainer>
 
         <Footer />
       </div>

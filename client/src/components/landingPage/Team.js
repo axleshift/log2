@@ -34,12 +34,12 @@ const Team = () => {
     {
       name: 'Brian Joseph P. Pura',
       major: 'IS',
-      image: 'https://avatars.githubusercontent.com/u/186307007?v=4&size=64',
+      image: 'https://avatars.githubusercontent.com/u/186307007?v=4',
     },
     {
       name: 'Louise Dollosa',
       major: 'IS',
-      image: 'https://avatars.githubusercontent.com/u/62317165?v=4',
+      image: 'https://avatars.githubusercontent.com/u/127377161?v=4',
     },
   ]
 
@@ -47,7 +47,7 @@ const Team = () => {
     <CContainer fluid className="h-100 p-5">
       <div className="mt-5 text-center mb-5" data-aos="fade-down">
         <span>TEAM</span>
-        <h2 className="text-primary">Our Tech-savy Team</h2>
+        <h2 className="text-primary">Our Team</h2>
       </div>
       <CRow>
         {teamMembers.map((member, index) => (

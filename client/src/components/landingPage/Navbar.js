@@ -32,18 +32,24 @@ const Navbar = () => {
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
   return (
-    <CNavbar expand="sm" colorScheme={colorMode}>
+    <CNavbar expand="lg" colorScheme={colorMode} light>
       <CContainer fluid>
         <CNavbarBrand to="/" as={NavLink} data-aos="fade-down" data-aos-duration="1000">
-          <CImage src="/image/logo.png" width="150px" />
+          <CImage src="/image/logo.png" width="180px" />
         </CNavbarBrand>
+
         <CNavbarToggler
           aria-label="Toggle navigation"
           aria-expanded={visible}
           onClick={() => setVisible(!visible)}
-        />
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </CNavbarToggler>
+
+        {/* Collapse and Navbar Links */}
         <CCollapse className="navbar-collapse" visible={visible}>
           <CNavbarNav className="ms-auto">
+            {/* Theme Dropdown */}
             <CDropdown
               variant="nav-item"
               placement="bottom-end"
@@ -89,6 +95,8 @@ const Navbar = () => {
                 </CDropdownItem>
               </CDropdownMenu>
             </CDropdown>
+
+            {/* Login and Register Links */}
             <CNavItem>
               <CNavLink
                 className="text-white"

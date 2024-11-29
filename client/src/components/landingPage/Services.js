@@ -10,7 +10,14 @@ import {
   CCardBody,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faShip, faRoute, faUser, faUserShield } from '@fortawesome/free-solid-svg-icons'
+import {
+  faShip,
+  faRoute,
+  faUser,
+  faUserShield,
+  faPaperPlane,
+  faBell,
+} from '@fortawesome/free-solid-svg-icons'
 
 const Services = () => {
   return (
@@ -49,30 +56,32 @@ const Services = () => {
               <div className="mb-2 d-inline-block rounded-pill bg-primary bg-opacity-25 p-3">
                 <FontAwesomeIcon
                   style={{ width: '40px', height: '40px' }}
-                  icon={faUser}
+                  icon={faPaperPlane}
                   className="fa-2x text-primary"
                 />
               </div>
-              <h3>Real Time Customer Service</h3>
+              <h3>Document Tracking</h3>
               <p>
-                Experience unparalleled support with our real-time customer service, available 24/7
-                to address inquiries and resolve issues. Enhance customer satisfaction through
-                prompt and efficient communication.
+                Track all essential documents related to freight management with our Advanced
+                Document Tracking system. Every document, from invoices to shipping manifests, can
+                be tracked, ensuring compliance, reducing errors, and improving the overall
+                workflow.
               </p>
             </CCol>
             <CCol xs data-aos="zoom-out-up">
               <div className="mb-2 d-inline-block rounded-pill bg-primary bg-opacity-25 p-3">
                 <FontAwesomeIcon
                   style={{ width: '40px', height: '40px' }}
-                  icon={faUserShield}
+                  icon={faBell}
                   className="fa-2x text-primary"
                 />
               </div>
-              <h3>Advanced Cybersecurity Measures</h3>
+              <h3>Automated Alerts</h3>
               <p>
-                Protect your data with state-of-the-art cybersecurity solutions designed to
-                safeguard your information against evolving threats. Our proactive approach ensures
-                compliance and minimizes risks.
+                Stay ahead of any potential delays or issues with Automated Alerts that notify
+                vendors about important updates related to their shipments. Whether it’s a delay, a
+                status update, or a new document ready for review, our alert system keeps you
+                informed at all times.
               </p>
             </CCol>
           </CRow>
