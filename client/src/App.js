@@ -20,10 +20,8 @@ const SuppliersLogin = React.lazy(() => import('./views/pages/login/supplierslog
 const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpage.js'))
 
 function ProtectedRoute({ children }) {
-  const isDev = import.meta.env.VITE_APP_NODE_ENV === 'development'
-  const isUserLogin = Boolean(Cookies.get('token')) || isDev
-
-  const isDevMode = false
+  const isDevMode = import.meta.env.VITE_APP_NODE_ENV === 'development'
+  const isUserLogin = Boolean(Cookies.get('token')) || isDevMode
 
   if (isDevMode || isUserLogin) {
     return children
