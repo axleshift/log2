@@ -32,7 +32,7 @@ const Navbar = () => {
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
   return (
-    <CNavbar expand="lg" colorScheme={colorMode} light>
+    <CNavbar expand="lg" colorScheme={colorMode} light="true">
       <CContainer fluid>
         <CNavbarBrand to="/" as={NavLink} data-aos="fade-down" data-aos-duration="1000">
           <CImage src="/image/logo.png" width="180px" />

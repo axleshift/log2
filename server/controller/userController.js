@@ -13,8 +13,12 @@ const handleError = (error, next, message) => {
 };
 
 export const registerUser = async (req, res, next) => {
-    const { email, username, password } = req.body;
+    const { email, username, password, role } = req.body;
+
     logger.info("Registration attempt:", { email, username });
+
+    const validRoles = ["user", "supplier", "admin"];
+    const userRole = role && validRoles.includes(role) ? role : "user";
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -32,7 +36,13 @@ export const registerUser = async (req, res, next) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
-        const newUser = new UserModel({ email, username, password: hashedPassword, role: "admin" });
+        const newUser = new UserModel({
+            email,
+            username,
+            password: hashedPassword,
+            role: userRole,
+        });
+
         await newUser.save();
         logger.info("User created successfully:", newUser._id);
 
@@ -50,7 +60,12 @@ export const registerUser = async (req, res, next) => {
             sameSite: "Strict",
         });
 
-        return res.status(201).json({ status: "success", message: "User created successfully", accessToken, refreshToken });
+        return res.status(201).json({
+            status: "success",
+            message: "User created successfully",
+            accessToken,
+            refreshToken,
+        });
     } catch (error) {
         handleError(error, next, "Error during user registration");
     }
@@ -173,7 +188,19 @@ export const loginUser = async (req, res, next) => {
         });
 
         logger.info("User logged in successfully:", user._id);
-        return res.json({ status: "success", message: "Login successful", accessToken, refreshToken });
+
+        // Send user data along with the role
+        return res.status(200).json({
+            status: "success",
+            message: "Login successful",
+            accessToken,
+            refreshToken,
+            user: {
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            },
+        });
     } catch (error) {
         handleError(error, next, "Login error");
     }

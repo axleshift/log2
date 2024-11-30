@@ -25,6 +25,7 @@ import { VITE_RECAPTCHA_SITE_KEY } from '../../../config.js'
 
 const Login = () => {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
+
   const {
     register,
     handleSubmit,
@@ -65,7 +66,7 @@ const Login = () => {
         throw new Error(responseData.message || 'Login failed')
       }
 
-      const { accessToken, refreshToken } = responseData
+      const { accessToken, refreshToken, user } = responseData
 
       Cookies.set('token', accessToken, {
         expires: 1,
@@ -82,7 +83,15 @@ const Login = () => {
         type: 'success',
       })
       reset()
-      setTimeout(() => navigate('/dashboard'), 2000)
+
+      if (user.role === 'admin') {
+        navigate('/dashboard')
+      } else {
+        setNotification({
+          message: 'Unauthorized. You do not have admin access.',
+          type: 'danger',
+        })
+      }
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
     } finally {
@@ -100,7 +109,6 @@ const Login = () => {
         {/* Invisible reCAPTCHA */}
         <ReCAPTCHA ref={recaptchaRef} size="invisible" sitekey={VITE_RECAPTCHA_SITE_KEY} />
         <CRow className="justify-content-center">
-          {/* Left side - Vendor Portal Info */}
           <CCol
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
@@ -187,6 +195,15 @@ const Login = () => {
                             disabled={loading}
                           >
                             {loading ? 'Processing...' : 'FORGOT PASSWORD'}
+                          </CButton>
+                        </Link>
+                      </CCol>
+                    </CRow>
+                    <CRow className="mt-3">
+                      <CCol xs={12} className="text-center">
+                        <Link to="/register">
+                          <CButton color="link" className="px-0">
+                            Register Now!
                           </CButton>
                         </Link>
                       </CCol>

@@ -59,15 +59,6 @@ const SupplierHeader = () => {
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
 
-        {/* Navigation Menu */}
-        <CHeaderNav className="d-flex align-items-center flex-grow-1">
-          <CNavItem>
-            <CNavLink to="" as={NavLink} aria-label="Go to Dashboard">
-              Dashboard
-            </CNavLink>
-          </CNavItem>
-        </CHeaderNav>
-
         {/* Notifications and User Actions */}
         <CHeaderNav className="d-flex align-items-center ms-auto">
           <CNavItem>

@@ -7,12 +7,11 @@ const SupplierFooter = () => {
   return (
     <CFooter className="px-4">
       <div>
-        <a href="">CAPSTONE</a>
-        <span className="ms-1">© {currentYear} All rights reserved</span> {/* Copyright text */}
+        <span className="ms-1">© CAPSTONE {currentYear} All rights reserved</span>
       </div>
       <div className="ms-auto">
         <span className="me-1">Cluster L:</span>
-        <a href="">Logistics 2: Inventory Management</a>
+        <p>Logistics 2: Inventory Management System</p>
       </div>
     </CFooter>
   )

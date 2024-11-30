@@ -14,6 +14,7 @@ import {
   CInputGroupText,
   CRow,
   CAlert,
+  CFormSelect,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
@@ -55,14 +56,18 @@ function Register() {
         username: DOMPurify.sanitize(data.username),
         email: DOMPurify.sanitize(data.email),
         password: DOMPurify.sanitize(data.password),
+        role: DOMPurify.sanitize(data.role),
       }
+
       const response = await registerUser(sanitizedData)
 
       Cookies.set('token', response.accessToken, { expires: 1 })
       Cookies.set('refreshToken', response.refreshToken, { expires: 1 })
 
       setNotification({ message: 'Registration Successful! Redirecting...', type: 'success' })
+
       reset()
+
       setTimeout(() => navigate('/login'), 2000)
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
@@ -75,6 +80,10 @@ function Register() {
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
+        <CButton color="secondary" size="sm" onClick={handleBack} className="mb-3">
+          Back
+        </CButton>
+
         <CRow className="justify-content-center">
           <CCol md={9} lg={7} xl={6}>
             <CCard className="mx-4">
@@ -88,6 +97,7 @@ function Register() {
                   <h1>Register</h1>
                   <p className="text-body-secondary">Create your account</p>
 
+                  {/* Username Input */}
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilUser} />
@@ -106,6 +116,7 @@ function Register() {
                   </CInputGroup>
                   {errors.username && <p className="text-danger">{errors.username.message}</p>}
 
+                  {/* Email Input */}
                   <CInputGroup className="mb-3">
                     <CInputGroupText>@</CInputGroupText>
                     <CFormInput
@@ -123,6 +134,7 @@ function Register() {
                   </CInputGroup>
                   {errors.email && <p className="text-danger">{errors.email.message}</p>}
 
+                  {/* Password Input */}
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <CIcon icon={cilLockLocked} />
@@ -145,6 +157,7 @@ function Register() {
                   </CInputGroup>
                   {errors.password && <p className="text-danger">{errors.password.message}</p>}
 
+                  {/* Confirm Password Input */}
                   <CInputGroup className="mb-4">
                     <CInputGroupText>
                       <CIcon icon={cilLockLocked} />
@@ -164,6 +177,23 @@ function Register() {
                     <p className="text-danger">{errors.confirmPassword.message}</p>
                   )}
 
+                  {/* User Role Dropdown */}
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>
+                      <CIcon icon={cilUser} />
+                    </CInputGroupText>
+                    <CFormSelect
+                      {...register('role', { required: 'Please select a role' })}
+                      aria-label="Role Selection"
+                    >
+                      <option value="">Select Role</option>
+                      <option value="supplier">Supplier</option>
+                      <option value="user">User</option>
+                    </CFormSelect>
+                  </CInputGroup>
+                  {errors.role && <p className="text-danger">{errors.role.message}</p>}
+
+                  {/* Submit Button */}
                   <div className="d-grid">
                     <CButton color="success" type="submit" disabled={loading}>
                       {loading ? 'Creating Account...' : 'Create Account'}

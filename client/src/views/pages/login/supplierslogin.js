@@ -58,7 +58,8 @@ const SupplierLogin = () => {
         throw new Error(responseData.message || 'Login failed')
       }
 
-      const { accessToken, refreshToken } = responseData
+      const { accessToken, refreshToken, user } = responseData
+
       Cookies.set('token', accessToken, {
         expires: 1,
         secure: true,
@@ -78,7 +79,17 @@ const SupplierLogin = () => {
       })
 
       reset()
-      setTimeout(() => navigate('/supplierspage'), 2000)
+
+      if (user.role === 'supplier') {
+        navigate('/supplierspage/supplierprofile')
+      } else if (user.role === 'user') {
+        navigate('/supplierspage/supplierprofile')
+      } else {
+        setNotification({
+          message: 'Unauthorized role. Please contact support.',
+          type: 'danger',
+        })
+      }
     } catch (error) {
       setNotification({ message: error.message, type: 'danger' })
     } finally {

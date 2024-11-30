@@ -138,9 +138,8 @@ const SupplierProfile = () => {
               </CCardHeader>
               <CCardBody className="text-center">
                 <CImage
-                  src="https://via.placeholder.com/150" // Replace with actual image URL
+                  src="https://via.placeholder.com/150"
                   alt="Profile Picture"
-                  roundedCircle
                   className="mb-3"
                   width="150"
                 />
