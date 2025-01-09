@@ -10,6 +10,11 @@ import {
   CCarouselItem,
   CCarouselCaption,
   CImage,
+  CNav,
+  CNavItem,
+  CNavLink,
+  CTabContent,
+  CTabPane,
 } from '@coreui/react'
 import AOS from 'aos'
 
@@ -18,11 +23,12 @@ import { Navbar, Services, About, Team, Footer } from '../../../components/landi
 const Landing = () => {
   AOS.init()
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState(1)
 
   // Carousel images
   const images = [
-    { src: '/image/Freight-Land.jpg', caption: ' Land Freight' },
-    { src: '/image/Freight-Sea.jpg', caption: ' Sea Freight' },
+    { src: '/image/Freight-Land.jpg', caption: 'Land Freight' },
+    { src: '/image/Freight-Sea.jpg', caption: 'Sea Freight' },
     { src: '/image/Freight-Air.png', caption: 'Air Freight' },
   ]
 
@@ -57,7 +63,6 @@ const Landing = () => {
                         opacity: 0.6,
                       }}
                     />
-
                     <div
                       style={{
                         position: 'absolute',
@@ -124,9 +129,38 @@ const Landing = () => {
           </CContainer>
         </div>
 
-        <Services />
-        <About />
-        <Team />
+        {/* Navigation and Tabs */}
+        <CContainer className="my-5">
+          <CNav variant="pills" layout="fill">
+            <CNavItem>
+              <CNavLink active={activeTab === 1} onClick={() => setActiveTab(1)}>
+                Home
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink active={activeTab === 2} onClick={() => setActiveTab(2)}>
+                Recent Awards
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink active={activeTab === 3} onClick={() => setActiveTab(3)}>
+                Bid Document Uploader
+              </CNavLink>
+            </CNavItem>
+          </CNav>
+          <CTabContent>
+            <CTabPane visible={activeTab === 1}>
+              <Services />
+            </CTabPane>
+            <CTabPane visible={activeTab === 2}>
+              <About />
+            </CTabPane>
+            <CTabPane visible={activeTab === 3}>
+              <Team />
+            </CTabPane>
+          </CTabContent>
+        </CContainer>
+
         <Footer />
       </div>
     </div>

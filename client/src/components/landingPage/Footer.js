@@ -13,7 +13,7 @@ import {
 
 const Footer = () => {
   const navigate = useNavigate()
-
+  const currentYear = new Date().getFullYear()
   return (
     <CContainer fluid>
       <footer className="p-2 p-md-5 ">
