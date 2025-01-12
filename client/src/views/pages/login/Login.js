@@ -84,9 +84,18 @@ const Login = () => {
       })
       reset()
 
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'super admin') {
         navigate('/dashboard')
-      } else {
+      } else if (
+        user.role === 'inventory manager' ||
+        user.role === 'procurement manager' ||
+        user.role === 'regional manager' ||
+        user.role === 'auditor' ||
+        user.role === 'staff'
+      ) {
+        navigate('/inventory')
+      }
+      {
         setNotification({
           message: 'Unauthorized. You do not have admin access.',
           type: 'danger',

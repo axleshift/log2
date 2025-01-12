@@ -63,13 +63,11 @@ const SupplierLogin = () => {
       Cookies.set('token', accessToken, {
         expires: 1,
         secure: true,
-        httpOnly: true,
         sameSite: 'Strict',
       })
       Cookies.set('refreshToken', refreshToken, {
         expires: 1,
         secure: true,
-        httpOnly: true,
         sameSite: 'Strict',
       })
 
@@ -82,8 +80,16 @@ const SupplierLogin = () => {
 
       if (user.role === 'supplier') {
         navigate('/supplierspage/supplierprofile')
-      } else if (user.role === 'user') {
+      } else if (user.role === 'buyer') {
         navigate('/supplierspage/supplierprofile')
+      } else if (
+        user.role === 'vendor' ||
+        user.role === 'finance' ||
+        user.role === 'delivery partner' ||
+        user.role === 'temporary staff' ||
+        user.role === 'customer support'
+      ) {
+        navigate('/dashboard')
       } else {
         setNotification({
           message: 'Unauthorized role. Please contact support.',

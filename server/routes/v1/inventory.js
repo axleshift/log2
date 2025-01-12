@@ -8,6 +8,6 @@ router.get("/", getAllInventory);
 router.get("/:tracking_id", getInventoryByTrackingId);
 router.put("/:tracking_id", updateInventoryByTrackingId);
 router.delete("/:tracking_id", deleteInventoryByTrackingId);
-// Fetch inventory by warehouse ID
+
 router.get("/warehouse/:warehouse_id", getInventoryByWarehouse);
 export default router;
