@@ -89,7 +89,7 @@ const SupplierLogin = () => {
         user.role === 'temporary staff' ||
         user.role === 'customer support'
       ) {
-        navigate('/dashboard')
+        navigate('/supplierspage/supplierprofile')
       } else {
         setNotification({
           message: 'Unauthorized role. Please contact support.',
