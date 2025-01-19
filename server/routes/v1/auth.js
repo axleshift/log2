@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, getAllUsers, sendOTPForRegistration } from "../../controller/userController.js";
+import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, sendOTPForRegistration, getUsers } from "../../controller/authController.js";
 import { registerValidation, loginValidation, forgotPasswordValidation, changePasswordValidation } from "../../middleware/validationHandler.js";
 import { verifyRecaptcha } from "../../middleware/recaptcha.js";
 import { tokenMiddleware } from "../../middleware/authMiddleware.js";
@@ -15,6 +15,6 @@ router.post("/logout", tokenMiddleware, logoutUser);
 router.post("/refresh", refreshToken);
 router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
 router.post("/change-password", changePasswordValidation, changePassword);
-router.get("/users", tokenMiddleware, getAllUsers);
+router.get("/users", tokenMiddleware, getUsers);
 
 export default router;

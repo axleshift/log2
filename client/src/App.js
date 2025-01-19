@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import PropTypes from 'prop-types'
 import './scss/style.scss'
-import Cookies from 'js-cookie'
+import { AuthProvider } from './context/AuthContext.js'
+import ProtectedRoute from './components/Protected/ProtectedRoute.js'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -18,21 +19,6 @@ const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'
 const Landing = React.lazy(() => import('./views/pages/landing/Landing.js'))
 const SuppliersLogin = React.lazy(() => import('./views/pages/login/supplierslogin.js'))
 const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpage.js'))
-
-function ProtectedRoute({ children }) {
-  const isDevMode = import.meta.env.VITE_APP_NODE_ENV === 'production'
-  const isUserLogin = Boolean(Cookies.get('token')) || isDevMode
-
-  if (isDevMode || isUserLogin) {
-    return children
-  } else {
-    return <Navigate to="/login" replace />
-  }
-}
-
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-}
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -79,36 +65,39 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-            <div>Loading...</div>
-          </div>
-        }
-      >
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/404" element={<Page404 />} />
-            <Route path="/500" element={<Page500 />} />
-            <Route path="/forgotPass" element={<ForgotPass />} />
-            <Route path="/supplierslogin" element={<SuppliersLogin />} />
-            <Route path="/" element={<Landing />} />
-            <Route path="/supplierspage/*" element={<SuppliersPage />} />
+      <AuthProvider>
+        <Suspense
+          fallback={
+            <div className="pt-3 text-center">
+              <CSpinner color="primary" variant="grow" />
+              <div>Loading...</div>
+            </div>
+          }
+        >
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/404" element={<Page404 />} />
+              <Route path="/500" element={<Page500 />} />
+              <Route path="/forgotPass" element={<ForgotPass />} />
+              <Route path="/supplierslogin" element={<SuppliersLogin />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/supplierspage/*" element={<SuppliersPage />} />
 
-            <Route
-              path="*"
-              element={
-                <ProtectedRoute>
-                  <DefaultLayout />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </ErrorBoundary>
-      </Suspense>
+              {/* Protected Routes */}
+              <Route
+                path="*"
+                element={
+                  <ProtectedRoute>
+                    <DefaultLayout />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </Suspense>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

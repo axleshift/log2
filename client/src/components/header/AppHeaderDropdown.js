@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CAvatar,
@@ -14,48 +14,25 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilBell, cilEnvelopeOpen, cilSettings, cilTask, cilUser } from '@coreui/icons'
 import defaultAvatar from './../../assets/images/avatars/boy.jpg'
-import Cookies from 'js-cookie'
+import { useAuth } from '../../context/AuthContext.js'
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [userName, setUserName] = useState('Anonymous')
-  const [userAvatar, setUserAvatar] = useState(defaultAvatar)
+
+  const { user, logout } = useAuth()
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem('user') || '{}')
+    console.log('User object from AuthContext:', user)
+  }, [user])
 
-    console.log('User Info:', userInfo)
-
-    if (userInfo && userInfo.name) {
-      setUserName(userInfo.name)
-    } else {
-      setUserName('Anonymous')
-    }
-
-    if (userInfo && userInfo.avatar) {
-      setUserAvatar(userInfo.avatar)
-    } else {
-      setUserAvatar(defaultAvatar)
-    }
-  }, [])
-
-  const logoutUser = async () => {
-    // Clear cookies
-    Cookies.remove('token')
-    Cookies.remove('refreshToken')
-
-    // Clear session storage
-    sessionStorage.clear()
-
-    // Clear localStorage (optional)
-    localStorage.removeItem('user')
-  }
+  const userName = user && user.username ? user.username : 'Anonymous'
+  const userAvatar = user && user.avatar ? user.avatar : defaultAvatar
 
   const handleSignOut = async () => {
     setLoading(true)
     try {
-      await logoutUser()
+      await logout()
       navigate('/login')
     } catch (error) {
       console.error('Logout failed', error)
@@ -72,7 +49,7 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={userAvatar} size="lg" /> {/* Use dynamic avatar */}
+        <CAvatar src={userAvatar} size="lg" /> {/* Dynamic avatar */}
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
@@ -113,6 +90,7 @@ const AppHeaderDropdown = () => {
           Settings
         </CDropdownItem>
 
+        {/* Sign Out */}
         <CDropdownDivider />
         <CDropdownItem onClick={handleSignOut}>
           <CButton color="primary" role="button" disabled={loading}>

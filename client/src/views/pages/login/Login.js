@@ -22,6 +22,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import { Link, useNavigate } from 'react-router-dom'
 import Cookies from 'js-cookie'
 import { VITE_RECAPTCHA_SITE_KEY } from '../../../config.js'
+import { useAuth } from '../../../context/AuthContext.js'
 
 const Login = () => {
   const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -33,6 +34,7 @@ const Login = () => {
     reset,
   } = useForm()
   const navigate = useNavigate()
+  const { login } = useAuth()
   const usernameRef = useRef(null)
   const recaptchaRef = useRef(null)
   const [loading, setLoading] = useState(false)
@@ -68,6 +70,10 @@ const Login = () => {
 
       const { accessToken, refreshToken, user } = responseData
 
+      // Store user data and token in context
+      login(user, accessToken)
+
+      // Set tokens in cookies
       Cookies.set('token', accessToken, {
         expires: 1,
         secure: true,
@@ -76,6 +82,7 @@ const Login = () => {
       Cookies.set('refreshToken', refreshToken, {
         expires: 30,
         secure: true,
+        sameSite: 'Strict',
       })
 
       setNotification({
@@ -94,8 +101,7 @@ const Login = () => {
         user.role === 'staff'
       ) {
         navigate('/inventory')
-      }
-      {
+      } else {
         setNotification({
           message: 'Unauthorized. You do not have admin access.',
           type: 'danger',
