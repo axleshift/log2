@@ -14,7 +14,15 @@ import {
 } from '@coreui/react'
 import AOS from 'aos'
 
-import { Navbar, Services, About, Team, Newsletter, Footer } from '../components/landing/index'
+import {
+  Navbar,
+  Services,
+  About,
+  Bid,
+  Newsletter,
+  Footer,
+  Opportunities,
+} from '../components/landing/index'
 
 const Landing = () => {
   AOS.init()
@@ -69,7 +77,8 @@ const Landing = () => {
 
         <Services />
         <About />
-        <Team />
+        <Bid />
+        <Opportunities />
         <Newsletter setLoading={setLoading} />
 
         <Footer />

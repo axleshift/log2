@@ -19,6 +19,7 @@ const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'
 const Landing = React.lazy(() => import('./views/pages/landing/Landing.js'))
 const SuppliersLogin = React.lazy(() => import('./views/pages/login/supplierslogin.js'))
 const SuppliersPage = React.lazy(() => import('./views/pages/supplier/supplierpage.js'))
+const ContactUs = React.lazy(() => import('./views/pages/contactUs/contact-us.js'))
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="/supplierslogin" element={<SuppliersLogin />} />
               <Route path="/" element={<Landing />} />
               <Route path="/supplierspage/*" element={<SuppliersPage />} />
+              <Route path="/contact-us" element={<ContactUs />} />
 
               {/* Protected Routes */}
               <Route

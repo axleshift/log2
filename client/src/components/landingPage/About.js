@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import {
-  CTable,
-  CTableHead,
-  CTableBody,
-  CTableRow,
-  CTableHeaderCell,
-  CTableDataCell,
   CContainer,
   CFormInput,
+  CAccordion,
+  CAccordionItem,
+  CAccordionHeader,
+  CAccordionBody,
 } from '@coreui/react'
 
 const RecentAwardNotices = () => {
@@ -42,35 +40,24 @@ const RecentAwardNotices = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="mb-4"
       />
-      {/* Table */}
-      <CTable bordered hover>
-        <CTableHead color="primary">
-          <CTableRow>
-            <CTableHeaderCell scope="col">#</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Title</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Amount (PHP)</CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          {filteredNotices.map((notice, index) => (
-            <CTableRow key={index}>
-              <CTableDataCell>{index + 1}</CTableDataCell>
-              <CTableDataCell>
-                <a href="#">{notice.title}</a>
-              </CTableDataCell>
-              <CTableDataCell>{notice.amount}</CTableDataCell>
-            </CTableRow>
-          ))}
-          {/* Show message if no results found */}
-          {filteredNotices.length === 0 && (
-            <CTableRow>
-              <CTableDataCell colSpan="3" className="text-center">
-                No notices found.
-              </CTableDataCell>
-            </CTableRow>
-          )}
-        </CTableBody>
-      </CTable>
+      {/* Accordion */}
+      <CAccordion alwaysOpen>
+        {filteredNotices.map((notice, index) => (
+          <CAccordionItem key={index} itemKey={index.toString()}>
+            <CAccordionHeader>
+              {index + 1}. {notice.title}
+            </CAccordionHeader>
+            <CAccordionBody>
+              <p>
+                <strong>Amount:</strong> PHP {notice.amount}
+              </p>
+              <p>Additional details about this notice can go here.</p>
+            </CAccordionBody>
+          </CAccordionItem>
+        ))}
+        {/* Show message if no results found */}
+        {filteredNotices.length === 0 && <p className="text-center">No notices found.</p>}
+      </CAccordion>
     </CContainer>
   )
 }

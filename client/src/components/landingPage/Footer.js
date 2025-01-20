@@ -1,15 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  CContainer,
-  CRow,
-  CCol,
-  CImage,
-  CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
-} from '@coreui/react'
+import { CContainer } from '@coreui/react'
 
 const Footer = () => {
   const navigate = useNavigate()
@@ -29,6 +20,11 @@ const Footer = () => {
             <li className="ms-3">
               <span className="link-body-emphasis" onClick={() => navigate('/terms-of-service')}>
                 Terms of Service
+              </span>
+            </li>
+            <li className="ms-3">
+              <span className="link-body-emphasis" onClick={() => navigate('/contact-us')}>
+                Contact Us
               </span>
             </li>
           </ul>

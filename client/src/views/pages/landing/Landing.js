@@ -18,7 +18,14 @@ import {
 } from '@coreui/react'
 import AOS from 'aos'
 
-import { Navbar, Services, About, Team, Footer } from '../../../components/landingPage/index'
+import {
+  Navbar,
+  Services,
+  About,
+  Bid,
+  Footer,
+  Opportunities,
+} from '../../../components/landingPage/index'
 
 const Landing = () => {
   AOS.init()
@@ -139,11 +146,16 @@ const Landing = () => {
             </CNavItem>
             <CNavItem>
               <CNavLink active={activeTab === 2} onClick={() => setActiveTab(2)}>
-                Recent Awards
+                Opportunities
               </CNavLink>
             </CNavItem>
             <CNavItem>
               <CNavLink active={activeTab === 3} onClick={() => setActiveTab(3)}>
+                Recent Awards
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink active={activeTab === 4} onClick={() => setActiveTab(4)}>
                 Bid Document Uploader
               </CNavLink>
             </CNavItem>
@@ -153,10 +165,13 @@ const Landing = () => {
               <Services />
             </CTabPane>
             <CTabPane visible={activeTab === 2}>
-              <About />
+              <Opportunities />
             </CTabPane>
             <CTabPane visible={activeTab === 3}>
-              <Team />
+              <About />
+            </CTabPane>
+            <CTabPane visible={activeTab === 4}>
+              <Bid />
             </CTabPane>
           </CTabContent>
         </CContainer>

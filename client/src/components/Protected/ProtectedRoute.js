@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext.js'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
-  const isDevMode = import.meta.env.VITE_APP_NODE_ENV === 'production'
+  const isDevMode = import.meta.env.VITE_APP_NODE_ENV === 'development'
 
   const isUserLogin = user || Boolean(Cookies.get('token')) || isDevMode
 
