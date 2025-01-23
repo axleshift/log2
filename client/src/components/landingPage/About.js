@@ -2,64 +2,78 @@ import React, { useState } from 'react'
 import {
   CContainer,
   CFormInput,
-  CAccordion,
-  CAccordionItem,
-  CAccordionHeader,
-  CAccordionBody,
+  CRow,
+  CCol,
+  CTable,
+  CTableHead,
+  CTableBody,
+  CTableRow,
+  CTableHeaderCell,
+  CTableDataCell,
 } from '@coreui/react'
 
-const RecentAwardNotices = () => {
-  const awardNotices = [
-    { title: 'Various Instruments', amount: '4,020,520.00' },
-    { title: 'INSTALLATION OF SOLAR', amount: '249,250.08' },
-    { title: 'SUPPLEMENTAL FEEDING', amount: '572,039.20' },
-    { title: 'Reed Diffuser', amount: '1,044,888.00' },
-    { title: 'Lot 17-QUEZON', amount: '714,164.00' },
-    { title: 'HYGIENIC AND SURGICAL HAND DISINFECTANT ALCOHOL BA', amount: '451,200.00' },
-    { title: 'POWERFUL NEUTRAL AND ECOLOGICAL CLEANING CONCENTRA', amount: '478,380.00' },
-    { title: 'Construction of Concrete Water Tank@Danipa', amount: '362,493.13' },
-    { title: 'ten (10) ea Brush (Metal Big) and 19 other L/I', amount: '946,450.00' },
-    { title: 'Smart TV', amount: '96,550.00' },
+const NoticeOfAward = () => {
+  const notices = [
+    { title: 'Supply of Office Equipment', amount: '1,500,000.00', date: '2025-01-15' },
+    { title: 'Construction of New Facility', amount: '10,750,000.00', date: '2025-02-01' },
+    { title: 'IT System Upgrade', amount: '5,200,000.00', date: '2025-03-10' },
+    { title: 'Consultancy Services', amount: '3,000,000.00', date: '2025-04-05' },
   ]
 
   const [searchTerm, setSearchTerm] = useState('')
 
   // Filter notices based on search term
-  const filteredNotices = awardNotices.filter((notice) =>
+  const filteredNotices = notices.filter((notice) =>
     notice.title.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
     <CContainer className="p-5">
-      <h3 className="mb-4 text-center">Recent Award Notices</h3>
-      {/* Search Bar */}
-      <CFormInput
-        type="text"
-        placeholder="Search notices..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4"
-      />
-      {/* Accordion */}
-      <CAccordion alwaysOpen>
-        {filteredNotices.map((notice, index) => (
-          <CAccordionItem key={index} itemKey={index.toString()}>
-            <CAccordionHeader>
-              {index + 1}. {notice.title}
-            </CAccordionHeader>
-            <CAccordionBody>
-              <p>
-                <strong>Amount:</strong> PHP {notice.amount}
-              </p>
-              <p>Additional details about this notice can go here.</p>
-            </CAccordionBody>
-          </CAccordionItem>
-        ))}
-        {/* Show message if no results found */}
-        {filteredNotices.length === 0 && <p className="text-center">No notices found.</p>}
-      </CAccordion>
+      <h3 className="mb-4 text-center">Notice of Award</h3>
+
+      <CRow className="mb-3">
+        <CCol md={6} className="mx-auto">
+          <CFormInput
+            type="text"
+            placeholder="Search awards..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </CCol>
+      </CRow>
+
+      {filteredNotices.length > 0 ? (
+        <CTable striped hover responsive>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>#</CTableHeaderCell>
+              <CTableHeaderCell>Title</CTableHeaderCell>
+              <CTableHeaderCell>Amount</CTableHeaderCell>
+              <CTableHeaderCell>Date</CTableHeaderCell>
+              <CTableHeaderCell>Action</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {filteredNotices.map((notice, index) => (
+              <CTableRow key={index}>
+                <CTableDataCell>{index + 1}</CTableDataCell>
+                <CTableDataCell>{notice.title}</CTableDataCell>
+                <CTableDataCell>PHP {notice.amount}</CTableDataCell>
+                <CTableDataCell>{notice.date}</CTableDataCell>
+                <CTableDataCell>
+                  <a href={`/notice-details/${index}`} className="text-primary">
+                    See Details
+                  </a>
+                </CTableDataCell>
+              </CTableRow>
+            ))}
+          </CTableBody>
+        </CTable>
+      ) : (
+        <p className="text-center">No notices found.</p>
+      )}
     </CContainer>
   )
 }
 
-export default RecentAwardNotices
+export default NoticeOfAward

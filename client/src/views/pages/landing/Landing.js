@@ -15,6 +15,10 @@ import {
   CNavLink,
   CTabContent,
   CTabPane,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
 } from '@coreui/react'
 import AOS from 'aos'
 
@@ -25,6 +29,8 @@ import {
   Bid,
   Footer,
   Opportunities,
+  RecentAwardNotices,
+  NoticeToProceed,
 } from '../../../components/landingPage/index'
 
 const Landing = () => {
@@ -150,9 +156,20 @@ const Landing = () => {
               </CNavLink>
             </CNavItem>
             <CNavItem>
-              <CNavLink active={activeTab === 3} onClick={() => setActiveTab(3)}>
-                Recent Awards
-              </CNavLink>
+              <CDropdown>
+                <CDropdownToggle caret>Award Notice</CDropdownToggle>
+                <CDropdownMenu>
+                  <CDropdownItem active={activeTab === 3} onClick={() => setActiveTab(3)}>
+                    Recent Awards
+                  </CDropdownItem>
+                  <CDropdownItem active={activeTab === 5} onClick={() => setActiveTab(5)}>
+                    Notice of Award
+                  </CDropdownItem>
+                  <CDropdownItem active={activeTab === 6} onClick={() => setActiveTab(6)}>
+                    Notice To Proceed
+                  </CDropdownItem>
+                </CDropdownMenu>
+              </CDropdown>
             </CNavItem>
             <CNavItem>
               <CNavLink active={activeTab === 4} onClick={() => setActiveTab(4)}>
@@ -168,10 +185,16 @@ const Landing = () => {
               <Opportunities />
             </CTabPane>
             <CTabPane visible={activeTab === 3}>
-              <About />
+              <RecentAwardNotices />
             </CTabPane>
             <CTabPane visible={activeTab === 4}>
               <Bid />
+            </CTabPane>
+            <CTabPane visible={activeTab === 5}>
+              <About />
+            </CTabPane>
+            <CTabPane visible={activeTab === 6}>
+              <NoticeToProceed />
             </CTabPane>
           </CTabContent>
         </CContainer>

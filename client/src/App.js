@@ -18,6 +18,10 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const ForgotPass = React.lazy(() => import('./views/pages/forgotPass/ForgotPass'))
 const Landing = React.lazy(() => import('./views/pages/landing/Landing.js'))
 const ContactUs = React.lazy(() => import('./views/pages/contactUs/contact-us.js'))
+const NoticeDetails = React.lazy(() => import('./views/pages/NoticeDetails/notice-details.js'))
+const NoticeToProceedDetails = React.lazy(
+  () => import('./views/pages/NoticeToProceed/notice-to-proceed.js'),
+)
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -81,6 +85,9 @@ const App = () => {
               <Route path="/500" element={<Page500 />} />
               <Route path="/forgotPass" element={<ForgotPass />} />
               <Route path="/contact-us" element={<ContactUs />} />
+              <Route path="/notice-details/:id" element={<NoticeDetails />} />
+              <Route path="/notice-to-proceed/:id" element={<NoticeToProceedDetails />} />
+
               <Route path="/" element={<Landing />} />
 
               {/* Protected Routes */}
