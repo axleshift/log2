@@ -6,6 +6,11 @@ import {
   faWarehouse,
   faSitemap,
   faChartSimple,
+  faFileText,
+  faBox,
+  faUserAlt,
+  faChartLine,
+  faBell,
 } from '@fortawesome/free-solid-svg-icons'
 
 const _nav = [
@@ -24,54 +29,104 @@ const _nav = [
     ),
   },
   {
-    component: CNavTitle,
-    name: 'SHIPMENT',
-  },
-  {
-    component: CNavGroup,
-    name: 'Management',
+    component: CNavItem,
+    name: 'Document Tracking',
+    to: '/documentTracking',
     icon: (
-      <FontAwesomeIcon icon={faChartSimple} className="nav-icon" aria-label="Management Icon" />
+      <FontAwesomeIcon
+        icon={faFileText}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Document Icon"
+      />
     ),
-    items: [
-      {
-        component: CNavItem,
-        name: 'Logistics',
-        to: '/logistics',
-      },
-    ],
   },
   {
-    component: CNavTitle,
-    name: 'WAREHOUSE MANAGEMENT',
+    component: CNavItem,
+    name: 'Procurement',
+    to: '/procurement',
+    icon: (
+      <FontAwesomeIcon
+        icon={faBox}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Procurement Icon"
+      />
+    ),
   },
   {
-    component: CNavGroup,
+    component: CNavItem,
+    name: 'Vendor Management',
+    to: '/vendor',
+    icon: (
+      <FontAwesomeIcon
+        icon={faUserAlt}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Vendor Icon"
+      />
+    ),
+  },
+  {
+    component: CNavItem,
+    name: 'Logistics',
+    to: '/logistics',
+    icon: (
+      <FontAwesomeIcon
+        icon={faChartSimple}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Management Icon"
+      />
+    ),
+  },
+  /** 
+  {
+    component: CNavItem,
     name: 'Warehouses',
-    icon: <FontAwesomeIcon icon={faWarehouse} className="nav-icon" aria-label="Warehouses Icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Warehouse Management',
-        to: '/warehouse',
-      },
-    ],
+    to: '/warehouse',
+    icon: (
+      <FontAwesomeIcon
+        icon={faWarehouse}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Warehouses Icon"
+      />
+    ),
   },
+  **/ // DONT REMOVE THE COMMENTS
   {
-    component: CNavTitle,
-    name: 'INVENTORY MANAGEMENT',
-  },
-  {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Inventory',
-    icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" aria-label="Inventory Icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Inventories',
-        to: '/inventory',
-      },
-    ],
+    to: '/inventory',
+    icon: (
+      <FontAwesomeIcon
+        icon={faSitemap}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Inventory Icon"
+      />
+    ),
+  },
+  {
+    component: CNavItem,
+    name: 'Analytics',
+    to: '/analytics',
+    icon: (
+      <FontAwesomeIcon
+        icon={faChartLine}
+        className="nav-icon"
+        size="xl"
+        style={{ marginRight: '10px' }}
+        aria-label="Analytics Icon"
+      />
+    ),
   },
 ]
 

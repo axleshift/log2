@@ -49,7 +49,7 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={userAvatar} size="lg" /> {/* Dynamic avatar */}
+        <CAvatar src={userAvatar} size="lg" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
@@ -84,10 +84,6 @@ const AppHeaderDropdown = () => {
         <CDropdownItem onClick={handleProfileClick} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilUser} className="me-2" />
           Profile
-        </CDropdownItem>
-        <CDropdownItem>
-          <CIcon icon={cilSettings} className="me-2" />
-          Settings
         </CDropdownItem>
 
         {/* Sign Out */}

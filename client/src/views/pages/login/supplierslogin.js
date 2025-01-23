@@ -80,7 +80,7 @@ const SupplierLogin = () => {
 
       if (user.role === 'supplier') {
         navigate('/supplierspage/supplierprofile')
-      } else if (user.role === 'buyer') {
+      } else if (user.role === 'super admin') {
         navigate('/supplierspage/supplierprofile')
       } else if (
         user.role === 'vendor' ||

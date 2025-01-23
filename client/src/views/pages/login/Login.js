@@ -130,9 +130,10 @@ const Login = () => {
           >
             <h2>Vendor Portal</h2>
             <p>Logistic Management System</p>
-            <Link to="/supplierslogin" className="text-white">
+            {/**   <Link to="/supplierslogin" className="text-white">
               Supplier Page →
             </Link>
+            */}
             <Link to="/" className="text-white">
               Landing Page →
             </Link>

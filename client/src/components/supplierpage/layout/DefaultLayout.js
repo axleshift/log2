@@ -1,3 +1,5 @@
+{
+  /** 
 import React from 'react'
 import {
   SupplierContent,
@@ -22,3 +24,7 @@ const DefaultLayout = () => {
 }
 
 export default DefaultLayout
+
+
+*/
+} // DONT REMOVE THE COMMENT SYM I HAVE A TEST TO DO!!!
