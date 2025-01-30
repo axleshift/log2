@@ -24,8 +24,10 @@ import CIcon from '@coreui/icons-react'
 import { cilBell, cilEnvelopeOpen, cilTask, cilUser } from '@coreui/icons'
 import defaultAvatar from './../../assets/images/avatars/boy.jpg'
 import { useAuth } from '../../context/AuthContext.js'
+import { useNavigate } from 'react-router-dom'
 
 const AppHeaderDropdown = () => {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [updatesModalVisible, setUpdatesModalVisible] = useState(false)
   const [messagesModalVisible, setMessagesModalVisible] = useState(false)
@@ -45,6 +47,7 @@ const AppHeaderDropdown = () => {
     setLoading(true)
     try {
       await logout()
+      navigate('/login')
     } catch (error) {
       console.error('Logout failed', error)
       alert('Logout failed. Please try again.')
@@ -69,6 +72,10 @@ const AppHeaderDropdown = () => {
   const handleReply = (message) => {
     setSelectedMessage(message)
     setReplyModalVisible(true)
+  }
+
+  const handleClickProfile = () => {
+    navigate('/profile')
   }
 
   return (
@@ -110,12 +117,15 @@ const AppHeaderDropdown = () => {
           </CDropdownItem>
 
           <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-          <CDropdownItem style={{ cursor: 'pointer' }}>
+
+          {/* Updated Profile Click Handler */}
+          <CDropdownItem onClick={handleClickProfile} style={{ cursor: 'pointer' }}>
             <CIcon icon={cilUser} className="me-2" />
             Profile
           </CDropdownItem>
 
           <CDropdownDivider />
+
           <CDropdownItem onClick={handleSignOut}>
             <CButton color="primary" role="button" disabled={loading}>
               {loading ? 'Signing Out...' : 'Sign Out'}

@@ -34,28 +34,29 @@ export const tokenMiddleware = (req, res, next) => {
 
         if (!token) {
             console.warn("Unauthorized access attempt: No token provided.");
-            return res.status(401).json({ error: "No token provided" });
+            return res.status(401).json({ error: "Unauthorized: No token provided." });
         }
 
         // Verify the token
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
             if (err) {
-                const message = err.name === "TokenExpiredError" ? "Token has expired" : "Unauthorized access: Invalid token";
+                const message = err.name === "TokenExpiredError" ? "Unauthorized: Token has expired." : "Unauthorized: Invalid token.";
                 console.warn(`Token verification failed: ${message}`);
                 return res.status(401).json({ error: message });
             }
 
+            // Attach decoded user data to the request object
             req.user = {
-                id: decoded.id,
+                id: decoded.userId,
                 role: decoded.role,
                 email: decoded.email,
             };
 
-            console.info(`Token verified successfully for user: ${decoded.id}`);
+            console.info(`Token verified successfully for user: ${decoded.userId}`);
             next();
         });
     } catch (error) {
         console.error("Error in token middleware:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error." });
     }
 };

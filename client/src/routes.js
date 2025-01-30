@@ -1,3 +1,4 @@
+import { element } from 'prop-types'
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
@@ -19,10 +20,10 @@ const IncomingDetails = React.lazy(
 const OutgoingDetails = React.lazy(
   () => import('./views/Management/logistics/outgoing/OutgoingDetails.js'),
 )
-const Settings = React.lazy(() => import('./components/Settings/Profile.js'))
 const Inventory = React.lazy(() => import('./views/inventory/Inventory.js'))
 const WarehouseDetail = React.lazy(() => import('./components/warehouseDetail/WarehouseDetail.js'))
 const InventoryDetail = React.lazy(() => import('./components/warehouseInventory/InventoryDetail'))
+const ProfilePage = React.lazy(() => import('./views/Account/Profile.js'))
 
 const routes = [
   { path: '/', name: 'Home', element: Dashboard },
@@ -31,7 +32,6 @@ const routes = [
   //{ path: '/warehouse', name: 'Warehouse Management', element: WarehouseManagement },
   { path: '/incoming', name: 'Incoming Details', element: IncomingDetails },
   { path: '/outgoing', name: 'Outgoing Details', element: OutgoingDetails },
-  { path: '/profile', name: 'Profile', element: Settings },
   { path: '/warehouseDetail/:warehouse_id', name: 'Warehouse Detail', element: WarehouseDetail },
   { path: '/inventory/:warehouse_id', name: 'Inventory Detail', element: InventoryDetail },
   { path: '/inventory', name: 'Inventory', element: Inventory },
@@ -40,6 +40,7 @@ const routes = [
   { path: '/documentTracking', name: 'DocumentTracking', element: DocumentTracking },
   { path: '/procurement', name: 'Procurement', element: Procurement },
   { path: '/vendor', name: 'VendorManagement', element: VendorManagement },
+  { path: '/profile', name: 'ProfilePage', element: ProfilePage },
 ]
 
 export default routes

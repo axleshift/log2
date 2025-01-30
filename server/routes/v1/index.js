@@ -4,6 +4,7 @@ import warehouse from "./warehouse.js";
 import tracking from "./tracking.js";
 import logistics from "./logistics.js";
 import inventory from "./inventory.js";
+import profile from "./profile.js";
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use("/warehouse", warehouse);
 router.use("/tracking", tracking);
 router.use("/logistics", logistics);
 router.use("/inventory", inventory);
+router.use("/profile", profile);
 
 export default router;
