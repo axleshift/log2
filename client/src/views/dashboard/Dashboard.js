@@ -16,6 +16,7 @@ import { CWidgetStatsA } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import WidgetComponent from '../widgets/WidgetComponent'
 import UserDashboard from './UserDashboard'
+import MainChart from './MainChart'
 
 const Dashboard = () => {
   const [warehouse, setWarehouse] = useState([])
@@ -102,11 +103,12 @@ const Dashboard = () => {
           <WidgetComponent />
         </CCol>
       </CRow>
-
+      <MainChart />
       {/* User Dashboard Table */}
       <CRow className="mt-5">
         <CCol xs={12}>
           <h3>User Management</h3>
+
           <UserDashboard />
         </CCol>
       </CRow>

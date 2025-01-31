@@ -11,6 +11,7 @@ import {
   faUserAlt,
   faChartLine,
   faBell,
+  faFileInvoiceDollar,
 } from '@fortawesome/free-solid-svg-icons'
 
 const _nav = [
@@ -57,9 +58,8 @@ const _nav = [
     ),
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Vendor Management',
-    to: '/vendor',
     icon: (
       <FontAwesomeIcon
         icon={faUserAlt}
@@ -69,6 +69,36 @@ const _nav = [
         aria-label="Vendor Icon"
       />
     ),
+    items: [
+      {
+        component: CNavItem,
+        name: 'Vendor Management',
+        to: '/vendor',
+        icon: (
+          <FontAwesomeIcon
+            icon={faUserAlt}
+            className="nav-icon"
+            size="xl"
+            style={{ marginRight: '10px' }}
+            aria-label="Vendor Icon"
+          />
+        ),
+      },
+      {
+        component: CNavItem,
+        name: 'Request Of Quotation',
+        to: '/RFQ',
+        icon: (
+          <FontAwesomeIcon
+            icon={faFileInvoiceDollar}
+            className="nav-icon"
+            size="xl"
+            style={{ marginRight: '10px' }}
+            aria-label="RFQ Icon"
+          />
+        ),
+      },
+    ],
   },
   {
     component: CNavItem,
@@ -80,7 +110,7 @@ const _nav = [
         className="nav-icon"
         size="xl"
         style={{ marginRight: '10px' }}
-        aria-label="Management Icon"
+        aria-label="Logistics Icon"
       />
     ),
   },

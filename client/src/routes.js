@@ -24,6 +24,12 @@ const Inventory = React.lazy(() => import('./views/inventory/Inventory.js'))
 const WarehouseDetail = React.lazy(() => import('./components/warehouseDetail/WarehouseDetail.js'))
 const InventoryDetail = React.lazy(() => import('./components/warehouseInventory/InventoryDetail'))
 const ProfilePage = React.lazy(() => import('./views/Account/Profile.js'))
+const DocumentDetails = React.lazy(
+  () => import('./views/pages/DocumentTracking/DocumentDetails.js'),
+)
+const RFQ = React.lazy(() => import('./views/pages/RFQ/RFQ.js'))
+const ViewDetails = React.lazy(() => import('./views/pages/RFQ/viewdetails.js'))
+const Settings = React.lazy(() => import('./views/settings/Settings.js'))
 
 const routes = [
   { path: '/', name: 'Home', element: Dashboard },
@@ -41,6 +47,10 @@ const routes = [
   { path: '/procurement', name: 'Procurement', element: Procurement },
   { path: '/vendor', name: 'VendorManagement', element: VendorManagement },
   { path: '/profile', name: 'ProfilePage', element: ProfilePage },
+  { path: '/DocumentDetails/:id', name: 'DocumentDetails', element: DocumentDetails },
+  { path: '/RFQ', name: 'RFQ', element: RFQ },
+  { path: '/viewdetails', name: 'ViewDetails', element: ViewDetails },
+  { path: '/settings', name: 'Settings', element: Settings },
 ]
 
 export default routes

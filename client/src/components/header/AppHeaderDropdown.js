@@ -77,6 +77,9 @@ const AppHeaderDropdown = () => {
   const handleClickProfile = () => {
     navigate('/profile')
   }
+  const handleClickSettings = () => {
+    navigate('/settings')
+  }
 
   return (
     <>
@@ -122,6 +125,10 @@ const AppHeaderDropdown = () => {
           <CDropdownItem onClick={handleClickProfile} style={{ cursor: 'pointer' }}>
             <CIcon icon={cilUser} className="me-2" />
             Profile
+          </CDropdownItem>
+          <CDropdownItem onClick={handleClickSettings} style={{ cursor: 'pointer' }}>
+            <CIcon icon={cilUser} className="me-2" />
+            Settings
           </CDropdownItem>
 
           <CDropdownDivider />

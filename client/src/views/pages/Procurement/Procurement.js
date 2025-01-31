@@ -87,11 +87,6 @@ const Procurement = () => {
           <CCol sm="6">
             <p>Handle procurement processes, including orders and supplier management.</p>
           </CCol>
-          <CCol sm="6" className="text-right">
-            <CButton color="primary" onClick={toggleModal}>
-              Create New Order
-            </CButton>
-          </CCol>
         </CRow>
 
         {/* Orders Table */}
