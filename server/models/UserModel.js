@@ -1,38 +1,13 @@
 import mongoose from "mongoose";
-
 const userSchema = new mongoose.Schema(
     {
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            match: /.+\@.+\..+/,
-        },
-        username: {
-            type: String,
-            required: true,
-            unique: true,
-        },
-        password: {
-            type: String,
-            required: true,
-        },
-        role: {
-            type: String,
-            enum: ["admin", "super admin", "auditor", "staff", "inventory manager", "procurement manager", "regional manager", "user", "supplier", "vendor", "buyer", "finance", "temporary staff", "delivery partner", "customer support"],
-            required: true,
-        },
-        resetPasswordOtp: {
-            type: String,
-        },
-        resetPasswordOtpExpires: {
-            type: Date,
-        },
-        status: {
-            type: String,
-            enum: ["Active", "Inactive", "Banned"],
-            default: "Active",
-        },
+        email: { type: String, required: true, unique: true, match: /.+\@.+\..+/ },
+        username: { type: String, required: true, unique: true },
+        password: { type: String, required: true },
+        role: { type: String, enum: ["admin", "super admin", "user", "vendor", "buyer", "finance"], required: true },
+        status: { type: String, enum: ["Pending", "Approved", "Rejected", "Active"], default: "Active" }, // Ensure "Active" is a valid option
+        resetPasswordOtp: { type: String },
+        resetPasswordOtpExpires: { type: Date },
     },
     { timestamps: true }
 );
@@ -40,8 +15,7 @@ const userSchema = new mongoose.Schema(
 const UserModel = mongoose.model("User", userSchema);
 
 export const findUserByUsername = async (username) => {
-    const user = await UserModel.findOne({ username }).lean();
-    return user;
+    return await UserModel.findOne({ username }).lean();
 };
 
 export default UserModel;

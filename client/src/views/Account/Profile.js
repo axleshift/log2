@@ -24,22 +24,23 @@ const ProfilePage = () => {
   const [error, setError] = useState(null)
   const [showAvatars, setShowAvatars] = useState(false)
 
-  // Fetch profile data
   const fetchProfile = async () => {
-    if (!user || !accessToken) return
+    if (!user?._id || !accessToken) {
+      return setError('User ID or Access Token is missing.')
+    }
 
     try {
       const response = await axios.get(`${PROFILE_API_URL}/${user._id}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
+        timeout: 5000, // 5 seconds timeout
       })
 
       const profileData = response.data
-
-      if (!profileData.email) {
-        setError('Email is required in profile data.')
-      } else {
+      if (profileData.email) {
         setProfile(profileData)
         setPreviewImage(profileData.avatar || 'https://placehold.co/150')
+      } else {
+        setError('Email is required in profile data.')
       }
 
       localStorage.setItem('profile', JSON.stringify(profileData))
@@ -51,13 +52,13 @@ const ProfilePage = () => {
   }
 
   useEffect(() => {
-    if (!profile && user && accessToken) {
+    if (user && accessToken && !profile) {
       fetchProfile()
-    } else {
-      setPreviewImage(profile?.avatar || 'https://placehold.co/150')
+    } else if (profile) {
+      setPreviewImage(profile.avatar || 'https://placehold.co/150')
       setLoading(false)
     }
-  }, [user, accessToken, profile, setProfile])
+  }, [user, accessToken, profile])
 
   const handleChange = (e) => {
     const { name, value } = e.target

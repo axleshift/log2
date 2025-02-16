@@ -94,11 +94,10 @@ const Login = () => {
       if (user.role === 'admin' || user.role === 'super admin') {
         navigate('/dashboard')
       } else if (
-        user.role === 'inventory manager' ||
-        user.role === 'procurement manager' ||
-        user.role === 'regional manager' ||
-        user.role === 'auditor' ||
-        user.role === 'staff'
+        user.role === 'staff' ||
+        user.role === 'buyer' ||
+        user.role === 'staff' ||
+        user.role === 'vendor'
       ) {
         navigate('/inventory')
       } else {
@@ -128,12 +127,11 @@ const Login = () => {
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
           >
-            <h2>Vendor Portal</h2>
+            <h2>LOGIN PORTAL</h2>
             <p>Logistic Management System</p>
-            {/**   <Link to="/supplierslogin" className="text-white">
-              Supplier Page →
+            <Link to="/VendorLogin" className="text-white">
+              Vendor Portal →
             </Link>
-            */}
             <Link to="/" className="text-white">
               Landing Page →
             </Link>

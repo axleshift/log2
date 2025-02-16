@@ -6,8 +6,13 @@ import SimpleBar from 'simplebar-react'
 import 'simplebar-react/dist/simplebar.min.css'
 
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
+import { useAuth } from '../context/AuthContext.js'
 
 export const AppSidebarNav = ({ items }) => {
+  const { user } = useAuth()
+
+  const navItems = Array.isArray(items) ? items : []
+
   const navLink = (name, icon, badge, indent = false) => {
     return (
       <>
@@ -34,7 +39,7 @@ export const AppSidebarNav = ({ items }) => {
     return (
       <Component as="div" key={index}>
         {rest.to || rest.href ? (
-          <CNavLink {...(rest.to && { as: NavLink })} {...rest}>
+          <CNavLink {...rest} as={NavLink}>
             {navLink(name, icon, badge, indent)}
           </CNavLink>
         ) : (
@@ -58,8 +63,10 @@ export const AppSidebarNav = ({ items }) => {
 
   return (
     <CSidebarNav as={SimpleBar}>
-      {items &&
-        items.map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
+      {navItems &&
+        navItems
+          .filter((item) => !item.role_exclude || !item.role_exclude.includes(user?.role))
+          .map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
     </CSidebarNav>
   )
 }

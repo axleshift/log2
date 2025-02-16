@@ -19,142 +19,202 @@ const _nav = [
     component: CNavItem,
     name: 'Dashboard',
     to: '/dashboard',
+    role_exclude: [''],
     icon: (
       <FontAwesomeIcon
         icon={faDashboard}
         className="nav-icon"
         size="xl"
-        style={{ marginRight: '10px' }}
         aria-label="Dashboard Icon"
       />
     ),
   },
   {
     component: CNavItem,
-    name: 'Document Tracking',
-    to: '/documentTracking',
-    icon: (
-      <FontAwesomeIcon
-        icon={faFileText}
-        className="nav-icon"
-        size="xl"
-        style={{ marginRight: '10px' }}
-        aria-label="Document Icon"
-      />
-    ),
-  },
-  {
-    component: CNavItem,
-    name: 'Procurement',
-    to: '/procurement',
-    icon: (
-      <FontAwesomeIcon
-        icon={faBox}
-        className="nav-icon"
-        size="xl"
-        style={{ marginRight: '10px' }}
-        aria-label="Procurement Icon"
-      />
-    ),
-  },
-  {
-    component: CNavGroup,
-    name: 'Vendor Management',
-    icon: (
-      <FontAwesomeIcon
-        icon={faUserAlt}
-        className="nav-icon"
-        size="xl"
-        style={{ marginRight: '10px' }}
-        aria-label="Vendor Icon"
-      />
-    ),
-    items: [
-      {
-        component: CNavItem,
-        name: 'Vendor Management',
-        to: '/vendor',
-        icon: (
-          <FontAwesomeIcon
-            icon={faUserAlt}
-            className="nav-icon"
-            size="xl"
-            style={{ marginRight: '10px' }}
-            aria-label="Vendor Icon"
-          />
-        ),
-      },
-      {
-        component: CNavItem,
-        name: 'Request Of Quotation',
-        to: '/RFQ',
-        icon: (
-          <FontAwesomeIcon
-            icon={faFileInvoiceDollar}
-            className="nav-icon"
-            size="xl"
-            style={{ marginRight: '10px' }}
-            aria-label="RFQ Icon"
-          />
-        ),
-      },
-    ],
-  },
-  {
-    component: CNavItem,
-    name: 'Logistics',
-    to: '/logistics',
+    name: 'Admin Dashboard',
+    to: '/account/admin/pending-users',
+    role_exclude: ['staff', 'user', 'vendor'],
     icon: (
       <FontAwesomeIcon
         icon={faChartSimple}
         className="nav-icon"
         size="xl"
-        style={{ marginRight: '10px' }}
         aria-label="Logistics Icon"
       />
     ),
   },
-  /** 
+  {
+    component: CNavTitle,
+    name: 'ACCESSIBLE BY ADMINS',
+    role_exclude: [],
+  },
+  {
+    component: CNavGroup,
+    name: 'PROCUREMENT',
+    role_exclude: ['staff', 'user', 'vendor'],
+    icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Rfq Management',
+        to: '/procurement/procure',
+        icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
+      },
+      /** {
+        component: CNavItem,
+        name: 'Purchase Management',
+        to: '/procurement/purchaseManagement',
+      },
+      */
+      {
+        component: CNavItem,
+        name: 'Payments',
+        to: '/procurement/payments',
+      },
+      {
+        component: CNavItem,
+        name: 'BID Management',
+        to: '/procurement/bidding',
+      },
+      {
+        component: CNavItem,
+        name: 'Vendor Management',
+        to: '/procurement/vendors',
+      },
+      {
+        component: CNavItem,
+        name: 'PurchaseOrder Management',
+        to: '/procurement/purchaseManagement',
+      },
+      {
+        component: CNavItem,
+        name: 'Product Catalog',
+        to: '/procurement/productCatalog',
+      },
+      {
+        component: CNavItem,
+        name: 'Contract Management',
+        to: '/procurement/contract',
+      },
+      {
+        component: CNavItem,
+        name: 'Notifications & Alerts',
+        to: '/',
+      },
+    ],
+  },
+  {
+    component: CNavTitle,
+    name: 'VENDORS',
+    role_exclude: [],
+  },
+  {
+    component: CNavGroup,
+    name: 'Vendor Management',
+    role_exclude: ['staff', 'user', 'buyer'],
+    icon: <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Vendors Registration',
+        to: '/',
+      },
+      {
+        component: CNavItem,
+        name: 'Vendors',
+        to: '/vendor/vendor-manage',
+      },
+      {
+        component: CNavItem,
+        name: 'PurchaseOrder Management',
+        to: '/vendor/bidList',
+      },
+      {
+        component: CNavItem,
+        name: 'Bid List',
+        to: '/',
+      },
+      {
+        component: CNavItem,
+        name: 'RFQ & Submission',
+        to: '/vendor/RFQ',
+      },
+      {
+        component: CNavItem,
+        name: 'Contract Management',
+        to: '/',
+      },
+      {
+        component: CNavItem,
+        name: 'Payment & Invoices',
+        to: '/t',
+      },
+      {
+        component: CNavItem,
+        name: 'Communication Support',
+        to: '/',
+      },
+      {
+        component: CNavItem,
+        name: 'Notification & Alerts',
+        to: '/',
+      },
+    ],
+  },
+  {
+    component: CNavTitle,
+    name: 'LOGISTICS',
+    role_exclude: [],
+  },
   {
     component: CNavItem,
-    name: 'Warehouses',
-    to: '/warehouse',
+    name: 'Logistics Dashboard',
+    to: '/logistics',
+    role_exclude: ['staff', 'user', 'vendor', 'buyer'],
     icon: (
       <FontAwesomeIcon
-        icon={faWarehouse}
+        icon={faChartSimple}
         className="nav-icon"
         size="xl"
-        style={{ marginRight: '10px' }}
-        aria-label="Warehouses Icon"
+        aria-label="Logistics Icon"
       />
     ),
   },
-  **/ // DONT REMOVE THE COMMENTS
+  {
+    component: CNavTitle,
+    name: 'INVENTORY MANAGEMENT',
+    role_exclude: [],
+  },
   {
     component: CNavItem,
     name: 'Inventory',
     to: '/inventory',
+    role_exclude: ['staff', 'user', 'vendor', 'buyer'],
     icon: (
       <FontAwesomeIcon
         icon={faSitemap}
         className="nav-icon"
         size="xl"
-        style={{ marginRight: '10px' }}
         aria-label="Inventory Icon"
       />
     ),
   },
   {
-    component: CNavItem,
-    name: 'Analytics',
-    to: '/analytics',
+    component: CNavTitle,
+    name: 'ANALYTICS',
+    role_exclude: [],
+  },
+  {
+    component: CNavTitle,
+    name: 'SETTINGS',
+    to: '/settings',
+    role_exclude: ['staff', 'user', 'vendor', 'buyer'],
     icon: (
       <FontAwesomeIcon
-        icon={faChartLine}
+        icon={faSitemap}
         className="nav-icon"
         size="xl"
-        style={{ marginRight: '10px' }}
-        aria-label="Analytics Icon"
+        aria-label="Inventory Icon"
       />
     ),
   },

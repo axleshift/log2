@@ -1,214 +1,136 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useState } from 'react'
 import {
   CCard,
   CCardBody,
-  CCardHeader,
   CCardTitle,
+  CCardText,
   CButton,
-  CTable,
-  CTableHead,
-  CTableBody,
-  CTableRow,
-  CTableHeaderCell,
-  CTableDataCell,
-  CCol,
-  CRow,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CForm,
-  CInputGroup,
   CFormInput,
-  CFormLabel,
 } from '@coreui/react'
 
-const Vendor = () => {
-  const [modalVisible, setModalVisible] = useState(false)
-  const [addVendorModal, setAddVendorModal] = useState(false) // For adding new vendor
-  const [vendorDetails, setVendorDetails] = useState(null)
-  const [vendors, setVendors] = useState([
-    {
-      name: 'ABC Corp',
-      contactPerson: 'John Doe',
-      status: 'Active',
-      details: 'Contract: ABC123, Performance: Excellent',
-    },
-    {
-      name: 'XYZ Ltd.',
-      contactPerson: 'Jane Smith',
-      status: 'Inactive',
-      details: 'Contract: XYZ456, Performance: Good',
-    },
-  ])
+// Mock RFQ Data
+const mockRFQs = [
+  {
+    _id: '1',
+    title: 'Office Supplies',
+    description: 'Need 500 units of A4 paper reams',
+    quantity: 500,
+    budget: 1000,
+  },
+  {
+    _id: '2',
+    title: 'Laptop Procurement',
+    description: 'Seeking 10 high-performance laptops',
+    quantity: 10,
+    budget: 15000,
+  },
+  {
+    _id: '3',
+    title: 'Logistics Service',
+    description: 'Require transportation for 200kg shipment',
+    quantity: 1,
+    budget: 5000,
+  },
+]
 
-  const [newVendor, setNewVendor] = useState({
-    name: '',
-    contactPerson: '',
-    status: '',
-    details: '',
+const VendorDashboard = () => {
+  const [rfqs] = useState(mockRFQs)
+  const [bidModal, setBidModal] = useState(false)
+  const [selectedRFQ, setSelectedRFQ] = useState(null)
+  const [bidDetails, setBidDetails] = useState({
+    price: '',
+    deliveryTime: '',
   })
 
-  const handleViewClick = (vendor) => {
-    setVendorDetails(vendor)
-    setModalVisible(true)
+  const openBidModal = (rfq) => {
+    setSelectedRFQ(rfq)
+    setBidModal(true)
   }
 
-  const handleDelete = (vendor) => {
-    setVendors(vendors.filter((v) => v !== vendor))
-    setModalVisible(false)
-  }
+  const handleBidSubmit = () => {
+    if (!bidDetails.price || !bidDetails.deliveryTime) {
+      alert('Please fill in all fields.')
+      return
+    }
 
-  const handleAddVendor = () => {
-    setVendors([...vendors, newVendor])
-    setAddVendorModal(false)
-    setNewVendor({ name: '', contactPerson: '', status: '', details: '' }) // Clear form
+    // Mock bid submission
+    console.log('Bid Submitted:', {
+      rfqId: selectedRFQ._id,
+      vendorId: 'VENDOR_ID_HERE', // Replace with real vendor ID
+      price: bidDetails.price,
+      deliveryTime: bidDetails.deliveryTime,
+    })
+
+    alert('Bid submitted successfully!')
+    setBidModal(false)
+    setBidDetails({ price: '', deliveryTime: '' })
   }
 
   return (
-    <CCard>
-      <CCardHeader>
-        <CCardTitle>Vendor Management</CCardTitle>
-      </CCardHeader>
-      <CCardBody>
-        <CRow className="mb-4">
-          <CCol sm="6">
-            <p>Manage vendor details, contracts, and performance metrics.</p>
-          </CCol>
-          <CCol sm="6" className="text-right">
-            <CButton color="primary" onClick={() => setAddVendorModal(true)}>
-              Add New Vendor
-            </CButton>
-          </CCol>
-        </CRow>
+    <div className="container">
+      <h2 className="my-4">Vendor Dashboard</h2>
+      <div className="row">
+        {rfqs.map((rfq) => (
+          <div key={rfq._id} className="col-md-4 mb-4">
+            <CCard className="shadow-sm">
+              <CCardBody>
+                <CCardTitle>{rfq.title}</CCardTitle>
+                <CCardText>{rfq.description}</CCardText>
+                <CCardText>
+                  <strong>Quantity:</strong> {rfq.quantity}
+                </CCardText>
+                <CCardText>
+                  <strong>Budget:</strong> ${rfq.budget}
+                </CCardText>
+                <CButton color="primary" onClick={() => openBidModal(rfq)}>
+                  Submit Bid
+                </CButton>
+              </CCardBody>
+            </CCard>
+          </div>
+        ))}
+      </div>
 
-        {/* Vendor Table */}
-        <CTable bordered hover responsive>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell>Vendor Name</CTableHeaderCell>
-              <CTableHeaderCell>Contact Person</CTableHeaderCell>
-              <CTableHeaderCell>Status</CTableHeaderCell>
-              <CTableHeaderCell>Action</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {vendors.map((vendor, index) => (
-              <CTableRow key={index}>
-                <CTableDataCell>{vendor.name}</CTableDataCell>
-                <CTableDataCell>{vendor.contactPerson}</CTableDataCell>
-                <CTableDataCell>{vendor.status}</CTableDataCell>
-                <CTableDataCell>
-                  <CButton color="info" size="sm" onClick={() => handleViewClick(vendor)}>
-                    View
-                  </CButton>
-                  <CButton color="warning" size="sm" className="ml-2">
-                    Edit
-                  </CButton>
-                  <CButton
-                    color="danger"
-                    size="sm"
-                    onClick={() =>
-                      setVendors(vendors.filter((v) => v !== vendor)) || setModalVisible(false)
-                    }
-                    className="ml-2"
-                  >
-                    Delete
-                  </CButton>
-                </CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-
-        {/* Vendor Details Modal */}
-        <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg">
-          <CModalHeader>
-            <CModalTitle>Vendor Details</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            {vendorDetails && (
-              <div>
-                <p>
-                  <strong>Vendor Name:</strong> {vendorDetails.name}
-                </p>
-                <p>
-                  <strong>Contact Person:</strong> {vendorDetails.contactPerson}
-                </p>
-                <p>
-                  <strong>Status:</strong> {vendorDetails.status}
-                </p>
-                <p>
-                  <strong>Contract Details:</strong> {vendorDetails.details}
-                </p>
-              </div>
-            )}
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="secondary" onClick={() => setModalVisible(false)}>
-              Close
-            </CButton>
-          </CModalFooter>
-        </CModal>
-
-        {/* Add New Vendor Modal */}
-        <CModal visible={addVendorModal} onClose={() => setAddVendorModal(false)} size="lg">
-          <CModalHeader>
-            <CModalTitle>Add New Vendor</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <CForm>
-              <CInputGroup>
-                <CFormLabel htmlFor="name">Vendor Name</CFormLabel>
-                <CFormInput
-                  id="name"
-                  value={newVendor.name}
-                  onChange={(e) => setNewVendor({ ...newVendor, name: e.target.value })}
-                  placeholder="Enter vendor name"
-                />
-              </CInputGroup>
-              <CInputGroup>
-                <CFormLabel htmlFor="contactPerson">Contact Person</CFormLabel>
-                <CFormInput
-                  id="contactPerson"
-                  value={newVendor.contactPerson}
-                  onChange={(e) => setNewVendor({ ...newVendor, contactPerson: e.target.value })}
-                  placeholder="Enter contact person"
-                />
-              </CInputGroup>
-              <CInputGroup>
-                <CFormLabel htmlFor="status">Status</CFormLabel>
-                <CFormInput
-                  id="status"
-                  value={newVendor.status}
-                  onChange={(e) => setNewVendor({ ...newVendor, status: e.target.value })}
-                  placeholder="Enter status"
-                />
-              </CInputGroup>
-              <CInputGroup>
-                <CFormLabel htmlFor="details">Contract Details</CFormLabel>
-                <CFormInput
-                  id="details"
-                  value={newVendor.details}
-                  onChange={(e) => setNewVendor({ ...newVendor, details: e.target.value })}
-                  placeholder="Enter contract details"
-                />
-              </CInputGroup>
-            </CForm>
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="secondary" onClick={() => setAddVendorModal(false)}>
-              Cancel
-            </CButton>
-            <CButton color="primary" onClick={handleAddVendor}>
-              Add Vendor
-            </CButton>
-          </CModalFooter>
-        </CModal>
-      </CCardBody>
-    </CCard>
+      {/* Bid Submission Modal */}
+      <CModal visible={bidModal} onClose={() => setBidModal(false)}>
+        <CModalHeader>
+          <CModalTitle>Submit a Bid</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p>
+            <strong>RFQ:</strong> {selectedRFQ?.title}
+          </p>
+          <CFormInput
+            type="number"
+            placeholder="Enter bid price"
+            value={bidDetails.price}
+            onChange={(e) => setBidDetails({ ...bidDetails, price: e.target.value })}
+            className="mb-3"
+          />
+          <CFormInput
+            type="text"
+            placeholder="Estimated delivery time"
+            value={bidDetails.deliveryTime}
+            onChange={(e) => setBidDetails({ ...bidDetails, deliveryTime: e.target.value })}
+          />
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setBidModal(false)}>
+            Cancel
+          </CButton>
+          <CButton color="success" onClick={handleBidSubmit}>
+            Submit Bid
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </div>
   )
 }
 
-export default Vendor
+export default VendorDashboard

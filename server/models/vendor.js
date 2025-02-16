@@ -1,0 +1,16 @@
+import mongoose from "mongoose";
+
+const vendorSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    businessName: { type: String, required: true },
+    fullName: { type: String, required: true },
+    businessAddress: { type: String, required: true },
+    contactNumber: { type: String, required: true },
+    certifications: [{ type: String }],
+    taxId: { type: String },
+    vendorId: { type: String, default: () => `VENDOR-${Date.now()}` },
+});
+
+const VendorModel = mongoose.model("Vendor", vendorSchema);
+
+export default VendorModel;

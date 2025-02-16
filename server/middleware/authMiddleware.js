@@ -60,3 +60,18 @@ export const tokenMiddleware = (req, res, next) => {
         res.status(500).json({ error: "Internal server error." });
     }
 };
+
+export const authenticateAdmin = (req, res, next) => {
+    try {
+        console.log("User Role:", req.user?.role);
+
+        if (!req.user || !req.user.role || (req.user.role !== "admin" && req.user.role !== "super admin")) {
+            console.warn("Forbidden: User does not have admin privileges.");
+            return res.status(403).json({ status: "error", message: "Forbidden: Admins only" });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({ status: "error", message: "Internal server error." });
+    }
+};

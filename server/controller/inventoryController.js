@@ -1,5 +1,79 @@
 import Inventory from "../models/inventoryModel.js";
-import Warehouse from "../models/warehouseModel.js";
+
+// Create a new inventory entry
+export const createInventory = async (req, res) => {
+    try {
+        const newInventory = new Inventory(req.body);
+        await newInventory.save();
+        return res.status(201).json({ message: "Inventory created successfully", newInventory });
+    } catch (err) {
+        return res.status(400).json({ message: "Error creating inventory", error: err.message });
+    }
+};
+
+// Get all inventory items
+export const getAllInventory = async (req, res) => {
+    try {
+        const inventoryItems = await Inventory.find().populate("product");
+        return res.status(200).json(inventoryItems);
+    } catch (err) {
+        return res.status(400).json({ message: "Error fetching inventory items", error: err.message });
+    }
+};
+
+// Get an inventory item by ID
+export const getInventoryById = async (req, res) => {
+    try {
+        const inventoryItem = await Inventory.findById(req.params.id).populate("product");
+        if (!inventoryItem) {
+            return res.status(404).json({ message: "Inventory item not found" });
+        }
+        return res.status(200).json(inventoryItem);
+    } catch (err) {
+        return res.status(400).json({ message: "Error fetching inventory item", error: err.message });
+    }
+};
+
+// Update an inventory item
+export const updateInventory = async (req, res) => {
+    try {
+        const updatedInventory = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedInventory) {
+            return res.status(404).json({ message: "Inventory item not found" });
+        }
+        return res.status(200).json({ message: "Inventory updated successfully", updatedInventory });
+    } catch (err) {
+        return res.status(400).json({ message: "Error updating inventory item", error: err.message });
+    }
+};
+
+// Delete an inventory item
+export const deleteInventory = async (req, res) => {
+    try {
+        const deletedInventory = await Inventory.findByIdAndDelete(req.params.id);
+        if (!deletedInventory) {
+            return res.status(404).json({ message: "Inventory item not found" });
+        }
+        return res.status(200).json({ message: "Inventory deleted successfully" });
+    } catch (err) {
+        return res.status(400).json({ message: "Error deleting inventory item", error: err.message });
+    }
+};
+
+// Check stock against reorder level and get products that need restocking
+export const checkReorderLevel = async (req, res) => {
+    try {
+        const lowStockItems = await Inventory.find({ quantity: { $lt: { $remainder: "$reorderLevel" } } }).populate("product");
+        return res.status(200).json(lowStockItems);
+    } catch (err) {
+        return res.status(400).json({ message: "Error checking reorder levels", error: err.message });
+    }
+};
+
+/** DO NOT UNDO THE COMMENT YOU'LL SEE THE DEVIL
+ * 
+ * import Warehouse from "../models/warehouseModel.js";
+
 
 export const createInventory = async (req, res) => {
     try {
@@ -107,3 +181,4 @@ export const deleteInventoryByTrackingId = async (req, res) => {
         return res.status(500).json({ message: "Failed to delete inventory", error: error.message });
     }
 };
+**/
