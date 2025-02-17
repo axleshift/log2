@@ -1,7 +1,6 @@
 import logger from "../utils/logger.js";
 
 const errorHandler = (err, req, res, next) => {
-    // Log the error details with additional context
     logger.error(err.message, {
         stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
         url: req.originalUrl,

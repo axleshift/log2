@@ -8,6 +8,7 @@ const sessionMiddleware = session({
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         sameSite: "Strict",
+        cookie: { maxAge: 86400000 },
     },
 });
 

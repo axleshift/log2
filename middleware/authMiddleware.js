@@ -5,21 +5,83 @@ dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
-export const tokenMiddleware = (req, res, next) => {
-    // Access the token from cookies or authorization header
-    const token = req.cookies.accessToken || req.headers["authorization"]?.split(" ")[1];
-
-    if (!token) {
-        return res.status(403).json({ error: "No token provided" });
-    }
-
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) {
-            const message = err.name === "TokenExpiredError" ? "Token has expired" : "Unauthorized access";
-            return res.status(401).json({ error: message });
+// Roles Middleware
+export const checkRole = (allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !req.user.role) {
+            console.warn("Unauthorized access attempt: Missing user information.");
+            return res.status(401).json({ message: "Unauthorized: User information missing." });
         }
 
-        req.userId = decoded.userId;
+        const userRole = req.user.role;
+
+        if (allowedRoles.includes(userRole)) {
+            console.info(`Access granted to user with role: ${userRole}`);
+            return next();
+        }
+
+        console.warn(`Access denied for user with role: ${userRole}`);
+        return res.status(403).json({ message: "Access denied" });
+    };
+};
+
+// Token Verification Middleware
+export const tokenMiddleware = (req, res, next) => {
+    try {
+        // Log incoming request for debugging
+        console.log("Incoming request:", req.method, req.path);
+
+        // Extract token from cookies or Authorization header
+        const token = req.cookies?.accessToken || req.headers["authorization"]?.split(" ")[1];
+        console.log("Extracted Token:", token);
+
+        if (!token) {
+            console.warn("Unauthorized access attempt: No token provided.");
+            return res.status(401).json({ error: "Unauthorized: No token provided." });
+        }
+
+        // Verify the token
+        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+            if (err) {
+                console.warn("Token verification failed:", err.message);
+                return res.status(401).json({ error: "Unauthorized: Invalid token." });
+            }
+
+            // Log decoded token
+            console.log("Decoded Token Data:", decoded);
+
+            if (!decoded.userId) {
+                console.warn("Invalid token payload: No userId found.");
+                return res.status(401).json({ error: "Unauthorized: Invalid token payload." });
+            }
+
+            // Attach decoded user data to the request object
+            req.user = {
+                id: decoded.userId,
+                role: decoded.role,
+                email: decoded.email,
+            };
+
+            console.info(`Token verified successfully for user: ${decoded.userId}`);
+            next();
+        });
+    } catch (error) {
+        console.error("Error in token middleware:", error);
+        res.status(500).json({ error: "Internal server error." });
+    }
+};
+
+export const authenticateAdmin = (req, res, next) => {
+    try {
+        console.log("User Role:", req.user?.role);
+
+        if (!req.user || !req.user.role || (req.user.role !== "admin" && req.user.role !== "super admin")) {
+            console.warn("Forbidden: User does not have admin privileges.");
+            return res.status(403).json({ status: "error", message: "Forbidden: Admins only" });
+        }
+
         next();
-    });
+    } catch (error) {
+        return res.status(500).json({ status: "error", message: "Internal server error." });
+    }
 };
