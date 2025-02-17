@@ -27,7 +27,9 @@ const RFQSchema = new mongoose.Schema(
             enum: ["Open", "Closed", "Awarded"],
             default: "Open",
         },
-        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+        budget: { type: Number, required: true },
+        deadline: { type: Date, required: true },
+        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
     { timestamps: true }
 );

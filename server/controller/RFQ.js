@@ -3,15 +3,20 @@ import RFQ from "../models/RFQ.js";
 // Create a new RFQ
 export const createRFQ = async (req, res) => {
     try {
-        const { rfqNumber, title, description, items, vendors, createdBy } = req.body;
+        const { rfqNumber, title, description, items, vendors, budget, deadline, createdBy } = req.body;
 
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
         const newRFQ = new RFQ({
             rfqNumber,
             title,
             description,
             items,
             vendors,
-            createdBy,
+            budget,
+            deadline,
+            createdBy: req.user.id,
         });
 
         const savedRFQ = await newRFQ.save();
@@ -24,34 +29,42 @@ export const createRFQ = async (req, res) => {
 // Get all RFQs
 export const getAllRFQs = async (req, res) => {
     try {
-        const rfqs = await RFQ.find().populate("vendors").populate("quotes.vendor");
+        const rfqs = await RFQ.find().populate("vendors").populate("quotes.vendor").populate("createdBy", "email");
 
         res.status(200).json(rfqs);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
-export const addVendorsToRFQ = async (req, res) => {
+// INVITE VENDORS
+export const inviteToRFQ = async (req, res) => {
     try {
         const { id } = req.params;
         const { vendors } = req.body;
-        if (!vendors || !Array.isArray(vendors)) {
-            return res.status(400).json({ error: "Vendors must be an array of valid ObjectIds" });
+
+        console.log("Incoming request to invite vendors to RFQ:", id);
+        console.log("Received vendors array:", vendors);
+
+        if (!vendors || !Array.isArray(vendors) || vendors.length === 0) {
+            return res.status(400).json({ error: "Vendors must be a non-empty array of valid ObjectIds" });
         }
 
         const updatedRFQ = await RFQ.findByIdAndUpdate(id, { $addToSet: { vendors: { $each: vendors } } }, { new: true });
 
         if (!updatedRFQ) {
+            console.log("RFQ not found for ID:", id);
             return res.status(404).json({ error: "RFQ not found" });
         }
 
+        console.log("Vendors successfully invited:", updatedRFQ);
         res.status(200).json({ message: "Vendors added successfully", rfq: updatedRFQ });
     } catch (error) {
+        console.error("Error inviting vendors:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
+// GET RFQ BY ID
 export const getRFQById = async (req, res) => {
     try {
         const rfq = await RFQ.findById(req.params.id).populate("vendors").populate("quotes.vendor").populate("awardedVendor").populate("createdBy");

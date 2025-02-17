@@ -28,7 +28,7 @@ const product = lazy(() => import('./views/pages/Procurement/product.js'))
 const ContractManagement = lazy(() => import('./views/pages/Procurement/Contract.js'))
 const RFQManagement = lazy(() => import('./views/pages/RFQ/RFQManagement.js'))
 const Vendors = lazy(() => import('./views/pages/Procurement/Vendor.js'))
-const RFQList = lazy(() => import('./components/procurement/RFQ/ListPage.js'))
+//const RFQList = lazy(() => import('./components/procurement/RFQ/ListPage.js'))
 const RFQDetails = lazy(() => import('./components/procurement/RFQ/RFQDetails.js'))
 
 // VENDOR SECTION
@@ -61,20 +61,23 @@ const routes = [
   { path: '/settings', name: 'Settings', element: Settings },
 
   // PROCUREMENT PATH SECTION -_-
-  { path: '/procurement/procure', name: 'Procurement', element: Procurement },
+  { path: '/procurement/rfq-management', name: 'Procurement', element: Procurement },
   {
     path: '/procurement/purchaseManagement',
     name: 'Purchase Management',
     element: PurchaseManagement,
   },
-  { path: '/procurement/payments', name: 'Payments', element: Payments },
-  { path: '/procurement/productCatalog', name: 'Product', element: product },
-  { path: '/procurement/contract', name: 'Contract Management', element: ContractManagement },
+  { path: '/procurement/payments-invoices', name: 'Payments', element: Payments },
+  { path: '/procurement/product-catalog', name: 'Product', element: product },
+  {
+    path: '/procurement/procurement/contracts',
+    name: 'Contract Management',
+    element: ContractManagement,
+  },
   { path: '/procurement/RFQ/Management', name: 'RFQ Management', element: RFQManagement },
   { path: '/procurement/bidding', name: 'Bidding Management', element: BiddingManagement },
-  { path: '/procurement/procurement', name: 'Procurement', element: Procurement },
   { path: '/procurement/vendors', name: 'Vendor Management', element: Vendors },
-  { path: '/procurement/rfqs', name: 'RFQList', element: RFQList },
+  //{ path: '/procurement/rfqs', name: 'RFQList', element: RFQList },
   { path: '/procurement/rfqs/:id', name: 'RFQDetails', element: RFQDetails },
 
   ///////// not done yetttttttttttttttt may revise pa pooooooo this is not final SORRY T_T

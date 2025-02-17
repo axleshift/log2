@@ -14,6 +14,7 @@ import {
   CFormInput,
   CRow,
   CAlert,
+  CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
@@ -68,6 +69,8 @@ function Register() {
       }
 
       const userData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
         username: data.username,
         email,
         password: data.password,
@@ -119,25 +122,57 @@ function Register() {
                 ) : (
                   <FormProvider {...methods}>
                     <CForm onSubmit={handleSubmit(onSubmit)}>
-                      <h1>Complete Registration</h1>
+                      <h1 className="text-center mb-4">Complete Registration</h1>
                       {notification.message && (
                         <CAlert color={notification.type}>{notification.message}</CAlert>
                       )}
 
+                      {/* First Name */}
+                      <CInputGroup className={`mb-3 ${errors.firstName ? 'is-invalid' : ''}`}>
+                        <CInputGroupText>
+                          <CIcon icon={cilUser} />
+                        </CInputGroupText>
+                        <CFormInput
+                          placeholder="First Name"
+                          {...register('firstName', { required: 'First Name is required' })}
+                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
+                          onBlur={(e) => (e.target.style.borderColor = '')}
+                        />
+                      </CInputGroup>
+                      {errors.firstName && (
+                        <CAlert color="danger">{errors.firstName.message}</CAlert>
+                      )}
+
+                      {/* Last Name */}
+                      <CInputGroup className={`mb-3 ${errors.lastName ? 'is-invalid' : ''}`}>
+                        <CInputGroupText>
+                          <CIcon icon={cilUser} />
+                        </CInputGroupText>
+                        <CFormInput
+                          placeholder="Last Name"
+                          {...register('lastName', { required: 'Last Name is required' })}
+                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
+                          onBlur={(e) => (e.target.style.borderColor = '')}
+                        />
+                      </CInputGroup>
+                      {errors.lastName && <CAlert color="danger">{errors.lastName.message}</CAlert>}
+
                       {/* Username */}
-                      <CInputGroup className="mb-3">
+                      <CInputGroup className={`mb-3 ${errors.username ? 'is-invalid' : ''}`}>
                         <CInputGroupText>
                           <CIcon icon={cilUser} />
                         </CInputGroupText>
                         <CFormInput
                           placeholder="Username"
                           {...register('username', { required: 'Username is required' })}
+                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
+                          onBlur={(e) => (e.target.style.borderColor = '')}
                         />
                       </CInputGroup>
                       {errors.username && <CAlert color="danger">{errors.username.message}</CAlert>}
 
                       {/* Password */}
-                      <CInputGroup className="mb-3">
+                      <CInputGroup className={`mb-3 ${errors.password ? 'is-invalid' : ''}`}>
                         <CInputGroupText>
                           <CIcon icon={cilLockLocked} />
                         </CInputGroupText>
@@ -145,8 +180,11 @@ function Register() {
                           type="password"
                           placeholder="Password"
                           {...register('password', { required: 'Password is required' })}
+                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
+                          onBlur={(e) => (e.target.style.borderColor = '')}
                         />
                       </CInputGroup>
+                      {errors.password && <CAlert color="danger">{errors.password.message}</CAlert>}
 
                       {/* Role Selection */}
                       <CInputGroup className="mb-3">
@@ -166,7 +204,7 @@ function Register() {
 
                       <div className="d-grid">
                         <CButton color="primary" type="submit" disabled={loading}>
-                          {loading ? 'Registering...' : 'Register'}
+                          {loading ? <CSpinner color="light" /> : 'Register'}
                         </CButton>
                       </div>
                     </CForm>

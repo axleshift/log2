@@ -97,7 +97,7 @@ const Login = () => {
         user.role === 'staff' ||
         user.role === 'buyer' ||
         user.role === 'staff' ||
-        user.role === 'vendor'
+        user.role === 'user'
       ) {
         navigate('/inventory')
       } else {

@@ -83,7 +83,7 @@ UserDetailsModal.propTypes = {
       taxId: PropTypes.string,
       certifications: PropTypes.arrayOf(PropTypes.string),
     }),
-  }).isRequired,
+  }),
 }
 
 export default UserDetailsModal

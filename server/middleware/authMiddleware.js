@@ -28,6 +28,9 @@ export const checkRole = (allowedRoles) => {
 // Token Verification Middleware
 export const tokenMiddleware = (req, res, next) => {
     try {
+        // Log incoming request for debugging
+        console.log("Incoming request:", req.method, req.path);
+
         // Extract token from cookies or Authorization header
         const token = req.cookies?.accessToken || req.headers["authorization"]?.split(" ")[1];
         console.log("Extracted Token:", token);
@@ -40,9 +43,16 @@ export const tokenMiddleware = (req, res, next) => {
         // Verify the token
         jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
             if (err) {
-                const message = err.name === "TokenExpiredError" ? "Unauthorized: Token has expired." : "Unauthorized: Invalid token.";
-                console.warn(`Token verification failed: ${message}`);
-                return res.status(401).json({ error: message });
+                console.warn("Token verification failed:", err.message);
+                return res.status(401).json({ error: "Unauthorized: Invalid token." });
+            }
+
+            // Log decoded token
+            console.log("Decoded Token Data:", decoded);
+
+            if (!decoded.userId) {
+                console.warn("Invalid token payload: No userId found.");
+                return res.status(401).json({ error: "Unauthorized: Invalid token payload." });
             }
 
             // Attach decoded user data to the request object
