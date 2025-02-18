@@ -17,6 +17,7 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
+  CSpinner,
 } from '@coreui/react'
 
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -47,7 +48,9 @@ const VendorManagement = () => {
         }
 
         const data = await response.json()
-        setUsers(Array.isArray(data.users) ? data.users : [])
+
+        const filteredVendors = data.users.filter((user) => user.role === 'vendor')
+        setUsers(filteredVendors)
       } catch (error) {
         console.error('Error fetching users:', error)
         setUsers([])
@@ -119,36 +122,57 @@ const VendorManagement = () => {
     setModalVisible(true)
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved':
+        return 'success'
+      case 'Pending':
+        return 'warning'
+      default:
+        return 'secondary'
+    }
+  }
+
   return (
     <>
       <CRow>
         <CCol xs="12">
-          <CCard>
+          <CCard className="shadow-lg">
             <CCardBody>
-              <h4>Vendor Management</h4>
+              <h4 className="text-primary">Vendor Management</h4>
               {loading ? (
-                <div>Loading...</div>
+                <div className="d-flex justify-content-center">
+                  <CSpinner color="primary" />
+                </div>
               ) : (
                 <CTable striped bordered hover responsive>
-                  <CTableHead>
+                  <CTableHead className="bg-light">
                     <CTableRow>
                       <CTableHeaderCell>User ID</CTableHeaderCell>
-                      <CTableHeaderCell>Name</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
                       <CTableHeaderCell>Status</CTableHeaderCell>
+                      <CTableHeaderCell>Role</CTableHeaderCell>
                       <CTableHeaderCell>Actions</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {users.length > 0 ? (
                       users.map((user) => (
-                        <CTableRow key={user._id}>
+                        <CTableRow key={user._id} className="text-center">
                           <CTableDataCell>{user._id}</CTableDataCell>
-                          <CTableDataCell>{user?.name || 'N/A'}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
-                          <CTableDataCell>{user.status}</CTableDataCell>
                           <CTableDataCell>
-                            <CButton color="info" onClick={() => handleViewDetails(user)}>
+                            <CButton color={getStatusColor(user.status)} className="mr-2">
+                              {user.status}
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell>{user.role}</CTableDataCell>
+                          <CTableDataCell>
+                            <CButton
+                              color="info"
+                              onClick={() => handleViewDetails(user)}
+                              className="mr-2"
+                            >
                               View Details
                             </CButton>
 
@@ -177,7 +201,7 @@ const VendorManagement = () => {
                     ) : (
                       <CTableRow>
                         <CTableDataCell colSpan="5" className="text-center">
-                          No users found.
+                          No vendors found.
                         </CTableDataCell>
                       </CTableRow>
                     )}
@@ -189,7 +213,7 @@ const VendorManagement = () => {
         </CCol>
       </CRow>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} className="bg-light">
         <CModalHeader onClose={() => setModalVisible(false)}>
           <CModalTitle>User Details</CModalTitle>
         </CModalHeader>
@@ -207,6 +231,9 @@ const VendorManagement = () => {
               </p>
               <p>
                 <strong>Status:</strong> {selectedUser.status}
+              </p>
+              <p>
+                <strong>Role:</strong> {selectedUser.role}
               </p>
             </div>
           )}

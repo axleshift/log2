@@ -1,9 +1,10 @@
 import RFQ from "../models/RFQ.js";
+import { sendEmail } from "../utils/otpStore.js";
 
 // Create a new RFQ
 export const createRFQ = async (req, res) => {
     try {
-        const { rfqNumber, title, description, items, vendors, budget, deadline, createdBy } = req.body;
+        const { rfqNumber, title, description, items, vendors, budget, deadline } = req.body;
 
         if (!req.user) {
             return res.status(401).json({ message: "Unauthorized" });
@@ -36,6 +37,7 @@ export const getAllRFQs = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 // INVITE VENDORS
 export const inviteToRFQ = async (req, res) => {
     try {
@@ -64,36 +66,86 @@ export const inviteToRFQ = async (req, res) => {
     }
 };
 
+// SEND INVITE EMAIL
+export const sendInviteEmail = async (req, res) => {
+    const { vendorEmail, rfqTitle, rfqId } = req.body;
+
+    if (!vendorEmail || !rfqTitle || !rfqId) {
+        return res.status(400).send("Missing required fields: vendorEmail, rfqTitle, or rfqId.");
+    }
+
+    try {
+        await sendEmail(vendorEmail, rfqTitle, rfqId);
+        return res.status(200).send("Email sent successfully");
+    } catch (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).send(`Error sending email: ${error.message}`);
+    }
+};
+
 // GET RFQ BY ID
 export const getRFQById = async (req, res) => {
     try {
-        const rfq = await RFQ.findById(req.params.id).populate("vendors").populate("quotes.vendor").populate("awardedVendor").populate("createdBy");
-
+        const rfq = await RFQ.findById(req.params.id)
+            .populate({
+                path: "vendors",
+                populate: {
+                    path: "userId",
+                    select: "username email role status",
+                },
+            })
+            .populate({
+                path: "quotes.vendor",
+                populate: {
+                    path: "userId",
+                    select: "username email role status",
+                },
+            })
+            .populate({
+                path: "awardedVendor",
+                populate: {
+                    path: "userId",
+                    select: "username email role status",
+                },
+            })
+            .populate("createdBy", "email");
         if (!rfq) {
             return res.status(404).json({ message: "RFQ not found" });
         }
 
         res.status(200).json(rfq);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Error fetching RFQ details:", error);
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
 
-//  Vendors submit a quote (bid)
+// Vendors submit a quote (bid)
 export const submitQuote = async (req, res) => {
     try {
         const { vendor, price, deliveryTime, additionalNotes } = req.body;
+
         const rfq = await RFQ.findById(req.params.id);
 
         if (!rfq) {
             return res.status(404).json({ error: "RFQ not found" });
         }
 
-        rfq.quotes.push({ vendor, price, deliveryTime, additionalNotes });
+        if (!rfq.vendors.includes(vendorId)) {
+            return res.status(403).json({ error: "You are not invited to submit a quote for this RFQ" });
+        }
+
+        rfq.quotes.push({ vendor: vendorId, price, deliveryTime, additionalNotes });
         await rfq.save();
 
-        res.status(200).json({ message: "Quote submitted successfully", rfq });
+        const updatedRFQ = await RFQ.findById(req.params.id).populate({
+            path: "quotes.vendor",
+            select: "fullName email",
+        });
+
+        res.status(200).json({ message: "Quote submitted successfully", rfq: updatedRFQ });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -112,7 +164,15 @@ export const awardRFQ = async (req, res) => {
         rfq.status = "Awarded";
         await rfq.save();
 
-        res.status(200).json({ message: "RFQ awarded successfully", rfq });
+        const updatedRFQ = await RFQ.findById(req.params.id).populate({
+            path: "awardedVendor",
+            populate: {
+                path: "userId",
+                select: "username email role status",
+            },
+        });
+
+        res.status(200).json({ message: "RFQ awarded successfully", rfq: updatedRFQ });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

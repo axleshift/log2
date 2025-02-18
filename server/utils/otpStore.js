@@ -52,3 +52,29 @@ export const getOtp = (email) => {
 export const clearOtp = (email) => {
     delete otpStore[email];
 };
+
+// SEND INVITE EMAIL
+export const sendEmail = async (vendorEmail, rfqTitle, rfqId) => {
+    const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: vendorEmail,
+        subject: `Invitation to submit a quote for RFQ: ${rfqTitle}`,
+        html: `
+        <p>Dear Vendor,</p>
+        <p>You have been invited to submit a quotation for RFQ #${rfqId}: ${rfqTitle}.</p>
+        <p>Please <a href="http://localhost:3000/procurement/rfqs/${rfqId}" target="_blank">click here</a> to view the full RFQ details and submit your quote.</p>
+        <p>Best regards,</p>
+        <p>Your Company</p>
+      `,
+    };
+
+    return transporter.sendMail(mailOptions);
+};

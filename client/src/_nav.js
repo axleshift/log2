@@ -36,7 +36,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'PROCUREMENT',
-    role_exclude: ['staff', 'vendor'],
+    role_exclude: ['staff'],
     icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
     items: [
       {
@@ -102,18 +102,6 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Vendors Registration',
-        to: '/vendor/registration',
-        icon: <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />,
-      },
-      {
-        component: CNavItem,
-        name: 'Vendors List',
-        to: '/vendor/list',
-        icon: <FontAwesomeIcon icon={faUserAlt} className="nav-icon" />,
-      },
-      {
-        component: CNavItem,
         name: 'Bid List',
         to: '/vendor/bid-list',
         icon: <FontAwesomeIcon icon={faSitemap} className="nav-icon" />,
@@ -121,7 +109,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'RFQ & Submissions',
-        to: '/vendor/rfq-submissions',
+        to: '/rfqs/:id',
         icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
       },
       {

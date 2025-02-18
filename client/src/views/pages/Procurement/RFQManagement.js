@@ -13,7 +13,7 @@ import {
 import CreateRFQ from '../../../components/procurement/RFQ/CreateRFQ.js'
 import RFQList from '../../../components/procurement/RFQ/ListPage.js'
 
-const MainProcurement = () => {
+const RFQManagement = () => {
   const [activeTab, setActiveTab] = useState('createRFQ')
 
   return (
@@ -56,4 +56,4 @@ const MainProcurement = () => {
   )
 }
 
-export default MainProcurement
+export default RFQManagement
