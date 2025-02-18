@@ -49,7 +49,7 @@ export const verifyOtp = async (req, res, next) => {
 };
 
 export const registerUser = async (req, res, next) => {
-    const { firstName, lastName, email, username, password, role, vendorDetails } = req.body;
+    const { email, username, password, role, vendorDetails } = req.body;
     const validRoles = ["user", "admin", "super admin", "vendor", "buyer", "finance"];
     const userRole = validRoles.includes(role) ? role : "user";
 
@@ -65,8 +65,6 @@ export const registerUser = async (req, res, next) => {
 
         // Create user
         const newUser = await createUser({
-            firstName,
-            lastName,
             email,
             username,
             password: hashedPassword,
