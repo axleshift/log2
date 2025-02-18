@@ -1,9 +1,10 @@
 import express from "express";
 import { createProduct, getAllProducts, getProductById, updateProductById, deleteProductById } from "../../controller/product.js";
+import upload from "../../utils/multer.js";
 
 const router = express.Router();
 
-router.post("/", createProduct);
+router.post("/create", upload.array("images", 5), createProduct);
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 router.put("/:id", updateProductById);

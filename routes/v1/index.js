@@ -10,6 +10,8 @@ import product from "./product.js";
 import RFQ from "./RFQ.js";
 import bid from "./bid.js";
 import payments from "./payments.js";
+import Procurement from "./procurement.js";
+import shipment from "./shipment.js";
 
 const router = express.Router();
 
@@ -25,5 +27,7 @@ router.use("/product", product);
 router.use("/rfq", RFQ);
 router.use("/bid", bid);
 router.use("/payments", payments);
+router.use("/procurement", Procurement);
+router.use("/shipment", shipment);
 
 export default router;
