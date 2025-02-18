@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import VendorModel from "../models/vendor.js";
-
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.DB_URI);

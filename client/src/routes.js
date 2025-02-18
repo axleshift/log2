@@ -26,7 +26,9 @@ const Payments = lazy(() => import('./views/pages/Procurement/Payments.js'))
 const product = lazy(() => import('./views/pages/Procurement/product.js'))
 const ContractManagement = lazy(() => import('./views/pages/Procurement/Contract.js'))
 const Vendors = lazy(() => import('./views/pages/Procurement/Vendor.js'))
-// Import RFQ Management here
+const ProductDetails = lazy(() => import('./components/product/ProductDetails.js'))
+//const ProductCreation = lazy(() => import('./components/product/Creation.js'))
+
 const RFQManagement = lazy(() => import('./views/pages/Procurement/RFQManagement.js'))
 
 const RFQDetails = lazy(() => import('./components/procurement/RFQ/RFQDetails.js'))
@@ -60,6 +62,9 @@ const routes = [
   },
   { path: '/procurement/payments-invoices', name: 'Payments', element: Payments },
   { path: '/procurement/product-catalog', name: 'Product', element: product },
+  { path: '/procurement/product/:id', name: 'Product Details', element: ProductDetails },
+  //{ path: '/procurement/product/new', name: 'Product Creation', element: ProductCreation },
+
   {
     path: '/procurement/procurement/contracts',
     name: 'Contract Management',

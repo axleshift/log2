@@ -1,12 +1,22 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { CContainer, CCard, CCardBody, CCardHeader, CSpinner, CAlert } from '@coreui/react'
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import {
+  CContainer,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CSpinner,
+  CAlert,
+  CRow,
+  CCol,
+  CButton,
+} from '@coreui/react'
 
 const PRODUCT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/product`
 
 function ProductDetails() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -27,26 +37,92 @@ function ProductDetails() {
     fetchProduct()
   }, [id])
 
-  if (loading) return <CSpinner />
+  if (loading)
+    return (
+      <CContainer className="text-center py-4">
+        <CSpinner color="primary" size="sm" />
+        <p className="mt-2">Loading product details...</p>
+      </CContainer>
+    )
+
   if (error) return <CAlert color="danger">{error}</CAlert>
 
   return (
-    <CContainer>
-      <CCard>
-        <CCardHeader>{product.itemName}</CCardHeader>
-        <CCardBody>
-          <p>{product.description}</p>
-          <p>
-            <strong>Category:</strong> {product.category}
-          </p>
-          <p>
-            <strong>Price:</strong> ${product.unitPrice}
-          </p>
-          <p>
-            <strong>Stock:</strong> {product.stockQuantity}
-          </p>
-        </CCardBody>
-      </CCard>
+    <CContainer className="py-4">
+      <CButton color="secondary" onClick={() => navigate(-1)}>
+        ← Back
+      </CButton>
+
+      {product && (
+        <CRow className="mt-4">
+          {/* Product Image */}
+          <CCol md={6}>
+            {product.images && product.images.length > 0 ? (
+              <img
+                src={product.images[0]}
+                alt={product.itemName}
+                className="img-fluid rounded"
+                style={{ maxHeight: '400px', objectFit: 'cover' }}
+              />
+            ) : (
+              <p>No image available</p>
+            )}
+          </CCol>
+
+          {/* Product Details */}
+          <CCol md={6}>
+            <CCard>
+              <CCardHeader className="fw-bold">{product.itemName}</CCardHeader>
+              <CCardBody>
+                <p>
+                  <strong>Description:</strong> {product.description || 'No description available.'}
+                </p>
+                <p>
+                  <strong>Category:</strong> {product.category || 'Uncategorized'}
+                </p>
+                <p>
+                  <strong>Price:</strong> $
+                  {product.price ? Number(product.price).toFixed(2) : '0.00'}
+                </p>
+                <p>
+                  <strong>Stock Quantity:</strong> {product.stockQuantity ?? 'N/A'}
+                </p>
+                <p>
+                  <strong>Status:</strong> {product.status || 'Unknown'}
+                </p>
+                <p>
+                  <strong>SKU:</strong> {product.sku || 'N/A'}
+                </p>
+                <p>
+                  <strong>Weight:</strong> {product.weight ? `${product.weight} kg` : 'N/A'}
+                </p>
+                <p>
+                  <strong>Dimensions:</strong>{' '}
+                  {product.dimensions
+                    ? `${product.dimensions.length || 'N/A'} x ${product.dimensions.width || 'N/A'} x ${product.dimensions.height || 'N/A'} cm`
+                    : 'N/A'}
+                </p>
+                <p>
+                  <strong>Manufacturer:</strong> {product.manufacturer || 'N/A'}
+                </p>
+                <p>
+                  <strong>Tags:</strong>{' '}
+                  {product.tags && product.tags.length > 0 ? product.tags.join(', ') : 'N/A'}
+                </p>
+                <p>
+                  <strong>Color:</strong> {product.color || 'N/A'}
+                </p>
+                <p>
+                  <strong>Size:</strong> {product.size || 'N/A'}
+                </p>
+                <p>
+                  <strong>Vendor:</strong> {product.created_by?.fullName || 'Unknown'}
+                </p>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      )}
     </CContainer>
   )
 }

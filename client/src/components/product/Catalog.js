@@ -1,5 +1,4 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CCard,
@@ -21,6 +20,7 @@ function ProductCatalog() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [priceRange, setPriceRange] = useState([0, 1000])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -32,8 +32,14 @@ function ProductCatalog() {
         const response = await fetch(PRODUCT_API_URL)
         if (!response.ok) throw new Error('Failed to fetch products')
         const data = await response.json()
+        console.log('Fetched products:', data)
         setProducts(data)
         setFilteredProducts(data)
+
+        const uniqueCategories = Array.from(
+          new Set(data.map((product) => product.category).filter(Boolean)),
+        )
+        setCategories(['All', ...uniqueCategories])
       } catch (err) {
         setError(err.message)
       } finally {
@@ -46,7 +52,7 @@ function ProductCatalog() {
   useEffect(() => {
     let filtered = products.filter((product) => {
       const isCategoryMatch = selectedCategory === 'All' || product.category === selectedCategory
-      const isPriceMatch = product.unitPrice >= priceRange[0] && product.unitPrice <= priceRange[1]
+      const isPriceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
 
       const isSearchMatch =
         (product.itemName && product.itemName.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -55,12 +61,30 @@ function ProductCatalog() {
 
       return isCategoryMatch && isPriceMatch && isSearchMatch
     })
+    console.log('Filtered products:', filtered)
     setFilteredProducts(filtered)
   }, [searchQuery, selectedCategory, priceRange, products])
 
+  const onViewDetails = (productId) => {
+    navigate(`/procurement/product/${productId}`)
+  }
+
+  const onAddProduct = () => {
+    navigate('/procurement/product/new')
+  }
+
   return (
     <CContainer className="py-4">
-      <h2 className="fw-bold text-center pb-4">Product Catalog</h2>
+      <CRow className="align-items-center mb-4">
+        <CCol md={8}>
+          <h2 className="fw-bold">Product Catalog</h2>
+        </CCol>
+        <CCol md={4} className="text-end">
+          <CButton color="success" onClick={onAddProduct}>
+            + Add Product
+          </CButton>
+        </CCol>
+      </CRow>
 
       {/* Filters */}
       <CRow className="mb-4">
@@ -79,10 +103,15 @@ function ProductCatalog() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="form-control"
           >
-            <option value="All">All Categories</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Footwear">Footwear</option>
-            <option value="Apparel">Apparel</option>
+            {categories.length > 0 ? (
+              categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))
+            ) : (
+              <option>Loading Categories...</option>
+            )}
           </select>
         </CCol>
         <CCol md={4}>
@@ -100,10 +129,8 @@ function ProductCatalog() {
         </CCol>
       </CRow>
 
-      {/* Error Handling */}
       {error && <CAlert color="danger">{error}</CAlert>}
 
-      {/* Loading Spinner */}
       {loading ? (
         <div className="text-center">
           <CSpinner color="primary" size="sm" />
@@ -117,6 +144,14 @@ function ProductCatalog() {
             filteredProducts.map((product) => (
               <CCol key={product._id} md={4}>
                 <CCard className="shadow-sm">
+                  {product.images && product.images.length > 0 && (
+                    <img
+                      src={product.images[0]}
+                      alt={product.itemName}
+                      className="card-img-top"
+                      style={{ height: '200px', objectFit: 'cover' }}
+                    />
+                  )}
                   <CCardHeader className="fw-bold">{product.itemName}</CCardHeader>
                   <CCardBody>
                     <p className="text-muted">
@@ -127,13 +162,13 @@ function ProductCatalog() {
                     </p>
                     <p className="small">
                       <strong>Price:</strong> $
-                      {product.unitPrice ? Number(product.unitPrice).toFixed(2) : '0.00'}
+                      {product.price ? Number(product.price).toFixed(2) : '0.00'}
                     </p>
                     <p className="small">
                       <strong>Stock:</strong> {product.stockQuantity ?? 'N/A'}
                     </p>
                     <p className="small">
-                      <strong>Vendor:</strong> {product.vendorId?.name || 'N/A'}
+                      <strong>Vendor:</strong> {product.created_by?.fullName || 'Unknown'}
                     </p>
                     <CButton
                       color="primary"

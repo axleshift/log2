@@ -4,7 +4,7 @@ import User from "../models/UserModel.js";
 // Create Vendor
 export const createVendor = async (req, res) => {
     try {
-        const { user, companyName, contactPerson, email, phone, address, taxId, certifications } = req.body;
+        const { user, businessName, fullName, email, contactNumber, businessAddress, taxId, certifications } = req.body;
 
         const existingUser = await User.findById(user);
         if (!existingUser) {
@@ -16,17 +16,13 @@ export const createVendor = async (req, res) => {
             return res.status(400).json({ message: "Vendor already exists" });
         }
 
-        // Generate a unique vendor ID
-        const vendorId = `VENDOR-${Date.now()}`;
-
         const vendor = new Vendor({
-            vendorId,
-            user,
-            companyName,
-            contactPerson,
+            userId: user,
+            businessName,
+            fullName,
             email,
-            phone,
-            address,
+            contactNumber,
+            businessAddress,
             taxId,
             certifications,
         });
@@ -59,6 +55,7 @@ export const getVendorById = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
+
 // Update Vendor with User Details
 export const updateVendor = async (req, res) => {
     try {
@@ -71,7 +68,6 @@ export const updateVendor = async (req, res) => {
         vendor.updatedAt = Date.now();
 
         await vendor.save();
-
         await vendor.populate("userId", "username email role status");
 
         res.status(200).json({ message: "Vendor updated successfully", vendor });
@@ -91,7 +87,6 @@ export const deleteVendor = async (req, res) => {
         vendor.status = "Approved";
         vendor.updatedAt = Date.now();
         await vendor.save();
-
         await vendor.populate("userId", "username email role status");
 
         res.status(200).json({ message: "Vendor deleted successfully" });
@@ -111,7 +106,6 @@ export const approveVendor = async (req, res) => {
         vendor.status = "Approved";
         vendor.updatedAt = Date.now();
         await vendor.save();
-
         await vendor.populate("userId", "username email role status");
 
         res.status(200).json({ message: "Vendor approved successfully", vendor });
@@ -132,7 +126,6 @@ export const rejectVendor = async (req, res) => {
         vendor.status = "Rejected";
         vendor.updatedAt = Date.now();
         await vendor.save();
-
         await vendor.populate("userId", "username email role status");
 
         res.status(200).json({ message: "Vendor rejected successfully", vendor });
@@ -153,7 +146,6 @@ export const unapproveVendor = async (req, res) => {
         vendor.status = "Pending";
         vendor.updatedAt = Date.now();
         await vendor.save();
-
         await vendor.populate("userId", "username email role status");
 
         res.status(200).json({ message: "Vendor approval canceled", vendor });

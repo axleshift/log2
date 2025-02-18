@@ -1,11 +1,13 @@
 import express from "express";
+import { createPurchaseOrder, getAllPurchaseOrders, getPurchaseOrderById, updatePurchaseOrderStatus, deletePurchaseOrder, addPaymentToPurchaseOrder } from "../../controller/purchaseOrder.js";
 
 const router = express.Router();
 
-import { createPurchaseOrder, getPurchaseOrdersByStatus, updatePurchaseOrderStatus, attachDocuments } from "../../controller/purchaseOrder.js";
 router.post("/", createPurchaseOrder);
-router.get("/status/:status", getPurchaseOrdersByStatus);
-router.put("/status/:id", updatePurchaseOrderStatus);
-router.put("/attach-documents/:id", attachDocuments);
+router.get("/", getAllPurchaseOrders);
+router.get("/:id", getPurchaseOrderById);
+router.put("/:id/status", updatePurchaseOrderStatus);
+router.delete("/:id", deletePurchaseOrder);
+router.post("/:id/payments", addPaymentToPurchaseOrder);
 
 export default router;

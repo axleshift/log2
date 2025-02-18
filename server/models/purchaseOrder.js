@@ -1,40 +1,53 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const purchaseOrderSchema = new mongoose.Schema({
-    vendor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Vendor", // Assumes you have a Vendor model
-        required: true,
-    },
+const PurchaseOrderSchema = new Schema({
+    procurement: { type: Schema.Types.ObjectId, ref: "Procurement" },
+    vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
+    orderNumber: { type: String, required: true, unique: true },
+
     items: [
         {
-            product: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product", // Assumes you have a Product model
-                required: true,
-            },
+            product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
+            totalPrice: {
+                type: Number,
+                required: true,
+                default: function () {
+                    return this.quantity * this.price;
+                },
+            },
         },
     ],
-    totalAmount: { type: Number, required: true },
+    shipments: [{ type: Schema.Types.ObjectId, ref: "Shipment" }],
     status: {
         type: String,
-        enum: ["pending", "approved", "shipped", "completed"],
-        default: "pending",
+        enum: ["Ordered", "Shipped", "Delivered", "Cancelled"],
+        default: "Ordered",
     },
-    invoice: {
-        type: String, // Stores the file path for the attached invoice
-    },
-    additionalDocuments: [
+
+    totalAmount: { type: Number, required: true },
+    paymentStatus: { type: String, enum: ["Pending", "Paid", "Partially Paid"], default: "Pending" },
+
+    payments: [
         {
-            type: String, // Stores file paths for additional attached documents
+            vendor: { type: Schema.Types.ObjectId, ref: "Vendor" },
+            amount: { type: Number, required: true },
+            method: {
+                type: String,
+                enum: ["Bank Transfer", "Credit Card", "PayPal", "Cash", "Cheque"],
+                required: true,
+            },
+            status: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
+            transactionId: { type: String },
+            paymentDate: { type: Date },
         },
     ],
+
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
 
-const PurchaseOrder = mongoose.model("PurchaseOrder", purchaseOrderSchema);
-
+const PurchaseOrder = mongoose.model("PurchaseOrder", PurchaseOrderSchema);
 export default PurchaseOrder;
