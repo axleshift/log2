@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema(
     {
-        itemName: { type: String, required: true },
+        name: { type: String, required: true },
         description: { type: String, required: true },
         price: { type: Number, required: true, min: 0 },
         category: { type: String, required: true },
@@ -12,7 +12,7 @@ const ProductSchema = new mongoose.Schema(
             enum: ["Available", "Out of Stock", "Discontinued", "Pre-order"],
             default: "Available",
         },
-        sku: { type: String, unique: true },
+        sku: { type: String, unique: true, required: true },
         images: [{ type: String }],
         weight: { type: Number },
         dimensions: {
@@ -22,7 +22,6 @@ const ProductSchema = new mongoose.Schema(
         },
         manufacturer: { type: String },
         tags: [{ type: String }],
-        created_by: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
         color: { type: String },
         size: { type: String },
     },

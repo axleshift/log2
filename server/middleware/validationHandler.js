@@ -18,7 +18,7 @@ export const validateRegistration = [
     body("email").isEmail().withMessage("Invalid email format"),
     body("username").notEmpty().withMessage("Username is required"),
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
-    body("role").optional().isIn(["user", "admin", "super admin", "vendor"]).withMessage("Invalid role"),
+    body("role").optional().isIn(["user", "admin", "super admin", "vendor", "buyer", "finance"]).withMessage("Invalid role"),
 
     // Vendor-specific validation (only if role is 'vendor')
     body("businessName").if(body("role").equals("vendor")).notEmpty().withMessage("Business Name is required"),
@@ -27,6 +27,10 @@ export const validateRegistration = [
     body("contactNumber").if(body("role").equals("vendor")).notEmpty().withMessage("Contact Number is required"),
     body("taxId").if(body("role").equals("vendor")).notEmpty().withMessage("Tax ID is required"),
     body("certifications").if(body("role").equals("vendor")).notEmpty().withMessage("Certifications is required"),
+
+    // Department-specific validation (only if department details are provided)
+    body("departmentName").optional().notEmpty().withMessage("Department Name is required if provided"),
+    body("departmentDescription").optional().notEmpty().withMessage("Department Description is required if provided"),
 ];
 
 // Login Validation

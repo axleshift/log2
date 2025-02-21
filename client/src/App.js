@@ -43,7 +43,6 @@ class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return <Navigate to="/404" replace />
     }
-
     return this.props.children
   }
 }
@@ -54,7 +53,7 @@ ErrorBoundary.propTypes = {
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-  const storedTheme = useSelector((state) => state.theme)
+  const storedTheme = useSelector((state) => state.theme) // Redux state for theme
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -63,7 +62,7 @@ const App = () => {
     if (theme) {
       setColorMode(theme)
     } else if (!isColorModeSet()) {
-      setColorMode(storedTheme)
+      setColorMode(storedTheme) // Keep Redux-managed theme
     }
   }, [isColorModeSet, setColorMode, storedTheme])
 
@@ -72,7 +71,7 @@ const App = () => {
       <AuthProvider>
         <Suspense
           fallback={
-            <div className="pt-3 text-center">
+            <div className="d-flex justify-content-center align-items-center vh-100">
               <CSpinner color="primary" variant="grow" />
               <div>Loading...</div>
             </div>
@@ -89,7 +88,6 @@ const App = () => {
               <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/notice-details/:id" element={<NoticeDetails />} />
               <Route path="/notice-to-proceed/:id" element={<NoticeToProceedDetails />} />
-
               <Route path="/" element={<Landing />} />
 
               {/* Protected Routes */}

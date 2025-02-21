@@ -19,7 +19,7 @@ function ProductCatalog() {
   const [filteredProducts, setFilteredProducts] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
-  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [priceRange, setPriceRange] = useState([0, 20000])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -32,14 +32,15 @@ function ProductCatalog() {
         const response = await fetch(PRODUCT_API_URL)
         if (!response.ok) throw new Error('Failed to fetch products')
         const data = await response.json()
-        console.log('Fetched products:', data)
+
         setProducts(data)
         setFilteredProducts(data)
 
-        const uniqueCategories = Array.from(
-          new Set(data.map((product) => product.category).filter(Boolean)),
-        )
-        setCategories(['All', ...uniqueCategories])
+        const uniqueCategories = ['All', ...new Set(data.map((p) => p.category).filter(Boolean))]
+        setCategories(uniqueCategories)
+
+        const maxPrice = Math.max(...data.map((p) => p.price), 20000)
+        setPriceRange([0, maxPrice])
       } catch (err) {
         setError(err.message)
       } finally {
@@ -50,28 +51,22 @@ function ProductCatalog() {
   }, [])
 
   useEffect(() => {
-    let filtered = products.filter((product) => {
+    const filtered = products.filter((product) => {
       const isCategoryMatch = selectedCategory === 'All' || product.category === selectedCategory
       const isPriceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
-
+      const searchTerm = searchQuery.toLowerCase()
       const isSearchMatch =
-        (product.itemName && product.itemName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (product.description &&
-          product.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        searchQuery === '' ||
+        product.itemName.toLowerCase().includes(searchTerm) ||
+        product.description.toLowerCase().includes(searchTerm)
 
       return isCategoryMatch && isPriceMatch && isSearchMatch
     })
-    console.log('Filtered products:', filtered)
     setFilteredProducts(filtered)
   }, [searchQuery, selectedCategory, priceRange, products])
 
-  const onViewDetails = (productId) => {
-    navigate(`/procurement/product/${productId}`)
-  }
-
-  const onAddProduct = () => {
-    navigate('/procurement/product/new')
-  }
+  const onViewDetails = (productId) => navigate(`/procurement/product/${productId}`)
+  const onAddProduct = () => navigate('/procurement/product/new')
 
   return (
     <CContainer className="py-4">
@@ -91,7 +86,7 @@ function ProductCatalog() {
         <CCol md={4}>
           <input
             type="text"
-            placeholder="Search by name or description"
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="form-control"
@@ -103,15 +98,11 @@ function ProductCatalog() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="form-control"
           >
-            {categories.length > 0 ? (
-              categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))
-            ) : (
-              <option>Loading Categories...</option>
-            )}
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </CCol>
         <CCol md={4}>
@@ -121,20 +112,19 @@ function ProductCatalog() {
           <input
             type="range"
             min="0"
-            max="1000"
+            max="10000"
             value={priceRange[1]}
-            onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+            onChange={(e) => setPriceRange([0, Number(e.target.value)])}
             className="form-range"
           />
         </CCol>
       </CRow>
 
       {error && <CAlert color="danger">{error}</CAlert>}
-
       {loading ? (
         <div className="text-center">
-          <CSpinner color="primary" size="sm" />
-          <p className="mt-2">Loading products...</p>
+          <CSpinner color="primary" />
+          <p>Loading products...</p>
         </div>
       ) : (
         <CRow className="g-4">
@@ -144,37 +134,28 @@ function ProductCatalog() {
             filteredProducts.map((product) => (
               <CCol key={product._id} md={4}>
                 <CCard className="shadow-sm">
-                  {product.images && product.images.length > 0 && (
+                  {product.images?.length > 0 && (
                     <img
                       src={product.images[0]}
                       alt={product.itemName}
                       className="card-img-top"
-                      style={{ height: '200px', objectFit: 'cover' }}
+                      style={{ height: '180px', objectFit: 'cover' }}
                     />
                   )}
                   <CCardHeader className="fw-bold">{product.itemName}</CCardHeader>
                   <CCardBody>
-                    <p className="text-muted">
-                      {product.description || 'No description available.'}
-                    </p>
-                    <p className="small">
+                    <p className="text-muted">{product.description?.slice(0, 60)}...</p>
+                    <p>
                       <strong>Category:</strong> {product.category || 'Uncategorized'}
                     </p>
-                    <p className="small">
+                    <p>
                       <strong>Price:</strong> $
                       {product.price ? Number(product.price).toFixed(2) : '0.00'}
                     </p>
-                    <p className="small">
+                    <p>
                       <strong>Stock:</strong> {product.stockQuantity ?? 'N/A'}
                     </p>
-                    <p className="small">
-                      <strong>Vendor:</strong> {product.created_by?.fullName || 'Unknown'}
-                    </p>
-                    <CButton
-                      color="primary"
-                      className="mt-2"
-                      onClick={() => onViewDetails(product._id)}
-                    >
+                    <CButton color="primary" onClick={() => onViewDetails(product._id)}>
                       View Details
                     </CButton>
                   </CCardBody>

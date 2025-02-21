@@ -1,7 +1,7 @@
+import nodemailer from "nodemailer";
 import { TokenService } from "./tokenService.js";
 import User from "../models/UserModel.js";
 import RFQ from "../models/RFQ.js";
-import nodemailer from "nodemailer";
 
 export const generateInviteToken = async (rfqId, vendorId) => {
     try {

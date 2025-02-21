@@ -15,18 +15,23 @@ const logger = winston.createLogger({
 });
 
 if (!SECRET_KEY || !REFRESH_KEY) {
-    // Updated check for REFRESH_KEY
     throw new Error("Environment variables for secret keys are not set.");
 }
 
 export class TokenService {
     // Generate access token
-    static generateAccessToken(payload, expiresIn = "1h") {
+    static generateAccessToken(user, expiresIn = "1h") {
+        const payload = {
+            userId: user._id,
+            role: user.role,
+            email: user.email,
+        };
         return jwt.sign(payload, SECRET_KEY, { expiresIn });
     }
 
     // Generate refresh token
-    static generateRefreshToken(payload, expiresIn = "7d") {
+    static generateRefreshToken(user, expiresIn = "7d") {
+        const payload = { userId: user._id };
         return jwt.sign(payload, REFRESH_KEY, { expiresIn });
     }
 

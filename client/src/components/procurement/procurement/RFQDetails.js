@@ -24,9 +24,6 @@ const RFQDetails = () => {
   const [rfq, setRFQ] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [quoteModal, setQuoteModal] = useState(false)
-  const [selectedVendorId, setSelectedVendorId] = useState(null)
-  const [vendors, setVendors] = useState([])
 
   useEffect(() => {
     const fetchRFQ = async () => {
@@ -40,7 +37,6 @@ const RFQDetails = () => {
         setLoading(true)
         const response = await axios.get(`${RFQ_API_URL}/${id}`)
         setRFQ(response.data)
-        setVendors(response.data.vendors) // Vendors will be fetched here
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load RFQ')
       } finally {
@@ -55,6 +51,11 @@ const RFQDetails = () => {
   if (error) return <div>{error}</div>
   if (!rfq) return <div>No RFQ found.</div>
 
+  // Ensure these are defined before accessing .length
+  const products = rfq.products || []
+  const invitedVendors = rfq.invitedVendors || []
+  const quotes = rfq.quotes || []
+
   return (
     <CCard>
       <CCardHeader>
@@ -65,19 +66,20 @@ const RFQDetails = () => {
       </CCardHeader>
       <CCardBody>
         <h6>
-          <strong>RFQ Number:</strong> {rfq.rfqNumber}
+          <strong>RFQ ID:</strong> {rfq._id}
         </h6>
         <h6>
-          <strong>Title:</strong> {rfq.title}
+          <strong>Title:</strong> {rfq.procurementId?.title || 'N/A'}
         </h6>
         <h6>
-          <strong>Description:</strong> {rfq.description || 'No description available'}
+          <strong>Description:</strong>{' '}
+          {rfq.procurementId?.description || 'No description available'}
         </h6>
         <h6>
           <strong>Status:</strong>
           <CBadge
             color={
-              rfq.status === 'Open' ? 'success' : rfq.status === 'Awarded' ? 'warning' : 'danger'
+              rfq.status === 'Open' ? 'success' : rfq.status === 'Closed' ? 'danger' : 'warning'
             }
           >
             {rfq.status}
@@ -92,7 +94,7 @@ const RFQDetails = () => {
 
         <hr />
 
-        {/* Items Table */}
+        {/* Products Table */}
         <h6>
           <strong>Items</strong>
         </h6>
@@ -100,22 +102,22 @@ const RFQDetails = () => {
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Name</CTableHeaderCell>
+              <CTableHeaderCell>Specs</CTableHeaderCell>
               <CTableHeaderCell>Quantity</CTableHeaderCell>
-              <CTableHeaderCell>Unit</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {rfq.items.length > 0 ? (
-              rfq.items.map((item, index) => (
+            {products.length > 0 ? (
+              products.map((product, index) => (
                 <CTableRow key={index}>
-                  <CTableDataCell>{item.name || 'No name'}</CTableDataCell>
-                  <CTableDataCell>{item.quantity || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{item.unit || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{product.name || 'No name'}</CTableDataCell>
+                  <CTableDataCell>{product.specs || 'No specs'}</CTableDataCell>
+                  <CTableDataCell>{product.quantity || 'N/A'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="3">No items listed</CTableDataCell>
+                <CTableDataCell colSpan="3">No products listed</CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -137,13 +139,13 @@ const RFQDetails = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {rfq.vendors.length > 0 ? (
-              rfq.vendors.map((vendor, index) => (
+            {invitedVendors.length > 0 ? (
+              invitedVendors.map((vendor, index) => (
                 <CTableRow key={index}>
                   <CTableDataCell>{vendor.businessName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.fullName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.contactNumber || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{vendor.userId?.email || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{vendor.userId?.email || 'No Email'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
@@ -164,19 +166,21 @@ const RFQDetails = () => {
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Vendor</CTableHeaderCell>
-              <CTableHeaderCell>Price</CTableHeaderCell>
+              <CTableHeaderCell>Price Per Unit</CTableHeaderCell>
               <CTableHeaderCell>Delivery Time</CTableHeaderCell>
-              <CTableHeaderCell>Additional Notes</CTableHeaderCell>
+              <CTableHeaderCell>Status</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {rfq.quotes.length > 0 ? (
-              rfq.quotes.map((quote, index) => (
+            {quotes.length > 0 ? (
+              quotes.map((quote, index) => (
                 <CTableRow key={index}>
-                  <CTableDataCell>{quote.vendor?.businessName || 'Unknown Vendor'}</CTableDataCell>
-                  <CTableDataCell>${quote.price || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.deliveryTime || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.additionalNotes || 'No additional notes'}</CTableDataCell>
+                  <CTableDataCell>
+                    {quote.vendorId?.businessName || 'Unknown Vendor'}
+                  </CTableDataCell>
+                  <CTableDataCell>{quote.quoteDetails[0]?.pricePerUnit || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{quote.quoteDetails[0]?.deliveryTime || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{quote.status}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
@@ -189,13 +193,14 @@ const RFQDetails = () => {
 
         <hr />
 
-        {/* Awarded Vendor */}
-        {rfq.awardedVendor ? (
+        {/* Selected Vendor */}
+        {rfq.selectedVendor ? (
           <h6>
-            <strong>Awarded Vendor:</strong> {rfq.awardedVendor.businessName || rfq.awardedVendor}
+            <strong>Selected Vendor:</strong>{' '}
+            {rfq.selectedVendor.businessName || rfq.selectedVendor}
           </h6>
         ) : (
-          <p>No vendor awarded yet.</p>
+          <p>No vendor selected yet.</p>
         )}
       </CCardBody>
     </CCard>

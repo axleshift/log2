@@ -1,28 +1,32 @@
+import Procurement from "../models/procurement.js";
 import RFQ from "../models/RFQ.js";
+import Vendor from "../models/vendor.js";
 import { sendEmail } from "../utils/otpStore.js";
 
-// Create a new RFQ
+// Create RFQ
 export const createRFQ = async (req, res) => {
     try {
-        const { rfqNumber, title, description, items, vendors, budget, deadline } = req.body;
+        console.log("📥 Received RFQ creation request:", req.body);
 
-        if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
+        const rfq = new RFQ({ ...req.body });
+        await rfq.save();
+
+        // If linked to a Procurement, update it
+        if (rfq.procurementId) {
+            const procurement = await Procurement.findById(rfq.procurementId);
+            if (!procurement) {
+                return res.status(400).json({ error: "Procurement not found" });
+            }
+            if (procurement.rfqId) {
+                return res.status(400).json({ error: "Procurement already has an RFQ assigned" });
+            }
+            procurement.rfqId = rfq._id;
+            await procurement.save();
         }
-        const newRFQ = new RFQ({
-            rfqNumber,
-            title,
-            description,
-            items,
-            vendors,
-            budget,
-            deadline,
-            createdBy: req.user.id,
-        });
 
-        const savedRFQ = await newRFQ.save();
-        res.status(201).json(savedRFQ);
+        res.status(201).json(rfq);
     } catch (error) {
+        console.error("❌ Error in createRFQ:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -30,150 +34,221 @@ export const createRFQ = async (req, res) => {
 // Get all RFQs
 export const getAllRFQs = async (req, res) => {
     try {
-        const rfqs = await RFQ.find().populate("vendors").populate("quotes.vendor").populate("createdBy", "email");
+        const rfqs = await RFQ.find()
+            .populate("procurementId")
+            .populate("products")
+            .populate("createdBy", "email username role")
+            .populate("invitedVendors", "businessName fullName contactNumber userId")
+            .populate({
+                path: "invitedVendors",
+                populate: {
+                    path: "userId",
+                    select: "email",
+                },
+            })
+            .populate("quotes.vendorId", "businessName email");
 
         res.status(200).json(rfqs);
     } catch (error) {
+        console.error("Error in getAllRFQs:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
-// INVITE VENDORS
-export const inviteToRFQ = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { vendors } = req.body;
-
-        console.log("Incoming request to invite vendors to RFQ:", id);
-        console.log("Received vendors array:", vendors);
-
-        if (!vendors || !Array.isArray(vendors) || vendors.length === 0) {
-            return res.status(400).json({ error: "Vendors must be a non-empty array of valid ObjectIds" });
-        }
-
-        const updatedRFQ = await RFQ.findByIdAndUpdate(id, { $addToSet: { vendors: { $each: vendors } } }, { new: true });
-
-        if (!updatedRFQ) {
-            console.log("RFQ not found for ID:", id);
-            return res.status(404).json({ error: "RFQ not found" });
-        }
-
-        console.log("Vendors successfully invited:", updatedRFQ);
-        res.status(200).json({ message: "Vendors added successfully", rfq: updatedRFQ });
-    } catch (error) {
-        console.error("Error inviting vendors:", error);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-// SEND INVITE EMAIL
-export const sendInviteEmail = async (req, res) => {
-    const { vendorEmail, rfqTitle, rfqId } = req.body;
-
-    if (!vendorEmail || !rfqTitle || !rfqId) {
-        return res.status(400).send("Missing required fields: vendorEmail, rfqTitle, or rfqId.");
-    }
-
-    try {
-        await sendEmail(vendorEmail, rfqTitle, rfqId);
-        return res.status(200).send("Email sent successfully");
-    } catch (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).send(`Error sending email: ${error.message}`);
-    }
-};
-
-// GET RFQ BY ID
+// Get RFQ by ID
 export const getRFQById = async (req, res) => {
     try {
         const rfq = await RFQ.findById(req.params.id)
+            .populate("procurementId")
+            .populate("createdBy", "email username role")
             .populate({
-                path: "vendors",
+                path: "invitedVendors",
                 populate: {
                     path: "userId",
-                    select: "username email role status",
+                    select: "email",
                 },
             })
             .populate({
-                path: "quotes.vendor",
-                populate: {
-                    path: "userId",
-                    select: "username email role status",
-                },
-            })
-            .populate({
-                path: "awardedVendor",
-                populate: {
-                    path: "userId",
-                    select: "username email role status",
-                },
-            })
-            .populate("createdBy", "email");
+                path: "quotes.vendorId",
+                select: "businessName email",
+            });
+
+        if (!rfq) return res.status(404).json({ error: "RFQ not found" });
+
+        res.status(200).json(rfq);
+    } catch (error) {
+        console.error("Error in getRFQById:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Update RFQ
+export const updateRFQ = async (req, res) => {
+    try {
+        const rfq = await RFQ.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("procurementId invitedVendors selectedVendor");
+        if (!rfq) return res.status(404).json({ error: "RFQ not found" });
+        res.status(200).json(rfq);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Delete RFQ
+export const deleteRFQ = async (req, res) => {
+    try {
+        const rfq = await RFQ.findByIdAndDelete(req.params.id);
+        if (!rfq) return res.status(404).json({ error: "RFQ not found" });
+        res.status(200).json({ message: "RFQ deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const closeRFQ = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const rfq = await RFQ.findById(id);
         if (!rfq) {
             return res.status(404).json({ message: "RFQ not found" });
         }
 
-        res.status(200).json(rfq);
-    } catch (error) {
-        console.error("Error fetching RFQ details:", error);
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Vendors submit a quote (bid)
-export const submitQuote = async (req, res) => {
-    try {
-        const { vendor, price, deliveryTime, additionalNotes } = req.body;
-
-        const rfq = await RFQ.findById(req.params.id);
-
-        if (!rfq) {
-            return res.status(404).json({ error: "RFQ not found" });
+        if (rfq.status === "Closed") {
+            return res.status(400).json({ message: "RFQ is already closed" });
         }
 
-        if (!rfq.vendors.includes(vendorId)) {
-            return res.status(403).json({ error: "You are not invited to submit a quote for this RFQ" });
-        }
-
-        rfq.quotes.push({ vendor: vendorId, price, deliveryTime, additionalNotes });
+        rfq.status = "Closed";
         await rfq.save();
 
-        const updatedRFQ = await RFQ.findById(req.params.id).populate({
-            path: "quotes.vendor",
-            select: "fullName email",
-        });
-
-        res.status(200).json({ message: "Quote submitted successfully", rfq: updatedRFQ });
+        res.status(200).json({ message: "RFQ closed successfully", rfq });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: "Error closing RFQ", error: error.message });
     }
 };
 
-// Award RFQ to a vendor
-export const awardRFQ = async (req, res) => {
+// Invite vendors to an RFQ
+export const inviteToRFQ = async (req, res) => {
     try {
-        const { awardedVendor } = req.body;
-        const rfq = await RFQ.findById(req.params.id);
+        const { id: rfqId } = req.params;
+        const { vendorIds } = req.body;
 
-        if (!rfq) {
-            return res.status(404).json({ error: "RFQ not found" });
+        if (!vendorIds || !Array.isArray(vendorIds)) {
+            return res.status(400).json({ message: "Invalid vendors list" });
         }
 
-        rfq.awardedVendor = awardedVendor;
+        const rfq = await RFQ.findById(rfqId).select("invitedVendors");
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found" });
+        }
+        const existingVendorIds = new Set(rfq.invitedVendors.map((id) => id.toString()));
+        const newVendorIds = vendorIds.filter((id) => !existingVendorIds.has(id));
+
+        if (newVendorIds.length === 0) {
+            return res.status(200).json({ message: "No new vendors to invite", rfq });
+        }
+
+        const vendors = await Vendor.find({ _id: { $in: newVendorIds } }).populate("userId", "email");
+        if (!vendors.length) {
+            return res.status(400).json({ message: "No valid vendors found for invitation" });
+        }
+        // Update RFQ only if new vendors exist
+        const updatedRFQ = await RFQ.findByIdAndUpdate(rfqId, { $addToSet: { invitedVendors: { $each: newVendorIds } } }, { new: true }).populate("invitedVendors");
+        await Promise.all(vendors.filter((vendor) => vendor.userId?.email).map((vendor) => sendEmail(vendor.userId.email, rfqId)));
+
+        res.status(200).json({
+            message: "Vendors invited successfully, emails sent",
+            rfq: updatedRFQ,
+        });
+    } catch (error) {
+        console.error("Error in inviteToRFQ:", error);
+        res.status(500).json({ message: "Error inviting vendors", error: error.message });
+    }
+};
+
+// Submit a quote
+export const submitQuote = async (req, res) => {
+    try {
+        const { rfqId, vendorId, quoteAmount, items } = req.body;
+        const rfq = await RFQ.findById(rfqId);
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found." });
+        }
+        if (!rfq.invitedVendors.includes(vendorId)) {
+            return res.status(403).json({ message: "Vendor not invited to this RFQ." });
+        }
+        const existingQuote = rfq.quotes.find((quote) => quote.vendorId.toString() === vendorId);
+        if (existingQuote) {
+            return res.status(400).json({ message: "Vendor has already submitted a quote." });
+        }
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ message: "Invalid items in quote." });
+        }
+
+        // Add the quote to the RFQ
+        const newQuote = {
+            vendorId,
+            quoteAmount,
+            items,
+            submittedAt: new Date(),
+        };
+        rfq.quotes.push(newQuote);
+        await rfq.save();
+
+        res.status(200).json({ message: "Quote submitted successfully", rfq });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Award vendor and create a PO
+export const awardVendor = async (req, res) => {
+    try {
+        const { rfqId, vendorId } = req.body;
+
+        const rfq = await RFQ.findById(rfqId);
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found." });
+        }
+        rfq.awardedVendor = vendorId;
         rfq.status = "Awarded";
         await rfq.save();
 
-        const updatedRFQ = await RFQ.findById(req.params.id).populate({
-            path: "awardedVendor",
-            populate: {
-                path: "userId",
-                select: "username email role status",
-            },
+        const procurement = await Procurement.findById(rfq.procurementId);
+        if (!procurement) {
+            return res.status(404).json({ message: "Procurement not found." });
+        }
+
+        const purchaseOrder = new PurchaseOrder({
+            procurementId: procurement._id,
+            vendorId: rfq.awardedVendor,
+            items: procurement.items,
+            paymentTerms: rfq.paymentTerms,
         });
 
-        res.status(200).json({ message: "RFQ awarded successfully", rfq: updatedRFQ });
+        await purchaseOrder.save();
+        procurement.purchaseOrders.push(purchaseOrder._id);
+        await procurement.save();
+
+        res.status(200).json({ message: "Vendor awarded and PO created successfully", rfq });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Update payment terms for an RFQ
+export const updatePaymentTerms = async (req, res) => {
+    try {
+        const { rfqId, paymentTerms } = req.body;
+
+        const rfq = await RFQ.findById(rfqId);
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found." });
+        }
+
+        rfq.paymentTerms = paymentTerms;
+        await rfq.save();
+
+        res.status(200).json(rfq);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

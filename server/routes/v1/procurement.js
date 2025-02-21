@@ -1,27 +1,25 @@
 import express from "express";
-import { createProcurement, getAllProcurements, getProcurementById, updateProcurementStatus, addQuoteToProcurement, addNegotiationToProcurement, deleteProcurement } from "../../controller/procurement.js";
+import {
+    createProcurement,
+    getProcurements,
+    //   getAllProcurement,
+    getProcurementById,
+    updateProcurementById,
+    deleteProcurementById,
+    approveProcurement,
+    rejectProcurement,
+} from "../../controller/procurement.js";
+import { tokenMiddleware } from "../../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Create a new procurement
-router.post("/", createProcurement);
-
-// Get all procurements
-router.get("/", getAllProcurements);
-
-// Get a procurement by ID
+router.post("/", tokenMiddleware, createProcurement);
+router.get("/", getProcurements);
+//router.get("/", getAllProcurement);
 router.get("/:id", getProcurementById);
-
-// Update procurement status
-router.put("/:id/status", updateProcurementStatus);
-
-// Add a quote to a procurement
-router.post("/:id/quotes", addQuoteToProcurement);
-
-// Add a negotiation to a procurement
-router.post("/:id/negotiations", addNegotiationToProcurement);
-
-// Delete a procurement
-router.delete("/:id", deleteProcurement);
+router.put("/:id", updateProcurementById);
+router.delete("/:id", deleteProcurementById);
+router.patch("/:procurementId/approve", approveProcurement);
+router.patch("/:procurementId/reject", rejectProcurement);
 
 export default router;

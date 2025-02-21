@@ -27,6 +27,7 @@ function ProductDetails() {
         const response = await fetch(`${PRODUCT_API_URL}/${id}`)
         if (!response.ok) throw new Error('Failed to fetch product details')
         const data = await response.json()
+        console.log('🚀 Fetched Product Data:', data)
         setProduct(data)
       } catch (err) {
         setError(err.message)
@@ -55,68 +56,65 @@ function ProductDetails() {
 
       {product && (
         <CRow className="mt-4">
-          {/* Product Image */}
           <CCol md={6}>
-            {product.images && product.images.length > 0 ? (
+            {product?.images?.length ? (
               <img
                 src={product.images[0]}
-                alt={product.itemName}
+                alt={product?.itemName ?? 'Product'}
                 className="img-fluid rounded"
-                style={{ maxHeight: '400px', objectFit: 'cover' }}
               />
             ) : (
               <p>No image available</p>
             )}
           </CCol>
 
-          {/* Product Details */}
           <CCol md={6}>
             <CCard>
-              <CCardHeader className="fw-bold">{product.itemName}</CCardHeader>
+              <CCardHeader className="fw-bold">{product?.itemName ?? 'N/A'}</CCardHeader>
               <CCardBody>
                 <p>
-                  <strong>Description:</strong> {product.description || 'No description available.'}
+                  <strong>Description:</strong>{' '}
+                  {product?.description ?? 'No description available.'}
                 </p>
                 <p>
-                  <strong>Category:</strong> {product.category || 'Uncategorized'}
+                  <strong>Category:</strong> {product?.category ?? 'Uncategorized'}
                 </p>
                 <p>
                   <strong>Price:</strong> $
-                  {product.price ? Number(product.price).toFixed(2) : '0.00'}
+                  {product?.price ? Number(product.price).toFixed(2) : '0.00'}
                 </p>
                 <p>
-                  <strong>Stock Quantity:</strong> {product.stockQuantity ?? 'N/A'}
+                  <strong>Stock Quantity:</strong> {product?.stockQuantity ?? 'N/A'}
                 </p>
                 <p>
-                  <strong>Status:</strong> {product.status || 'Unknown'}
+                  <strong>Status:</strong> {product?.status ?? 'Unknown'}
                 </p>
                 <p>
-                  <strong>SKU:</strong> {product.sku || 'N/A'}
+                  <strong>SKU:</strong> {product?.sku ?? 'N/A'}
                 </p>
                 <p>
-                  <strong>Weight:</strong> {product.weight ? `${product.weight} kg` : 'N/A'}
+                  <strong>Weight:</strong> {product?.weight ? `${product.weight} kg` : 'N/A'}
                 </p>
                 <p>
                   <strong>Dimensions:</strong>{' '}
-                  {product.dimensions
-                    ? `${product.dimensions.length || 'N/A'} x ${product.dimensions.width || 'N/A'} x ${product.dimensions.height || 'N/A'} cm`
+                  {product?.dimensions &&
+                  (product.dimensions.length ||
+                    product.dimensions.width ||
+                    product.dimensions.height)
+                    ? `${product.dimensions.length ?? 'N/A'} x ${product.dimensions.width ?? 'N/A'} x ${product.dimensions.height ?? 'N/A'} cm`
                     : 'N/A'}
                 </p>
                 <p>
-                  <strong>Manufacturer:</strong> {product.manufacturer || 'N/A'}
+                  <strong>Manufacturer:</strong> {product?.manufacturer ?? 'N/A'}
                 </p>
                 <p>
-                  <strong>Tags:</strong>{' '}
-                  {product.tags && product.tags.length > 0 ? product.tags.join(', ') : 'N/A'}
+                  <strong>Tags:</strong> {product?.tags?.length ? product.tags.join(', ') : 'N/A'}
                 </p>
                 <p>
-                  <strong>Color:</strong> {product.color || 'N/A'}
+                  <strong>Color:</strong> {product?.color ?? 'N/A'}
                 </p>
                 <p>
-                  <strong>Size:</strong> {product.size || 'N/A'}
-                </p>
-                <p>
-                  <strong>Vendor:</strong> {product.created_by?.fullName || 'Unknown'}
+                  <strong>Size:</strong> {product?.size ?? 'N/A'}
                 </p>
               </CCardBody>
             </CCard>

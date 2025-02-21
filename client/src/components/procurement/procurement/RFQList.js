@@ -29,9 +29,7 @@ const RFQList = () => {
   const [rfqs, setRFQs] = useState([])
   const [vendors, setVendors] = useState([])
   const [selectedRFQ, setSelectedRFQ] = useState(null)
-  const [selectedVendor, setSelectedVendor] = useState('')
   const [toast, setToast] = useState({ visible: false, message: '', color: '' })
-  const [isInviting, setIsInviting] = useState(false)
 
   useEffect(() => {
     const fetchRFQs = async () => {
@@ -56,62 +54,47 @@ const RFQList = () => {
     fetchVendors()
   }, [])
 
-  const handleInvite = async () => {
-    if (!selectedRFQ || !selectedVendor) {
-      setToast({
-        visible: true,
-        message: 'Please select a vendor',
-        color: 'danger',
-      })
-      return
-    }
-
-    setIsInviting(true)
-
+  const handleDelete = async (rfqId) => {
     try {
-      const response = await axios.put(
-        `${RFQ_API_URL}/${selectedRFQ}/invite-vendors`,
-        { vendors: [selectedVendor] },
-        { headers: { 'Content-Type': 'application/json' } },
-      )
+      const response = await axios.delete(`${RFQ_API_URL}/${rfqId}/delete`)
 
-      const vendor = vendors.find((vendor) => vendor._id === selectedVendor)
-      const vendorEmail = vendor?.userId?.email
-
-      if (!vendorEmail) {
-        throw new Error('Vendor email not found')
+      if (response && response.status === 200) {
+        setRFQs(rfqs.filter((rfq) => rfq._id !== rfqId))
+        setToast({
+          visible: true,
+          message: 'RFQ deleted successfully!',
+          color: 'success',
+        })
+      } else {
+        throw new Error(`Failed to delete RFQ with status: ${response?.status}`)
       }
-
-      const rfqResponse = await axios.get(`${RFQ_API_URL}/${selectedRFQ}`)
-      const rfqTitle = rfqResponse.data.title
-      const rfqId = selectedRFQ
-
-      if (!rfqTitle || !rfqId) {
-        throw new Error('Missing required fields: rfqTitle or rfqId.')
-      }
-
-      const emailResponse = await axios.post(`${API_BASE_URL}/api/v1/rfq/send-invite-email`, {
-        vendorEmail,
-        rfqTitle,
-        rfqId,
-      })
-
-      setToast({
-        visible: true,
-        message: 'Vendor invited successfully!',
-        color: 'success',
-      })
-
-      setSelectedRFQ(null)
-      setSelectedVendor('')
     } catch (error) {
+      console.error('Delete RFQ error:', error)
+
+      const errorMessage =
+        error?.response?.data?.message || error.message || 'An unknown error occurred'
       setToast({
         visible: true,
-        message: `Failed to invite vendor: ${error.response?.data?.message || error.message}`,
+        message: `Failed to delete RFQ: ${errorMessage}`,
         color: 'danger',
       })
-    } finally {
-      setIsInviting(false)
+    }
+  }
+
+  const handleCloseRFQ = async (rfqId) => {
+    try {
+      const response = await axios.patch(`${RFQ_API_URL}/${rfqId}/close`)
+      if (response.status === 200) {
+        setRFQs(rfqs.map((rfq) => (rfq._id === rfqId ? { ...rfq, status: 'Closed' } : rfq)))
+        setToast({ visible: true, message: 'RFQ closed successfully!', color: 'success' })
+      }
+    } catch (error) {
+      console.error('Close RFQ error:', error)
+      setToast({
+        visible: true,
+        message: `Failed to close RFQ: ${error.response?.data?.message || error.message}`,
+        color: 'danger',
+      })
     }
   }
 
@@ -120,7 +103,7 @@ const RFQList = () => {
       <CToaster position="top-center">
         {toast.visible && (
           <CToast
-            autohide={true}
+            autohide
             color={toast.color}
             onClose={() => setToast({ ...toast, visible: false })}
           >
@@ -140,8 +123,8 @@ const RFQList = () => {
           <CTable hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell className="text-center">RFQ Number</CTableHeaderCell>
-                <CTableHeaderCell>Title</CTableHeaderCell>
+                <CTableHeaderCell className="text-center">RFQ ID</CTableHeaderCell>
+                <CTableHeaderCell className="text-center">Title</CTableHeaderCell>
                 <CTableHeaderCell className="text-center">Status</CTableHeaderCell>
                 <CTableHeaderCell className="text-center">Actions</CTableHeaderCell>
               </CTableRow>
@@ -149,10 +132,20 @@ const RFQList = () => {
             <CTableBody>
               {rfqs.map((rfq) => (
                 <CTableRow key={rfq._id}>
-                  <CTableDataCell className="text-center">{rfq.rfqNumber}</CTableDataCell>
-                  <CTableDataCell>{rfq.title}</CTableDataCell>
+                  <CTableDataCell className="text-center">{rfq._id}</CTableDataCell>
                   <CTableDataCell className="text-center">
-                    <CBadge color={rfq.status === 'Open' ? 'success' : 'warning'}>
+                    {rfq.procurementId?.title || 'N/A'}
+                  </CTableDataCell>
+                  <CTableDataCell className="text-center">
+                    <CBadge
+                      color={
+                        rfq.status === 'Open'
+                          ? 'success'
+                          : rfq.status === 'Closed'
+                            ? 'danger'
+                            : 'warning'
+                      }
+                    >
                       {rfq.status}
                     </CBadge>
                   </CTableDataCell>
@@ -164,8 +157,21 @@ const RFQList = () => {
                     >
                       View
                     </CButton>{' '}
-                    <CButton color="warning" size="sm" onClick={() => setSelectedRFQ(rfq._id)}>
+                    <CButton color="warning" size="sm" onClick={() => setSelectedRFQ(rfq)}>
                       Invite
+                    </CButton>{' '}
+                    {rfq.status !== 'Closed' && (
+                      <CButton color="danger" size="sm" onClick={() => handleCloseRFQ(rfq._id)}>
+                        Close
+                      </CButton>
+                    )}{' '}
+                    <CButton
+                      color="light"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(rfq._id)}
+                    >
+                      Delete
                     </CButton>
                   </CTableDataCell>
                 </CTableRow>
@@ -176,15 +182,23 @@ const RFQList = () => {
       </CCard>
 
       {/* Invite Vendor Modal */}
-      <InviteVendorModal
-        visible={selectedRFQ !== null}
-        vendors={vendors}
-        selectedVendor={selectedVendor}
-        setSelectedVendor={setSelectedVendor}
-        handleInvite={handleInvite}
-        isInviting={isInviting}
-        onClose={() => setSelectedRFQ(null)}
-      />
+      {selectedRFQ && (
+        <InviteVendorModal
+          rfq={selectedRFQ}
+          vendors={vendors}
+          onClose={() => setSelectedRFQ(null)}
+          onSuccess={(updatedRFQ) => {
+            setRFQs((prevRFQs) =>
+              prevRFQs.map((rfq) =>
+                rfq._id === updatedRFQ._id
+                  ? { ...rfq, ...updatedRFQ, procurementId: rfq.procurementId }
+                  : rfq,
+              ),
+            )
+            setToast({ visible: true, message: 'Vendors invited successfully!', color: 'success' })
+          }}
+        />
+      )}
     </>
   )
 }

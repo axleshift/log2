@@ -9,9 +9,11 @@ import vendor from "./vendor.js";
 import product from "./product.js";
 import RFQ from "./RFQ.js";
 import bid from "./bid.js";
-import payments from "./payments.js";
 import Procurement from "./procurement.js";
 import shipment from "./shipment.js";
+import purchaseOrder from "./purchaseOrder.js";
+import invoice from "./invoice.js";
+import Department from "./department.js";
 
 const router = express.Router();
 
@@ -26,8 +28,10 @@ router.use("/vendor", vendor);
 router.use("/product", product);
 router.use("/rfq", RFQ);
 router.use("/bid", bid);
-router.use("/payments", payments);
 router.use("/procurement", Procurement);
 router.use("/shipment", shipment);
+router.use("/purchaseOrder", purchaseOrder);
+router.use("/invoice", invoice);
+router.use("/department", Department);
 
 export default router;

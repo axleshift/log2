@@ -20,6 +20,7 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import OTPVerification from '../../../components/Forms/OtpForm.js'
 import VendorForm from '../../../components/Forms/VendorForm.js'
+import DepartmentForm from '../../../components/Forms/DepartmentForm.js'
 import Cookies from 'js-cookie'
 
 function Register() {
@@ -69,8 +70,6 @@ function Register() {
       }
 
       const userData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
         username: data.username,
         email,
         password: data.password,
@@ -127,36 +126,6 @@ function Register() {
                         <CAlert color={notification.type}>{notification.message}</CAlert>
                       )}
 
-                      {/* First Name */}
-                      <CInputGroup className={`mb-3 ${errors.firstName ? 'is-invalid' : ''}`}>
-                        <CInputGroupText>
-                          <CIcon icon={cilUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          placeholder="First Name"
-                          {...register('firstName', { required: 'First Name is required' })}
-                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
-                          onBlur={(e) => (e.target.style.borderColor = '')}
-                        />
-                      </CInputGroup>
-                      {errors.firstName && (
-                        <CAlert color="danger">{errors.firstName.message}</CAlert>
-                      )}
-
-                      {/* Last Name */}
-                      <CInputGroup className={`mb-3 ${errors.lastName ? 'is-invalid' : ''}`}>
-                        <CInputGroupText>
-                          <CIcon icon={cilUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          placeholder="Last Name"
-                          {...register('lastName', { required: 'Last Name is required' })}
-                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
-                          onBlur={(e) => (e.target.style.borderColor = '')}
-                        />
-                      </CInputGroup>
-                      {errors.lastName && <CAlert color="danger">{errors.lastName.message}</CAlert>}
-
                       {/* Username */}
                       <CInputGroup className={`mb-3 ${errors.username ? 'is-invalid' : ''}`}>
                         <CInputGroupText>
@@ -201,6 +170,11 @@ function Register() {
 
                       {/* Vendor Form (Conditionally Rendered) */}
                       {selectedRole === 'vendor' && <VendorForm />}
+
+                      {/* Department Form (Conditionally Rendered) */}
+                      {selectedRole === 'admin' || selectedRole === 'finance' ? (
+                        <DepartmentForm />
+                      ) : null}
 
                       <div className="d-grid">
                         <CButton color="primary" type="submit" disabled={loading}>

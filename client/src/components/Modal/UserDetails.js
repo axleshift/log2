@@ -26,7 +26,6 @@ const UserDetailsModal = ({ visible, onClose, user }) => {
               <strong>Status:</strong> {user.status}
             </p>
 
-            {/* Display vendor-specific details if the role is vendor */}
             {user.role === 'vendor' && user.details ? (
               <>
                 <p>

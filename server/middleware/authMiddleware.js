@@ -3,8 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const SECRET_KEY = process.env.SECRET_KEY;
-
 // Roles Middleware
 export const checkRole = (allowedRoles) => {
     return (req, res, next) => {
@@ -28,45 +26,41 @@ export const checkRole = (allowedRoles) => {
 // Token Verification Middleware
 export const tokenMiddleware = (req, res, next) => {
     try {
-        // Log incoming request for debugging
         console.log("Incoming request:", req.method, req.path);
 
-        // Extract token from cookies or Authorization header
+        // Extract token
         const token = req.cookies?.accessToken || req.headers["authorization"]?.split(" ")[1];
-        console.log("Extracted Token:", token);
+        console.log("🟡 Extracted Token:", token);
 
         if (!token) {
             console.warn("Unauthorized access attempt: No token provided.");
             return res.status(401).json({ error: "Unauthorized: No token provided." });
         }
 
-        // Verify the token
         jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
             if (err) {
-                console.warn("Token verification failed:", err.message);
+                console.warn("❌ Token verification failed:", err.message);
                 return res.status(401).json({ error: "Unauthorized: Invalid token." });
             }
 
-            // Log decoded token
-            console.log("Decoded Token Data:", decoded);
+            console.log("🟢 Decoded Token Data:", decoded);
 
-            if (!decoded.userId) {
-                console.warn("Invalid token payload: No userId found.");
+            if (!decoded?.userId) {
+                console.warn("❌ Invalid token payload: No userId found.");
                 return res.status(401).json({ error: "Unauthorized: Invalid token payload." });
             }
 
-            // Attach decoded user data to the request object
             req.user = {
                 id: decoded.userId,
-                role: decoded.role,
-                email: decoded.email,
+                role: decoded.role || "user",
+                email: decoded.email || null,
             };
 
-            console.info(`Token verified successfully for user: ${decoded.userId}`);
+            console.info(`✅ Token verified successfully for user: ${req.user.id}`);
             next();
         });
     } catch (error) {
-        console.error("Error in token middleware:", error);
+        console.error("❌ Error in token middleware:", error);
         res.status(500).json({ error: "Internal server error." });
     }
 };
