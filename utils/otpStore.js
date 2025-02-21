@@ -53,28 +53,40 @@ export const clearOtp = (email) => {
     delete otpStore[email];
 };
 
-// SEND INVITE EMAIL
-export const sendEmail = async (vendorEmail, rfqTitle, rfqId) => {
-    const transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+// SEND RFQ INVITE
+export const sendEmail = async (vendorEmail, rfqId) => {
+    if (!vendorEmail) {
+        console.error("❌ No vendor email provided.");
+        return Promise.reject("No vendor email provided.");
+    }
 
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: vendorEmail,
-        subject: `Invitation to submit a quote for RFQ: ${rfqTitle}`,
-        html: `
-        <p>Dear Vendor,</p>
-        <p>You have been invited to submit a quotation for RFQ #${rfqId}: ${rfqTitle}.</p>
-        <p>Please <a href="http://localhost:3000/procurement/rfqs/${rfqId}" target="_blank">click here</a> to view the full RFQ details and submit your quote.</p>
-        <p>Best regards,</p>
-        <p>Your Company</p>
-      `,
-    };
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
 
-    return transporter.sendMail(mailOptions);
+        const mailOptions = {
+            from: `"Logistics 2: Vendor Portal" <${process.env.EMAIL_USER}>`,
+            to: vendorEmail,
+            subject: `Invitation to Submit a Quote for RFQ #${rfqId}`,
+            html: `
+                <p>Dear Vendor,</p>
+                <p>You have been invited to submit a quotation for <strong>RFQ #${rfqId}</strong>.</p>
+                <p>Please <a href="http://localhost:3000/vendor/rfq/${rfqId}" target="_blank">click here</a> and log in to view the full RFQ details and submit your quote.</p>
+                <p>Best regards,</p>
+                <p>Logistics 2: Vendor Portal</p>
+            `,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully to ${vendorEmail}: ${info.messageId}`);
+        return info;
+    } catch (error) {
+        console.error("❌ Error sending email:", error);
+        throw new Error("Failed to send email");
+    }
 };

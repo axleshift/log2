@@ -1,162 +1,148 @@
 import Procurement from "../models/procurement.js";
+import RFQ from "../models/RFQ.js";
 
 // Create Procurement
 export const createProcurement = async (req, res) => {
     try {
-        const { title, description, products, procurementDate, deliveryDate } = req.body;
+        console.log("User ID from request:", req.user?.id);
 
-        const newProcurement = new Procurement({
-            title,
-            description,
-            createdBy: req.user._id,
-            products,
-            procurementDate,
-            deliveryDate,
+        // Create the Procurement object
+        const procurement = new Procurement({
+            ...req.body,
+            createdBy: req.user.id,
         });
 
-        const savedProcurement = await newProcurement.save();
-        res.status(201).json(savedProcurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
+        console.log("Creating Procurement:", procurement);
+        await procurement.save();
+        console.log("Procurement saved successfully:", procurement._id);
+
+        // If RFQ is required, create the RFQ
+        let rfq = null;
+        if (req.body.rfqRequired) {
+            rfq = new RFQ({
+                procurementId: procurement._id,
+                products: req.body.products || [], // Expecting an array of product objects
+                invitedVendors: [], // Vendors will be invited later
+                createdBy: req.user.id,
+            });
+
+            console.log("Creating RFQ:", rfq);
+            await rfq.save();
+            console.log("RFQ saved successfully:", rfq._id);
+
+            // Link RFQ to Procurement
+            procurement.rfqId = rfq._id;
+            await procurement.save();
+            console.log("Procurement updated with RFQ ID:", procurement.rfqId);
+        }
+
+        // Return the final procurement object, populated with related data
+        const finalProcurement = await Procurement.findById(procurement._id)
+            .populate("createdBy", "email username role")
+            .populate("rfqId") // Populate RFQ
+            .then((p) => p.populate("rfqId.createdBy", "email username role"));
+
+        console.log("Final Procurement Output:", JSON.stringify(finalProcurement, null, 2));
+        res.status(201).json(finalProcurement);
+    } catch (error) {
+        console.error("Error in createProcurement:", error);
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Get all procurements
-export const getAllProcurements = async (req, res) => {
+// GET PROCUREMENT RELATED ONLY WITHOUT RFQ
+export const getProcurements = async (req, res) => {
     try {
-        const procurements = await Procurement.find().populate("createdBy", "email").populate("products", "itemName").populate("invitedVendors", "fullName").populate("purchaseOrders", "orderNumber status totalAmount");
-
+        const procurements = await Procurement.find({ rfqRequired: false }).select("-rfqId").populate("createdBy", "email username role");
         res.status(200).json(procurements);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching procurements", error });
     }
 };
 
-// Get procurement by ID
+// Get all Procurements
+export const getAllProcurement = async (req, res) => {
+    try {
+        const procurements = await Procurement.find().populate("createdBy rfqId");
+        res.status(200).json(procurements);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get Procurement by ID
 export const getProcurementById = async (req, res) => {
     try {
-        const procurement = await Procurement.findById(req.params.id)
-            .populate("createdBy", "email")
-            .populate("products", "itemName")
-            .populate("invitedVendors", "fullName")
-            .populate("purchaseOrders", "orderNumber status totalAmount")
-            .populate("quotes.vendor", "fullName")
-            .populate("negotiations.vendor", "fullName");
-
-        if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
-        }
-
+        const procurement = await Procurement.findById(req.params.id).populate("createdBy rfqId");
+        if (!procurement) return res.status(404).json({ error: "Procurement not found" });
         res.status(200).json(procurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Update procurement status
-export const updateProcurementStatus = async (req, res) => {
+// Update Procurement
+export const updateProcurementById = async (req, res) => {
     try {
-        const procurement = await Procurement.findByIdAndUpdate(req.params.id, { status: req.body.status, updatedAt: Date.now() }, { new: true });
-
-        if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
-        }
-
+        const procurement = await Procurement.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("createdBy rfqId");
+        if (!procurement) return res.status(404).json({ error: "Procurement not found" });
         res.status(200).json(procurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Add a quote to a procurement
-export const addQuoteToProcurement = async (req, res) => {
-    try {
-        const { vendor, price, terms, deliveryTime } = req.body;
-        const procurement = await Procurement.findById(req.params.id);
-
-        if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
-        }
-
-        procurement.quotes.push({
-            vendor,
-            price,
-            terms,
-            deliveryTime,
-            status: "Pending",
-        });
-
-        procurement.updatedAt = Date.now();
-        await procurement.save();
-        res.status(200).json(procurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
-    }
-};
-
-// Add negotiation to a procurement
-export const addNegotiationToProcurement = async (req, res) => {
-    try {
-        const { vendor, proposedTerms, finalTerms, status } = req.body;
-        const procurement = await Procurement.findById(req.params.id);
-
-        if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
-        }
-
-        procurement.negotiations.push({
-            vendor,
-            proposedTerms,
-            finalTerms,
-            status: status || "Ongoing",
-        });
-
-        procurement.updatedAt = Date.now();
-        await procurement.save();
-        res.status(200).json(procurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
-    }
-};
-
-// Add a purchase order to a procurement
-export const addPurchaseOrderToProcurement = async (req, res) => {
-    try {
-        const { purchaseOrderId } = req.body;
-        const procurement = await Procurement.findById(req.params.id);
-
-        if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
-        }
-
-        procurement.purchaseOrders.push(purchaseOrderId);
-        procurement.updatedAt = Date.now();
-        await procurement.save();
-        res.status(200).json(procurement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
-    }
-};
-
-// Delete procurement
-export const deleteProcurement = async (req, res) => {
+// Delete Procurement
+export const deleteProcurementById = async (req, res) => {
     try {
         const procurement = await Procurement.findByIdAndDelete(req.params.id);
+        if (!procurement) return res.status(404).json({ error: "Procurement not found" });
+        res.status(200).json({ message: "Procurement deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const approveProcurement = async (req, res) => {
+    try {
+        const { procurementId } = req.params;
+        const procurement = await Procurement.findById(procurementId);
 
         if (!procurement) {
-            return res.status(404).json({ msg: "Procurement not found" });
+            return res.status(404).json({ message: "Procurement not found" });
         }
 
-        res.status(200).json({ msg: "Procurement deleted successfully" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: "Server error" });
+        if (procurement.status === "Approved") {
+            return res.status(400).json({ message: "Procurement is already approved" });
+        }
+
+        procurement.status = "Approved";
+        await procurement.save();
+
+        res.status(200).json({ message: "Procurement approved successfully", procurement });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export const rejectProcurement = async (req, res) => {
+    try {
+        const { procurementId } = req.params;
+        const procurement = await Procurement.findById(procurementId);
+
+        if (!procurement) {
+            return res.status(404).json({ message: "Procurement not found" });
+        }
+
+        if (procurement.status === "Rejected") {
+            return res.status(400).json({ message: "Procurement is already rejected" });
+        }
+
+        procurement.status = "Rejected";
+        await procurement.save();
+
+        res.status(200).json({ message: "Procurement rejected successfully", procurement });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };

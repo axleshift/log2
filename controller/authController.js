@@ -49,7 +49,8 @@ export const verifyOtp = async (req, res, next) => {
 };
 
 export const registerUser = async (req, res, next) => {
-    const { email, username, password, role, vendorDetails } = req.body;
+    const { email, username, password, role, vendorDetails, departmentName, departmentDescription } = req.body;
+
     const validRoles = ["user", "admin", "super admin", "vendor", "buyer", "finance"];
     const userRole = validRoles.includes(role) ? role : "user";
 
@@ -76,6 +77,7 @@ export const registerUser = async (req, res, next) => {
             throw new Error("User creation failed");
         }
 
+        // Handle vendor creation if user role is 'vendor'
         if (userRole === "vendor" && vendorDetails) {
             const vendorData = {
                 userId: newUser._id,
@@ -99,10 +101,28 @@ export const registerUser = async (req, res, next) => {
             }
         }
 
+        // Check if department details are provided
+        if (departmentName && departmentDescription) {
+            const newDepartment = new Department({
+                name: departmentName,
+                description: departmentDescription,
+                createdBy: newUser._id,
+            });
+
+            try {
+                // Save the department to the database
+                await newDepartment.save();
+            } catch (error) {
+                console.error("Error creating department:", error);
+                return res.status(500).json({ status: "error", message: "Department creation failed." });
+            }
+        }
+
         // Generate tokens
         const accessToken = TokenService.generateAccessToken({ userId: newUser._id });
         const refreshToken = TokenService.generateRefreshToken({ userId: newUser._id });
 
+        // Set refresh token in cookies
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -110,6 +130,7 @@ export const registerUser = async (req, res, next) => {
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
+        // Respond with success
         return res.status(201).json({
             status: "success",
             message: "User created successfully",
@@ -169,8 +190,8 @@ export const loginUser = async (req, res, next) => {
             return res.status(401).json({ status: "error", message: "Invalid credentials" });
         }
 
-        const accessToken = TokenService.generateAccessToken({ userId: user._id });
-        const refreshToken = TokenService.generateRefreshToken({ userId: user._id });
+        const accessToken = TokenService.generateAccessToken(user);
+        const refreshToken = TokenService.generateRefreshToken(user);
 
         res.cookie("token", accessToken, {
             httpOnly: true,

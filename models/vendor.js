@@ -8,7 +8,7 @@ const vendorSchema = new mongoose.Schema({
     contactNumber: { type: String, required: true },
     certifications: [{ type: String }],
     taxId: { type: String },
-    vendorId: { type: String, default: () => `VENDOR-${Date.now()}` },
+    quotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "RFQ" }],
 });
 
 const VendorModel = mongoose.model("Vendor", vendorSchema);
