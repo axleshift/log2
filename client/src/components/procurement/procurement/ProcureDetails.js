@@ -32,7 +32,6 @@ const ProcurementDetails = () => {
         setLoading(false)
         return
       }
-
       try {
         setLoading(true)
         const response = await axios.get(`${PROCUREMENT_API_URL}/${id}`)
@@ -70,6 +69,9 @@ const ProcurementDetails = () => {
           <strong>Description:</strong> {procurement.description || 'No description available'}
         </h6>
         <h6>
+          <strong>Department:</strong> {procurement.department}
+        </h6>
+        <h6>
           <strong>Status:</strong>
           <CBadge
             color={
@@ -79,30 +81,66 @@ const ProcurementDetails = () => {
                   ? 'success'
                   : procurement.status === 'Rejected'
                     ? 'danger'
-                    : 'primary'
+                    : procurement.status === 'Completed'
+                      ? 'info'
+                      : 'primary'
             }
           >
             {procurement.status}
           </CBadge>
         </h6>
-
         <h6>
-          <strong>Created By:</strong> {procurement.createdBy?.email || 'Unknown'}
+          <strong>Created By:</strong> {procurement.requestedBy?.email || 'Unknown'}
         </h6>
         <h6>
           <strong>Procurement Date:</strong>{' '}
           {new Date(procurement.procurementDate).toLocaleDateString()}
         </h6>
         <h6>
+          <strong>Delivery Date:</strong> {new Date(procurement.deliveryDate).toLocaleDateString()}
+        </h6>
+        <h6>
           <strong>RFQ Required:</strong> {procurement.rfqRequired ? 'Yes' : 'No'}
         </h6>
-
-        {procurement.rfqId && (
+        {procurement.rfqId?._id && (
           <h6>
             <strong>RFQ:</strong>{' '}
-            <a href={`/rfq/${procurement.rfqId._id}`}>{procurement.rfqId.title}</a>
+            <a href={`/rfq/${procurement.rfqId._id}`}>{procurement.rfqId.title || 'View RFQ'}</a>
           </h6>
         )}
+
+        <hr />
+
+        {/* Products Table */}
+        <h6>
+          <strong>Products</strong>
+        </h6>
+        <CTable hover responsive>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>Name</CTableHeaderCell>
+              <CTableHeaderCell>Quantity</CTableHeaderCell>
+              <CTableHeaderCell>Unit</CTableHeaderCell>
+              <CTableHeaderCell>Unit Price</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {procurement.products?.length > 0 ? (
+              procurement.products.map((product, index) => (
+                <CTableRow key={index}>
+                  <CTableDataCell>{product.name}</CTableDataCell>
+                  <CTableDataCell>{product.quantity}</CTableDataCell>
+                  <CTableDataCell>{product.unit}</CTableDataCell>
+                  <CTableDataCell>${product.unitPrice?.toFixed(2) || 'N/A'}</CTableDataCell>
+                </CTableRow>
+              ))
+            ) : (
+              <CTableRow>
+                <CTableDataCell colSpan="4">No products added yet.</CTableDataCell>
+              </CTableRow>
+            )}
+          </CTableBody>
+        </CTable>
 
         <hr />
 
@@ -120,7 +158,7 @@ const ProcurementDetails = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {procurement.purchaseOrders.length > 0 ? (
+            {procurement.purchaseOrders?.length > 0 ? (
               procurement.purchaseOrders.map((po, index) => (
                 <CTableRow key={index}>
                   <CTableDataCell>{po._id}</CTableDataCell>

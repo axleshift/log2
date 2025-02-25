@@ -1,3 +1,4 @@
+import { element } from 'prop-types'
 import { lazy } from 'react'
 
 const Dashboard = lazy(() => import('./views/dashboard/Dashboard'))
@@ -27,6 +28,8 @@ const ProcurementDetails = lazy(
   () => import('./components/procurement/procurement/ProcureDetails.js'),
 )
 const RFQDetails = lazy(() => import('./components/procurement/procurement/RFQDetails.js'))
+const PurchaseManagement = lazy(() => import('./views/pages/Procurement/PurchaseManagement.js'))
+const ShipmentsAndTracking = lazy(() => import('./views/pages/Procurement/Shipments.js'))
 
 // VENDOR SECTION
 const VendorRFQ = lazy(() => import('./views/pages/VendorManagement/RFQVendors.js'))
@@ -54,6 +57,8 @@ const routes = [
   { path: '/procurement/:id', name: 'ProcurementDetails', element: ProcurementDetails },
   { path: '/procurement/rfqs/:id', name: 'RFQDetails', element: RFQDetails },
   { path: '/procurement/vendors', name: 'Vendor Management', element: Vendors },
+  { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
+  { path: '/procurement/shipments', name: 'Shipments Tracking', element: ShipmentsAndTracking },
 
   // VENDOR RELATED PATH SECTION :P
   { path: '/vendor/rfqs/:id', name: 'VendorRFQ', element: VendorRFQ },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 import {
   CButton,
   CForm,
@@ -15,8 +15,8 @@ import {
   CSpinner,
 } from '@coreui/react'
 
-const PO_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/purchase-orders`
-const PROCUREMENT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/procurements`
+const PO_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/purchase-order`
+const PROCUREMENT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/procurement`
 const VENDOR_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/vendor`
 
 const CreatePurchaseOrder = () => {
@@ -82,6 +82,28 @@ const CreatePurchaseOrder = () => {
     }))
   }
 
+  const validateForm = () => {
+    if (!poData.procurementId || !poData.vendorId) {
+      setToastMessage('Procurement and Vendor must be selected.')
+      setToastColor('danger')
+      setToastVisible(true)
+      setTimeout(() => setToastVisible(false), 5000)
+      return false
+    }
+
+    for (const product of poData.products) {
+      if (!product.name || product.quantity <= 0 || product.price <= 0) {
+        setToastMessage('Please provide valid product details.')
+        setToastColor('danger')
+        setToastVisible(true)
+        setTimeout(() => setToastVisible(false), 5000)
+        return false
+      }
+    }
+
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -91,6 +113,11 @@ const CreatePurchaseOrder = () => {
       setToastColor('danger')
       setToastVisible(true)
       setTimeout(() => setToastVisible(false), 5000)
+      setLoading(false)
+      return
+    }
+
+    if (!validateForm()) {
       setLoading(false)
       return
     }
@@ -146,6 +173,7 @@ const CreatePurchaseOrder = () => {
           </CCol>
           <CCol md={6}>
             <CFormSelect
+              className="custom-dropdown"
               name="vendorId"
               value={poData.vendorId}
               onChange={handleChange}
@@ -153,11 +181,15 @@ const CreatePurchaseOrder = () => {
               required
             >
               <option value="">Choose Vendor</option>
-              {vendors.map((vendor) => (
-                <option key={vendor._id} value={vendor._id}>
-                  {vendor.name}
-                </option>
-              ))}
+              {vendors && vendors.length > 0 ? (
+                vendors.map((vendor) => (
+                  <option key={vendor._id} value={vendor._id}>
+                    {vendor.fullName} {vendor.user ? `(${vendor.email})` : ''}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No vendors available</option>
+              )}
             </CFormSelect>
           </CCol>
         </CRow>
@@ -208,6 +240,13 @@ const CreatePurchaseOrder = () => {
           {loading ? <CSpinner size="sm" /> : 'Create Purchase Order'}
         </CButton>
       </CForm>
+
+      <CToaster position="top-center" visible={toastVisible ? 'true' : 'false'}>
+        <CToast color={toastColor}>
+          <CToastHeader closeButton>{toastColor === 'success' ? 'Success' : 'Error'}</CToastHeader>
+          <CToastBody>{toastMessage}</CToastBody>
+        </CToast>
+      </CToaster>
     </>
   )
 }

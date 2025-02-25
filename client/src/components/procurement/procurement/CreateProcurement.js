@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '../../../context/AuthContext'
 import {
   CButton,
-  CForm,
-  CFormTextarea,
   CRow,
   CCol,
   CToast,
@@ -12,15 +10,11 @@ import {
   CToastHeader,
   CToaster,
   CSpinner,
-  CFormInput,
 } from '@coreui/react'
-import CustomSwitch from '../../Forms/FormSwitch'
-import RFQForms from './RFQForm'
+import ProcurementInput from './ProcurementInput'
 
 const API_URL = import.meta.env.VITE_API_URL
 const PROCUREMENT_API_URL = `${API_URL}/api/v1/procurement`
-const RFQ_API_URL = `${API_URL}/api/v1/rfq`
-const VENDOR_API_URL = `${API_URL}/api/v1/vendor`
 
 const CreateProcurement = () => {
   const { accessToken } = useAuth()
@@ -28,46 +22,63 @@ const CreateProcurement = () => {
     title: '',
     description: '',
     procurementDate: '',
-    deliveryDate: '',
     status: 'Pending',
-    rfqRequired: false,
-    selectedVendorId: '',
+    deliveryDate: '',
+    department: '',
+    products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
+    estimatedCost: 0,
   })
-
-  const [rfqData, setRfqData] = useState({ products: [], invitedVendors: [] })
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const fetchVendors = async () => {
-      try {
-        const response = await axios.get(VENDOR_API_URL, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-      } catch (error) {
-        console.error('❌ Error fetching vendors:', error)
-        showToast('🚨 Failed to load vendors.', 'danger')
-      }
-    }
-    if (accessToken) fetchVendors()
-  }, [accessToken])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setProcurementData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const toggleRFQ = () => {
+  const handleProductChange = (index, e) => {
+    const { name, value } = e.target
+    const updatedProducts = [...procurementData.products]
+
+    updatedProducts[index] = {
+      ...updatedProducts[index],
+      [name]:
+        name === 'quantity' || name === 'unitPrice'
+          ? value === ''
+            ? ''
+            : parseFloat(value)
+          : value,
+    }
+
+    const estimatedCost = updatedProducts.reduce(
+      (total, product) => total + (product.unitPrice || 0) * (product.quantity || 0),
+      0,
+    )
+
     setProcurementData((prev) => ({
       ...prev,
-      rfqRequired: !prev.rfqRequired,
+      products: updatedProducts,
+      estimatedCost: parseFloat(estimatedCost.toFixed(2)),
     }))
-    if (!procurementData.rfqRequired) setRfqData({ products: [], invitedVendors: [] })
   }
 
-  const showToast = (message, color) => {
-    setToasts((prev) => [...prev, { id: Date.now(), message, color }])
-    setTimeout(() => setToasts((prev) => prev.slice(1)), 5000)
+  const addProduct = () => {
+    setProcurementData((prev) => ({
+      ...prev,
+      products: [...prev.products, { name: '', quantity: 0, unit: '', unitPrice: 0 }],
+    }))
+  }
+
+  const removeProduct = (index) => {
+    const updatedProducts = procurementData.products.filter((_, i) => i !== index)
+    setProcurementData((prev) => ({
+      ...prev,
+      products: updatedProducts,
+      estimatedCost: updatedProducts.reduce(
+        (total, product) => total + (product.unitPrice * product.quantity || 0),
+        0,
+      ),
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -75,123 +86,176 @@ const CreateProcurement = () => {
     if (loading) return
     setLoading(true)
 
+    const isValid = procurementData.products.every(
+      (product) => product.name && product.quantity > 0 && product.unit && product.unitPrice >= 0,
+    )
+    if (!isValid) {
+      showToast('🚨 Please fill in all product details including unit.', 'danger')
+      setLoading(false)
+      return
+    }
+
     try {
       if (!accessToken) throw new Error('Authentication error. Please log in again.')
       const headers = { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
 
-      // Create Procurement
       const procurementPayload = {
         ...procurementData,
-        products: procurementData.rfqRequired ? rfqData.products : [],
-        invitedVendors: procurementData.rfqRequired ? rfqData.invitedVendors : [],
+        deliveryDate: procurementData.deliveryDate
+          ? new Date(procurementData.deliveryDate).toISOString()
+          : null,
       }
 
-      console.log('🔍 Submitting Procurement:', procurementPayload)
-      const procurementResponse = await axios.post(PROCUREMENT_API_URL, procurementPayload, {
-        headers,
-      })
+      await axios.post(PROCUREMENT_API_URL, procurementPayload, { headers })
 
-      console.log('✅ Procurement Created:', procurementResponse.data)
-
-      const rfqId = procurementResponse.data.rfqId
-
-      // If RFQ is required, send invites to vendors
-      if (procurementData.rfqRequired && rfqData.invitedVendors.length > 0) {
-        const invitePayload = { vendors: rfqData.invitedVendors }
-        console.log('🔍 Inviting Vendors to RFQ:', invitePayload)
-        await axios.post(`${RFQ_API_URL}/${rfqId}/invite`, invitePayload, { headers })
-        console.log('✅ Vendors Invited to RFQ')
-      }
-
-      // Reset form state
       setProcurementData({
         title: '',
         description: '',
         procurementDate: '',
-        deliveryDate: '',
         status: 'Pending',
-        rfqRequired: false,
-        selectedVendorId: '',
+        deliveryDate: '',
+        department: '',
+        products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
+        estimatedCost: 0,
       })
-      setRfqData({ products: [], invitedVendors: [] })
-
-      showToast('🎉 Procurement successfully created and vendors invited!', 'success')
+      showToast('🎉 Procurement successfully created!', 'success')
     } catch (error) {
-      console.error('❌ Error creating procurement:', error.response || error)
       showToast(error.response?.data?.message || '🚨 Failed to create procurement.', 'danger')
     } finally {
       setLoading(false)
     }
   }
 
+  const showToast = (message, color) => {
+    setToasts((prev) => [...prev, { id: Date.now(), message, color }])
+    setTimeout(() => setToasts((prev) => prev.slice(1)), 5000)
+  }
+
   return (
-    <CForm onSubmit={handleSubmit}>
-      {/* Procurement form fields */}
+    <form onSubmit={handleSubmit}>
       <CRow className="mb-3">
         <CCol md={6}>
-          <CFormInput
-            type="text"
+          <ProcurementInput
+            label="Title"
             name="title"
             value={procurementData.title}
             onChange={handleChange}
-            placeholder="Title"
-            label="Title"
             required
           />
         </CCol>
         <CCol md={6}>
-          <CFormInput
+          <ProcurementInput
+            label="Procurement Date"
             type="date"
             name="procurementDate"
             value={procurementData.procurementDate}
             onChange={handleChange}
-            label="Procurement Date"
             required
           />
         </CCol>
       </CRow>
-
-      {/* Description and dates */}
-      <CFormTextarea
+      <ProcurementInput
+        label="Description"
+        type="textarea"
         name="description"
         value={procurementData.description}
         onChange={handleChange}
-        placeholder="Description"
-        label="Description"
         required
         rows={3}
       />
-
       <CRow className="mb-3">
         <CCol md={6}>
-          <CFormInput
+          <ProcurementInput
+            label="Expected Delivery Date"
             type="date"
             name="deliveryDate"
             value={procurementData.deliveryDate}
             onChange={handleChange}
-            label="Expected Delivery Date"
           />
         </CCol>
         <CCol md={6}>
-          <CFormInput type="text" name="status" value="Pending" label="Status" disabled />
+          <ProcurementInput
+            label="Department"
+            type="select"
+            name="department"
+            value={procurementData.department}
+            onChange={handleChange}
+            options={['HR', 'Finance', 'Logistics', 'IT', 'Procurement', 'Operations']}
+            required
+          />
+        </CCol>
+      </CRow>
+      <h5>Products</h5>
+      {procurementData.products.map((product, index) => (
+        <CRow key={index} className="mb-2">
+          <CCol md={2}>
+            <ProcurementInput
+              label="Product Name"
+              name="name"
+              value={product.name}
+              onChange={(e) => handleProductChange(index, e)}
+              required
+            />
+          </CCol>
+          <CCol md={2}>
+            <ProcurementInput
+              label="Quantity"
+              type="number"
+              name="quantity"
+              value={product.quantity}
+              min="0"
+              onChange={(e) => handleProductChange(index, e)}
+              required
+            />
+          </CCol>
+          <CCol md={2}>
+            <ProcurementInput
+              label="Unit"
+              type="select"
+              name="unit"
+              value={product.unit}
+              onChange={(e) => handleProductChange(index, e)}
+              options={['KG', 'L', 'M', 'PCS', 'BOX', 'PACK']}
+              required
+            />
+          </CCol>
+          <CCol md={2}>
+            <ProcurementInput
+              label="Unit Price"
+              type="number"
+              name="unitPrice"
+              value={product.unitPrice}
+              min="0"
+              onChange={(e) => handleProductChange(index, e)}
+              required
+            />
+          </CCol>
+          <CCol md={2}>
+            <CButton color="danger" onClick={() => removeProduct(index)}>
+              Remove
+            </CButton>
+          </CCol>
+        </CRow>
+      ))}
+
+      <CRow className="mt-3">
+        <CCol md={6}>
+          <CButton color="primary" onClick={addProduct}>
+            Add Product
+          </CButton>
+        </CCol>
+        <CCol md={6} className="text-end">
+          <h5>Estimated Cost: ₱{procurementData.estimatedCost.toFixed(2)}</h5>
         </CCol>
       </CRow>
 
-      {/* RFQ toggle */}
-      <CustomSwitch
-        id="rfqRequired"
-        label="Require RFQ (Bidding Process)"
-        checked={procurementData.rfqRequired}
-        onChange={toggleRFQ}
-        description="Enable this option to require a Request for Quotation (RFQ) before proceeding with procurement."
-      />
-
-      {procurementData.rfqRequired && <RFQForms rfqData={rfqData} setRfqData={setRfqData} />}
-
-      <CButton color="success" type="submit" disabled={loading}>
-        {loading ? <CSpinner size="sm" /> : 'Create Procurement'}
-      </CButton>
-
+      <CRow className="mt-4">
+        <CCol md={12} className="text-center">
+          <CButton color="success" type="submit" disabled={loading}>
+            {loading ? <CSpinner size="sm" /> : 'Create Procurement'}
+          </CButton>
+        </CCol>
+      </CRow>
       <CToaster placement="top-end">
         {toasts.map(({ id, message, color }) => (
           <CToast key={id} color={color} autohide visible>
@@ -200,7 +264,7 @@ const CreateProcurement = () => {
           </CToast>
         ))}
       </CToaster>
-    </CForm>
+    </form>
   )
 }
 

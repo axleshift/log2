@@ -49,7 +49,7 @@ export const verifyOtp = async (req, res, next) => {
 };
 
 export const registerUser = async (req, res, next) => {
-    const { email, username, password, role, vendorDetails, departmentName, departmentDescription } = req.body;
+    const { email, username, password, role, vendorDetails } = req.body;
 
     const validRoles = ["user", "admin", "super admin", "vendor", "buyer", "finance"];
     const userRole = validRoles.includes(role) ? role : "user";
@@ -98,23 +98,6 @@ export const registerUser = async (req, res, next) => {
             } catch (error) {
                 console.error("Error creating vendor:", error);
                 return res.status(500).json({ status: "error", message: "Vendor creation failed." });
-            }
-        }
-
-        // Check if department details are provided
-        if (departmentName && departmentDescription) {
-            const newDepartment = new Department({
-                name: departmentName,
-                description: departmentDescription,
-                createdBy: newUser._id,
-            });
-
-            try {
-                // Save the department to the database
-                await newDepartment.save();
-            } catch (error) {
-                console.error("Error creating department:", error);
-                return res.status(500).json({ status: "error", message: "Department creation failed." });
             }
         }
 

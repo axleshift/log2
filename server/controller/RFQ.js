@@ -8,20 +8,36 @@ export const createRFQ = async (req, res) => {
     try {
         console.log("📥 Received RFQ creation request:", req.body);
 
+        const { procurementId } = req.body;
+
+        // Check if Procurement exists and is Approved
+        if (procurementId) {
+            const procurement = await Procurement.findById(procurementId);
+
+            if (!procurement) {
+                return res.status(400).json({ error: "Procurement not found" });
+            }
+
+            if (procurement.status !== "Approved") {
+                return res.status(400).json({ error: "Procurement must be approved to create an RFQ" });
+            }
+
+            // If RFQ already exists for this procurement, return an error
+            if (procurement.rfqId) {
+                return res.status(400).json({ error: "Procurement already has an RFQ assigned" });
+            }
+        }
+
+        // Create the RFQ
         const rfq = new RFQ({ ...req.body });
         await rfq.save();
 
         // If linked to a Procurement, update it
-        if (rfq.procurementId) {
-            const procurement = await Procurement.findById(rfq.procurementId);
-            if (!procurement) {
-                return res.status(400).json({ error: "Procurement not found" });
-            }
-            if (procurement.rfqId) {
-                return res.status(400).json({ error: "Procurement already has an RFQ assigned" });
-            }
+        if (procurementId) {
+            const procurement = await Procurement.findById(procurementId);
             procurement.rfqId = rfq._id;
             await procurement.save();
+            console.log("Procurement updated with RFQ ID:", procurement.rfqId);
         }
 
         res.status(201).json(rfq);
