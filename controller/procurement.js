@@ -1,12 +1,11 @@
 import Procurement from "../models/procurement.js";
-import RFQ from "../models/RFQ.js";
 
 // Create Procurement
 export const createProcurement = async (req, res) => {
     try {
         console.log("User ID from request:", req.user?.id);
 
-        const { products, rfqRequired } = req.body;
+        const { products } = req.body;
         const estimatedCost = products?.reduce((total, product) => total + (product.unitPrice || 0) * (product.quantity || 0), 0) || 0;
 
         console.log("Estimated Cost:", estimatedCost);
@@ -20,23 +19,7 @@ export const createProcurement = async (req, res) => {
         await procurement.save();
         console.log("Procurement Created:", procurement._id);
 
-        let rfq = null;
-        if (rfqRequired && procurement.status === "Approved") {
-            rfq = new RFQ({
-                procurementId: procurement._id,
-                products,
-                invitedVendors: [],
-                createdBy: req.user.id,
-            });
-            await rfq.save();
-            procurement.rfqId = rfq._id;
-            await procurement.save();
-            console.log("RFQ Linked to Procurement:", rfq._id);
-        }
-
-        const finalProcurement = await Procurement.findById(procurement._id)
-            .populate("requestedBy", "email username role")
-            .populate({ path: "rfqId", populate: { path: "createdBy", select: "email username role" } });
+        const finalProcurement = await Procurement.findById(procurement._id).populate("requestedBy", "email username role");
 
         res.status(201).json(finalProcurement);
     } catch (error) {
@@ -49,9 +32,7 @@ export const createProcurement = async (req, res) => {
 export const getProcurements = async (req, res) => {
     try {
         const query = req.query.rfqRequired ? { rfqRequired: req.query.rfqRequired === "true" } : {};
-        const procurements = await Procurement.find(query)
-            .populate("requestedBy", "email username role")
-            .populate({ path: "rfqId", populate: { path: "createdBy", select: "email username role" } });
+        const procurements = await Procurement.find(query).populate("requestedBy", "email username role");
         res.status(200).json(procurements);
     } catch (error) {
         console.error("Error fetching procurements:", error);
@@ -62,10 +43,7 @@ export const getProcurements = async (req, res) => {
 // Get Procurement by ID
 export const getProcurementById = async (req, res) => {
     try {
-        const procurement = await Procurement.findById(req.params.id)
-            .populate("requestedBy", "email username role")
-            .populate({ path: "rfqId", populate: { path: "createdBy", select: "email username role" } })
-            .populate("purchaseOrderId");
+        const procurement = await Procurement.findById(req.params.id).populate("requestedBy", "email username role");
 
         if (!procurement) return res.status(404).json({ error: "Procurement not found" });
         res.status(200).json(procurement);
@@ -78,9 +56,7 @@ export const getProcurementById = async (req, res) => {
 // Update Procurement
 export const updateProcurementById = async (req, res) => {
     try {
-        const procurement = await Procurement.findByIdAndUpdate(req.params.id, req.body, { new: true })
-            .populate("requestedBy", "email username role")
-            .populate({ path: "rfqId", populate: { path: "createdBy", select: "email username role" } });
+        const procurement = await Procurement.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("requestedBy", "email username role");
 
         if (!procurement) return res.status(404).json({ error: "Procurement not found" });
         res.status(200).json(procurement);
@@ -101,6 +77,42 @@ export const deleteProcurementById = async (req, res) => {
     }
 };
 
+// Approve Procurement Request
+export const approveProcurement = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const procurement = await Procurement.findByIdAndUpdate(id, { status: "Approved", rejectionReason: null }, { new: true });
+
+        if (!procurement) return res.status(404).json({ message: "Procurement request not found" });
+
+        res.status(200).json({ message: "Procurement Approved", data: procurement });
+    } catch (error) {
+        res.status(500).json({ message: "Error approving procurement", error });
+    }
+};
+
+// Reject Procurement Request
+export const rejectProcurement = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rejectionReason } = req.body;
+
+        if (!rejectionReason) {
+            return res.status(400).json({ message: "Rejection reason is required" });
+        }
+
+        const procurement = await Procurement.findByIdAndUpdate(id, { status: "Rejected", rejectionReason }, { new: true });
+
+        if (!procurement) return res.status(404).json({ message: "Procurement request not found" });
+
+        res.status(200).json({ message: "Procurement Rejected", data: procurement });
+    } catch (error) {
+        res.status(500).json({ message: "Error rejecting procurement", error });
+    }
+};
+
+/*
 // Approve Procurement
 export const approveProcurement = async (req, res) => {
     try {
@@ -115,18 +127,4 @@ export const approveProcurement = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
-// Reject Procurement
-export const rejectProcurement = async (req, res) => {
-    try {
-        const procurement = await Procurement.findById(req.params.procurementId);
-        if (!procurement) return res.status(404).json({ message: "Procurement not found" });
-        if (procurement.status === "Rejected") return res.status(400).json({ message: "Procurement is already rejected" });
-
-        procurement.status = "Rejected";
-        await procurement.save();
-        res.status(200).json({ message: "Procurement rejected successfully", procurement });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
+*/

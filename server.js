@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import helmet from "helmet";
@@ -8,10 +9,15 @@ import corsMiddleware from "./middleware/corsMiddleware.js";
 import sessionMiddleware from "./middleware/session.js";
 import errorHandler from "./middleware/errorHandler.js";
 import connectDB from "./utils/db.js";
+import { initializeSocket } from "./utils/socket.js";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+
+// Initialize Socket.io
+initializeSocket(server);
 
 // Middleware
 app.use(corsMiddleware);
@@ -29,11 +35,11 @@ app.use(errorHandler);
 
 // Server
 const PORT = process.env.PORT || 5058;
-app.listen(PORT, async () => {
-    // Connect to database
+server.listen(PORT, async () => {
     await connectDB();
     console.log("Server started at http://localhost:" + PORT);
 });
-process.on("uncaughtException", (err, origin) => console.error(err));
 
-process.on("unhandledRejection", (reason, promise) => console.error(reason));
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => console.error(err));
+process.on("unhandledRejection", (reason) => console.error(reason));

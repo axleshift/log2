@@ -1,41 +1,36 @@
 import mongoose from "mongoose";
 
-const RFQSchema = new mongoose.Schema({
-    procurementId: { type: mongoose.Schema.Types.ObjectId, ref: "Procurement" },
-    status: { type: String, enum: ["Open", "Closed", "Awarded"], default: "Open" },
-    products: [
-        {
-            name: String,
-            quantity: Number,
-            specs: String,
+const RFQSchema = new mongoose.Schema(
+    {
+        procurementId: { type: mongoose.Schema.Types.ObjectId, ref: "Procurement", required: true },
+        vendors: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vendor" }],
+        products: [
+            {
+                name: { type: String, required: true },
+                quantity: { type: Number, required: true },
+                unit: { type: String, required: true },
+                unitPrice: { type: Number },
+            },
+        ],
+        deadline: { type: Date, required: true },
+        status: {
+            type: String,
+            enum: ["Open", "Closed", "Awarded", "Cancelled"],
+            default: "Open",
         },
-    ],
-    invitedVendors: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vendor" }],
-    quotes: [
-        {
-            vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
-            quoteAmount: Number,
-            deliveryTime: Number,
-            status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" },
-            items: [
-                {
-                    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-                    quantity: Number,
-                    unitPrice: Number,
-                },
-            ],
-        },
-    ],
-    awardedVendor: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", default: null },
-    paymentTerms: {
-        type: String,
-        enum: ["Due on Receipt", "Net 30", "Net 60", "Installments"],
-        default: "Net 30",
+        quotes: [
+            {
+                vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
+                totalPrice: { type: Number, required: true },
+                quoteDate: { type: Date, default: Date.now },
+                terms: { type: String },
+                status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" },
+            },
+        ],
+        selectedVendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
     },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Added createdBy field
-    createdAt: { type: Date, default: Date.now },
-});
-
-const RFQ = mongoose.model("RFQ", RFQSchema);
+    { timestamps: true }
+);
+const RFQ = mongoose.models.RFQ || mongoose.model("RFQ", RFQSchema);
 
 export default RFQ;
