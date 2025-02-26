@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../context/AuthContext'
 import {
   CCard,
   CCardBody,
@@ -13,6 +14,11 @@ import {
   CTableDataCell,
   CBadge,
   CSpinner,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
+  CFormTextarea,
 } from '@coreui/react'
 import axios from 'axios'
 
@@ -21,9 +27,13 @@ const PROCUREMENT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/procurement`
 const ProcurementDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [procurement, setProcurement] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [rejectModal, setRejectModal] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     const fetchProcurement = async () => {
@@ -42,13 +52,44 @@ const ProcurementDetails = () => {
         setLoading(false)
       }
     }
-
     fetchProcurement()
   }, [id])
+
+  const handleApprove = async () => {
+    try {
+      setUpdating(true)
+      await axios.patch(`${PROCUREMENT_API_URL}/${id}/approve`)
+      setProcurement((prev) => ({ ...prev, status: 'Approved' }))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to approve procurement')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a rejection reason.')
+      return
+    }
+    try {
+      setUpdating(true)
+      await axios.patch(`${PROCUREMENT_API_URL}/${id}/reject`, { reason: rejectReason })
+      setProcurement((prev) => ({ ...prev, status: 'Rejected' }))
+      setRejectModal(false)
+      setRejectReason('')
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to reject procurement')
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   if (loading) return <CSpinner color="primary" />
   if (error) return <div>{error}</div>
   if (!procurement) return <div>No Procurement found.</div>
+
+  const isApprover = user?.role === 'super admin' || user?.role === 'admin'
 
   return (
     <CCard>
@@ -66,31 +107,24 @@ const ProcurementDetails = () => {
           <strong>Title:</strong> {procurement.title}
         </h6>
         <h6>
-          <strong>Description:</strong> {procurement.description || 'No description available'}
-        </h6>
-        <h6>
           <strong>Department:</strong> {procurement.department}
         </h6>
         <h6>
-          <strong>Status:</strong>
+          <strong>Status:</strong>{' '}
           <CBadge
             color={
               procurement.status === 'Pending'
                 ? 'warning'
                 : procurement.status === 'Approved'
                   ? 'success'
-                  : procurement.status === 'Rejected'
-                    ? 'danger'
-                    : procurement.status === 'Completed'
-                      ? 'info'
-                      : 'primary'
+                  : 'danger'
             }
           >
             {procurement.status}
           </CBadge>
         </h6>
         <h6>
-          <strong>Created By:</strong> {procurement.requestedBy?.email || 'Unknown'}
+          <strong>Requested By:</strong> {procurement.requestedBy?.email || 'Unknown'}
         </h6>
         <h6>
           <strong>Procurement Date:</strong>{' '}
@@ -99,16 +133,6 @@ const ProcurementDetails = () => {
         <h6>
           <strong>Delivery Date:</strong> {new Date(procurement.deliveryDate).toLocaleDateString()}
         </h6>
-        <h6>
-          <strong>RFQ Required:</strong> {procurement.rfqRequired ? 'Yes' : 'No'}
-        </h6>
-        {procurement.rfqId?._id && (
-          <h6>
-            <strong>RFQ:</strong>{' '}
-            <a href={`/rfq/${procurement.rfqId._id}`}>{procurement.rfqId.title || 'View RFQ'}</a>
-          </h6>
-        )}
-
         <hr />
 
         {/* Products Table */}
@@ -141,39 +165,39 @@ const ProcurementDetails = () => {
             )}
           </CTableBody>
         </CTable>
-
         <hr />
 
-        {/* Purchase Orders Table */}
-        <h6>
-          <strong>Purchase Orders</strong>
-        </h6>
-        <CTable hover responsive>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell>PO ID</CTableHeaderCell>
-              <CTableHeaderCell>Status</CTableHeaderCell>
-              <CTableHeaderCell>Amount</CTableHeaderCell>
-              <CTableHeaderCell>Created At</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {procurement.purchaseOrders?.length > 0 ? (
-              procurement.purchaseOrders.map((po, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell>{po._id}</CTableDataCell>
-                  <CTableDataCell>{po.status}</CTableDataCell>
-                  <CTableDataCell>${po.amount || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{new Date(po.createdAt).toLocaleDateString()}</CTableDataCell>
-                </CTableRow>
-              ))
-            ) : (
-              <CTableRow>
-                <CTableDataCell colSpan="4">No purchase orders created yet.</CTableDataCell>
-              </CTableRow>
-            )}
-          </CTableBody>
-        </CTable>
+        {/* Approval Buttons */}
+        {isApprover && procurement.status === 'Pending' && (
+          <>
+            <CButton color="success" className="me-2" onClick={handleApprove} disabled={updating}>
+              {updating ? <CSpinner size="sm" /> : 'Approve'}
+            </CButton>
+            <CButton color="danger" onClick={() => setRejectModal(true)} disabled={updating}>
+              {updating ? <CSpinner size="sm" /> : 'Reject'}
+            </CButton>
+          </>
+        )}
+
+        {/* Reject Modal */}
+        <CModal visible={rejectModal} onClose={() => setRejectModal(false)}>
+          <CModalHeader>Reject Procurement</CModalHeader>
+          <CModalBody>
+            <CFormTextarea
+              placeholder="Enter rejection reason..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={() => setRejectModal(false)}>
+              Cancel
+            </CButton>
+            <CButton color="danger" onClick={handleReject}>
+              Confirm Reject
+            </CButton>
+          </CModalFooter>
+        </CModal>
       </CCardBody>
     </CCard>
   )

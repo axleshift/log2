@@ -1,26 +1,33 @@
 import mongoose from "mongoose";
 
-const PurchaseOrderSchema = new mongoose.Schema({
-    procurementId: { type: mongoose.Schema.Types.ObjectId, ref: "Procurement" },
-    vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
-    items: [
-        {
-            productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-            quantity: Number,
-            unitPrice: Number,
-            totalPrice: {
-                type: Number,
-                default: function () {
-                    return this.quantity * this.unitPrice;
-                },
-            },
+const PurchaseOrderSchema = new mongoose.Schema(
+    {
+        poNumber: { type: String, required: true, unique: true },
+        orderDate: { type: Date, required: true },
+        receiveDate: { type: Date },
+        carrier: { type: String },
+        vendor: {
+            businessName: { type: String, required: true },
+            businessAddress: { type: String, required: true },
+            contactNumber: { type: String, required: true },
         },
-    ],
-    totalAmount: { type: Number, required: true },
-    status: { type: String, enum: ["Pending", "In Progress", "Delivered"], default: "Pending" },
-    paymentStatus: { type: String, enum: ["Paid", "Unpaid", "Partially Paid"], default: "Unpaid" },
-    createdAt: { type: Date, default: Date.now },
-});
+        shipTo: { type: mongoose.Schema.Types.ObjectId, ref: "Shipment", required: true },
+        details: [
+            {
+                productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+                description: { type: String, required: true },
+                quantity: { type: Number, required: true },
+                unitPrice: { type: Number, required: true },
+                subTotal: { type: Number, required: true },
+            },
+        ],
+        procurementId: { type: mongoose.Schema.Types.ObjectId, ref: "Procurement" },
+        rfqId: { type: mongoose.Schema.Types.ObjectId, ref: "RFQ", default: null },
+        vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
+        additionalNotes: { type: String },
+    },
+    { timestamps: true }
+);
 
 const PurchaseOrder = mongoose.models.PurchaseOrder || mongoose.model("PurchaseOrder", PurchaseOrderSchema);
 

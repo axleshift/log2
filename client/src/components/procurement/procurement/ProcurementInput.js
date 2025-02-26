@@ -8,10 +8,10 @@ const ProcurementInput = ({
   name,
   value,
   onChange,
-  placeholder,
+  placeholder = '',
   required = false,
   options = [],
-  rows,
+  rows = 3,
   disabled = false,
 }) => {
   if (type === 'textarea') {
@@ -77,15 +77,6 @@ ProcurementInput.propTypes = {
   options: PropTypes.arrayOf(PropTypes.string),
   rows: PropTypes.number,
   disabled: PropTypes.bool,
-}
-
-ProcurementInput.defaultProps = {
-  type: 'text',
-  placeholder: '',
-  required: false,
-  options: [],
-  rows: 3,
-  disabled: false,
 }
 
 export default ProcurementInput

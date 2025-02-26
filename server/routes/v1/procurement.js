@@ -9,7 +9,7 @@ router.get("/", getProcurements);
 router.get("/:id", getProcurementById);
 router.put("/:id", updateProcurementById);
 router.delete("/:id", deleteProcurementById);
-router.patch("/:procurementId/approve", approveProcurement);
-router.patch("/:procurementId/reject", rejectProcurement);
+router.patch("/:id/approve", approveProcurement);
+router.patch("/:id/reject", rejectProcurement);
 
 export default router;

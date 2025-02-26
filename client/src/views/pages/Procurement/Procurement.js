@@ -4,7 +4,7 @@ import CreateProcurement from '../../../components/procurement/procurement/Creat
 const ProcurementPage = () => {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Procurement Process</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">🛒 Procurement Request</h1>
       <CreateProcurement />
     </div>
   )

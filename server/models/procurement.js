@@ -25,9 +25,7 @@ const ProcurementSchema = new mongoose.Schema(
             enum: ["Pending", "Approved", "Rejected", "Completed"],
             default: "Pending",
         },
-        rfqRequired: { type: Boolean, required: true },
-        rfqId: { type: mongoose.Schema.Types.ObjectId, ref: "RFQ" },
-        purchaseOrderId: [{ type: mongoose.Schema.Types.ObjectId, ref: "PurchaseOrder" }],
+        rejectionReason: { type: String, default: null }, // Add this field
         deliveryDate: { type: Date, default: null },
     },
     { timestamps: true }

@@ -53,7 +53,7 @@ const routes = [
   { path: '/procurement/product-catalog', name: 'Product', element: product },
   { path: '/procurement/product/:id', name: 'Product Details', element: ProductDetails },
   { path: '/procurement/product/new', name: 'Product Creation', element: ProductCreation },
-  { path: '/procurement', name: 'ProcurementPage', element: ProcurementPage },
+  { path: '/procurement/procurement', name: 'ProcurementPage', element: ProcurementPage },
   { path: '/procurement/:id', name: 'ProcurementDetails', element: ProcurementDetails },
   { path: '/procurement/rfqs/:id', name: 'RFQDetails', element: RFQDetails },
   { path: '/procurement/vendors', name: 'Vendor Management', element: Vendors },

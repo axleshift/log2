@@ -1,9 +1,8 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, sendOTPForRegistration, getUsers } from "../../controller/authController.js";
+import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, sendOTPForRegistration, getUsers, approveUser, cancelApproval } from "../../controller/authController.js";
 import { validateRegistration, loginValidation, forgotPasswordValidation, changePasswordValidation } from "../../middleware/validationHandler.js";
 import { verifyRecaptcha } from "../../middleware/recaptcha.js";
 import { tokenMiddleware } from "../../middleware/authMiddleware.js";
-import { approveUser, cancelApproval } from "../../controller/approval.js";
 
 const router = express.Router();
 

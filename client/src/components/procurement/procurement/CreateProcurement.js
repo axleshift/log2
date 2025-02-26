@@ -30,6 +30,7 @@ const CreateProcurement = () => {
   })
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
+  const [showNextStepModal, setShowNextStepModal] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -86,15 +87,6 @@ const CreateProcurement = () => {
     if (loading) return
     setLoading(true)
 
-    const isValid = procurementData.products.every(
-      (product) => product.name && product.quantity > 0 && product.unit && product.unitPrice >= 0,
-    )
-    if (!isValid) {
-      showToast('🚨 Please fill in all product details including unit.', 'danger')
-      setLoading(false)
-      return
-    }
-
     try {
       if (!accessToken) throw new Error('Authentication error. Please log in again.')
       const headers = { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
@@ -108,6 +100,7 @@ const CreateProcurement = () => {
 
       await axios.post(PROCUREMENT_API_URL, procurementPayload, { headers })
 
+      // Reset form
       setProcurementData({
         title: '',
         description: '',
@@ -118,7 +111,11 @@ const CreateProcurement = () => {
         products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
         estimatedCost: 0,
       })
-      showToast('🎉 Procurement successfully created!', 'success')
+
+      showToast('✅ Procurement Request created successfully! Wait for Approval', 'success')
+
+      // Show modal to choose next step
+      setShowNextStepModal(true)
     } catch (error) {
       showToast(error.response?.data?.message || '🚨 Failed to create procurement.', 'danger')
     } finally {
