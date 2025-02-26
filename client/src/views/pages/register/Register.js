@@ -20,7 +20,6 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import OTPVerification from '../../../components/Forms/OtpForm.js'
 import VendorForm from '../../../components/Forms/VendorForm.js'
-import DepartmentForm from '../../../components/Forms/DepartmentForm.js'
 import Cookies from 'js-cookie'
 
 function Register() {
@@ -134,8 +133,6 @@ function Register() {
                         <CFormInput
                           placeholder="Username"
                           {...register('username', { required: 'Username is required' })}
-                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
-                          onBlur={(e) => (e.target.style.borderColor = '')}
                         />
                       </CInputGroup>
                       {errors.username && <CAlert color="danger">{errors.username.message}</CAlert>}
@@ -149,8 +146,6 @@ function Register() {
                           type="password"
                           placeholder="Password"
                           {...register('password', { required: 'Password is required' })}
-                          onFocus={(e) => (e.target.style.borderColor = 'var(--c-primary)')}
-                          onBlur={(e) => (e.target.style.borderColor = '')}
                         />
                       </CInputGroup>
                       {errors.password && <CAlert color="danger">{errors.password.message}</CAlert>}
@@ -170,11 +165,6 @@ function Register() {
 
                       {/* Vendor Form (Conditionally Rendered) */}
                       {selectedRole === 'vendor' && <VendorForm />}
-
-                      {/* Department Form (Conditionally Rendered) */}
-                      {selectedRole === 'admin' || selectedRole === 'finance' ? (
-                        <DepartmentForm />
-                      ) : null}
 
                       <div className="d-grid">
                         <CButton color="primary" type="submit" disabled={loading}>
