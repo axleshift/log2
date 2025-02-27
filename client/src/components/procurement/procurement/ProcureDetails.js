@@ -6,19 +6,18 @@ import {
   CCardBody,
   CCardHeader,
   CButton,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
   CBadge,
   CSpinner,
   CModal,
   CModalHeader,
   CModalBody,
   CModalFooter,
-  CFormTextarea,
+  CTable,
+  CTableHead,
+  CTableBody,
+  CTableHeaderCell,
+  CTableDataCell,
+  CTableRow,
 } from '@coreui/react'
 import axios from 'axios'
 
@@ -31,9 +30,7 @@ const ProcurementDetails = () => {
   const [procurement, setProcurement] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [rejectModal, setRejectModal] = useState(false)
-  const [rejectReason, setRejectReason] = useState('')
-  const [updating, setUpdating] = useState(false)
+  const [rfqPoModal, setRfqPoModal] = useState(false)
 
   useEffect(() => {
     const fetchProcurement = async () => {
@@ -55,41 +52,28 @@ const ProcurementDetails = () => {
     fetchProcurement()
   }, [id])
 
-  const handleApprove = async () => {
-    try {
-      setUpdating(true)
-      await axios.patch(`${PROCUREMENT_API_URL}/${id}/approve`)
-      setProcurement((prev) => ({ ...prev, status: 'Approved' }))
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to approve procurement')
-    } finally {
-      setUpdating(false)
+  useEffect(() => {
+    console.log('Procurement Status:', procurement?.status)
+    console.log('Requested By:', procurement?.requestedBy?._id)
+    console.log('Current User:', user?._id)
+
+    if (procurement?.status === 'Approved' && procurement?.requestedBy?._id === user?._id) {
+      setApprovalModal(true)
+      setRfqPoModal(true)
     }
+  }, [procurement, user])
+
+  const handleCreateRFQ = () => {
+    navigate(`/rfq/create/${procurement._id}`)
   }
 
-  const handleReject = async () => {
-    if (!rejectReason.trim()) {
-      alert('Please provide a rejection reason.')
-      return
-    }
-    try {
-      setUpdating(true)
-      await axios.patch(`${PROCUREMENT_API_URL}/${id}/reject`, { reason: rejectReason })
-      setProcurement((prev) => ({ ...prev, status: 'Rejected' }))
-      setRejectModal(false)
-      setRejectReason('')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to reject procurement')
-    } finally {
-      setUpdating(false)
-    }
+  const handleCreatePO = () => {
+    navigate(`/po/create/${procurement._id}`)
   }
 
   if (loading) return <CSpinner color="primary" />
   if (error) return <div>{error}</div>
   if (!procurement) return <div>No Procurement found.</div>
-
-  const isApprover = user?.role === 'super admin' || user?.role === 'admin'
 
   return (
     <CCard>
@@ -167,34 +151,21 @@ const ProcurementDetails = () => {
         </CTable>
         <hr />
 
-        {/* Approval Buttons */}
-        {isApprover && procurement.status === 'Pending' && (
-          <>
-            <CButton color="success" className="me-2" onClick={handleApprove} disabled={updating}>
-              {updating ? <CSpinner size="sm" /> : 'Approve'}
-            </CButton>
-            <CButton color="danger" onClick={() => setRejectModal(true)} disabled={updating}>
-              {updating ? <CSpinner size="sm" /> : 'Reject'}
-            </CButton>
-          </>
-        )}
-
-        {/* Reject Modal */}
-        <CModal visible={rejectModal} onClose={() => setRejectModal(false)}>
-          <CModalHeader>Reject Procurement</CModalHeader>
+        <CModal visible={true} onClose={() => setRfqPoModal(false)}>
+          <CModalHeader>Create RFQ or PO</CModalHeader>
           <CModalBody>
-            <CFormTextarea
-              placeholder="Enter rejection reason..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
+            Your procurement request has been approved. Would you like to create an RFQ or proceed
+            directly with a PO?
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" onClick={() => setRejectModal(false)}>
-              Cancel
+            <CButton color="primary" onClick={handleCreateRFQ}>
+              Create RFQ
             </CButton>
-            <CButton color="danger" onClick={handleReject}>
-              Confirm Reject
+            <CButton color="success" onClick={handleCreatePO}>
+              Create PO
+            </CButton>
+            <CButton color="secondary" onClick={() => setRfqPoModal(false)}>
+              Cancel
             </CButton>
           </CModalFooter>
         </CModal>

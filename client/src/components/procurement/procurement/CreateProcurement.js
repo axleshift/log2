@@ -28,9 +28,12 @@ const CreateProcurement = () => {
     products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
     estimatedCost: 0,
   })
+  const [requiresRFQ, setRequiresRFQ] = useState(false)
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
-  const [showNextStepModal, setShowNextStepModal] = useState(false)
+  const [currency, setCurrency] = useState('PHP')
+
+  const currencyOptions = ['PHP', 'USD', 'EUR', 'GBP', 'JPY']
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -93,6 +96,7 @@ const CreateProcurement = () => {
 
       const procurementPayload = {
         ...procurementData,
+        requiresRFQ,
         deliveryDate: procurementData.deliveryDate
           ? new Date(procurementData.deliveryDate).toISOString()
           : null,
@@ -111,11 +115,9 @@ const CreateProcurement = () => {
         products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
         estimatedCost: 0,
       })
+      setRequiresRFQ(false) // ✅ Reset RFQ checkbox
 
       showToast('✅ Procurement Request created successfully! Wait for Approval', 'success')
-
-      // Show modal to choose next step
-      setShowNextStepModal(true)
     } catch (error) {
       showToast(error.response?.data?.message || '🚨 Failed to create procurement.', 'danger')
     } finally {
@@ -182,6 +184,7 @@ const CreateProcurement = () => {
           />
         </CCol>
       </CRow>
+
       <h5>Products</h5>
       {procurementData.products.map((product, index) => (
         <CRow key={index} className="mb-2">
@@ -227,6 +230,31 @@ const CreateProcurement = () => {
               required
             />
           </CCol>
+          <CRow className="mt-3">
+            <CCol md={6}>
+              <label htmlFor="currency">Select Currency:</label>
+              <select
+                id="currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="form-control"
+              >
+                {currencyOptions.map((cur) => (
+                  <option key={cur} value={cur}>
+                    {cur}
+                  </option>
+                ))}
+              </select>
+            </CCol>
+          </CRow>
+
+          <CRow className="mt-3 text-end">
+            <CCol>
+              <h5>
+                Estimated Cost: {currency} {procurementData.estimatedCost.toFixed(2)}
+              </h5>
+            </CCol>
+          </CRow>
           <CCol md={2}>
             <CButton color="danger" onClick={() => removeProduct(index)}>
               Remove
@@ -241,8 +269,16 @@ const CreateProcurement = () => {
             Add Product
           </CButton>
         </CCol>
-        <CCol md={6} className="text-end">
-          <h5>Estimated Cost: ₱{procurementData.estimatedCost.toFixed(2)}</h5>
+      </CRow>
+
+      <CRow className="mt-3">
+        <CCol>
+          <input
+            type="checkbox"
+            checked={requiresRFQ}
+            onChange={(e) => setRequiresRFQ(e.target.checked)}
+          />{' '}
+          Requires RFQ?
         </CCol>
       </CRow>
 
@@ -254,10 +290,12 @@ const CreateProcurement = () => {
         </CCol>
       </CRow>
       <CToaster placement="top-end">
-        {toasts.map(({ id, message, color }) => (
-          <CToast key={id} color={color} autohide visible>
-            <CToastHeader closeButton>Notification</CToastHeader>
-            <CToastBody>{message}</CToastBody>
+        {toasts.map((toast) => (
+          <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
+            <CToastHeader closeButton>
+              {toast.color === 'success' ? '✅ Success' : '🚨 Error'}
+            </CToastHeader>
+            <CToastBody>{toast.message}</CToastBody>
           </CToast>
         ))}
       </CToaster>

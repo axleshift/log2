@@ -34,9 +34,9 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'PR & RFQ Approval',
-    to: '/procurement/rfq-management',
-    role_exclude: ['user', 'staff'],
+    name: 'Approval',
+    to: '/admin/approval',
+    role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
   },
   {
@@ -55,8 +55,15 @@ const _nav = [
     component: CNavItem,
     name: 'Procurement request',
     to: '/procurement/procurement',
-    role_exclude: ['user', 'staff'],
+    role_exclude: ['vendor', 'super admin', 'admin', 'staff'],
     icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'PR & RFQ List',
+    to: '/procurement/rfq-management',
+    role_exclude: ['vendor', 'super admin', 'admin', 'staff'],
+    icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -89,6 +96,7 @@ const _nav = [
   {
     component: CNavTitle,
     name: 'VENDOR MANAGEMENT',
+    role_exclude: ['user', 'staff'],
   },
   {
     component: CNavItem,

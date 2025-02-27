@@ -29,6 +29,26 @@ export const createRFQ = async (req, res) => {
     }
 };
 
+export const getRFQs = async (req, res) => {
+    try {
+        const { status, procurementId } = req.query;
+        let filter = {};
+
+        if (status) {
+            filter.status = status;
+        }
+
+        if (procurementId) {
+            filter.procurementId = procurementId;
+        }
+
+        const rfqs = await RFQ.find(filter).populate("procurementId").populate("vendors").exec();
+        return res.status(200).json({ message: "RFQs fetched successfully!", rfqs });
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching RFQs", error });
+    }
+};
+
 // Submit a quote from a vendor
 export const submitQuote = async (req, res) => {
     const { rfqId, vendorId, totalPrice, terms } = req.body;

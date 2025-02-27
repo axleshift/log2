@@ -30,6 +30,10 @@ const ProcurementDetails = lazy(
 const RFQDetails = lazy(() => import('./components/procurement/procurement/RFQDetails.js'))
 const PurchaseManagement = lazy(() => import('./views/pages/Procurement/PurchaseManagement.js'))
 const ShipmentsAndTracking = lazy(() => import('./views/pages/Procurement/Shipments.js'))
+const NextStep = lazy(() => import('./components/procurement/procurement/NextStep.js'))
+const CreateRFQ = lazy(() => import('./components/procurement/procurement/CreateRFQ.js'))
+const CreatePO = lazy(() => import('./components/procurement/procurement/CreatePO.js'))
+const ApprovalList = lazy(() => import('./views/pages/Procurement/ApprovalList.js'))
 
 // VENDOR SECTION
 const VendorRFQ = lazy(() => import('./views/pages/VendorManagement/RFQVendors.js'))
@@ -59,6 +63,10 @@ const routes = [
   { path: '/procurement/vendors', name: 'Vendor Management', element: Vendors },
   { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
   { path: '/procurement/shipments', name: 'Shipments Tracking', element: ShipmentsAndTracking },
+  { path: '/procurement/:id/next-step', name: 'Next Step', element: NextStep },
+  { path: '/rfq/create/:id', name: 'RFQ', element: CreateRFQ },
+  { path: '/po/create/:id', name: 'PO', element: CreatePO },
+  { path: '/admin/approval', name: ' Approval Page', element: ApprovalList },
 
   // VENDOR RELATED PATH SECTION :P
   { path: '/vendor/rfqs/:id', name: 'VendorRFQ', element: VendorRFQ },
