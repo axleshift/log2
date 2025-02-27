@@ -31,7 +31,16 @@ export const createProcurement = async (req, res) => {
 // Get all Procurements
 export const getProcurements = async (req, res) => {
     try {
-        const query = req.query.rfqRequired ? { rfqRequired: req.query.rfqRequired === "true" } : {};
+        const query = {};
+
+        if (req.query.status) {
+            query.status = req.query.status;
+        }
+
+        if (req.query.rfqRequired) {
+            query.rfqRequired = req.query.rfqRequired === "true";
+        }
+
         const procurements = await Procurement.find(query).populate("requestedBy", "email username role");
         res.status(200).json(procurements);
     } catch (error) {
@@ -98,16 +107,19 @@ export const rejectProcurement = async (req, res) => {
         const { id } = req.params;
         const { rejectionReason } = req.body;
 
-        if (!rejectionReason) {
+        if (!rejectionReason || rejectionReason.trim() === "") {
             return res.status(400).json({ message: "Rejection reason is required" });
         }
 
         const procurement = await Procurement.findByIdAndUpdate(id, { status: "Rejected", rejectionReason }, { new: true });
 
-        if (!procurement) return res.status(404).json({ message: "Procurement request not found" });
+        if (!procurement) {
+            return res.status(404).json({ message: "Procurement request not found" });
+        }
 
         res.status(200).json({ message: "Procurement Rejected", data: procurement });
     } catch (error) {
+        console.error("Error rejecting procurement:", error);
         res.status(500).json({ message: "Error rejecting procurement", error });
     }
 };

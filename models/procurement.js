@@ -25,12 +25,15 @@ const ProcurementSchema = new mongoose.Schema(
             enum: ["Pending", "Approved", "Rejected", "Completed"],
             default: "Pending",
         },
-        rejectionReason: { type: String, default: null }, // Add this field
+        rejectionReason: { type: String, default: null },
         deliveryDate: { type: Date, default: null },
+
+        requiresRFQ: { type: Boolean, required: true, default: false },
     },
     { timestamps: true }
 );
 
+// Automatically calculate estimatedCost when updating products
 ProcurementSchema.pre("findOneAndUpdate", function (next) {
     const update = this.getUpdate();
     if (update.products && Array.isArray(update.products)) {
