@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import {
   CTable,
@@ -13,29 +14,27 @@ import {
   CButton,
 } from '@coreui/react'
 
-const RFQ_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/rfq`
-
 const RFQList = () => {
   const [rfqs, setRfqs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchRFQs = async () => {
       try {
-        const response = await axios.get(RFQ_API_URL)
-        console.log('Full API Response:', response.data)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/rfq`)
 
-        if (Array.isArray(response.data)) {
-          setRfqs(response.data)
-        } else if (Array.isArray(response.data.rfqs)) {
+        if (response.data && Array.isArray(response.data.rfqs)) {
           setRfqs(response.data.rfqs)
+        } else if (Array.isArray(response.data)) {
+          setRfqs(response.data)
         } else {
-          setRfqs([])
           setError('Unexpected API response format')
+          setRfqs([])
         }
       } catch (err) {
-        console.error('Error fetching RFQs:', err)
         setError(err.response?.data?.message || 'Failed to fetch RFQs')
       } finally {
         setLoading(false)
@@ -44,6 +43,20 @@ const RFQList = () => {
 
     fetchRFQs()
   }, [])
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this RFQ?')) return
+
+    setDeletingId(id)
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/rfq/${id}`)
+      setRfqs(rfqs.filter((rfq) => rfq._id !== id))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete RFQ')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <CContainer className="mt-4">
@@ -74,8 +87,21 @@ const RFQList = () => {
                   </CTableDataCell>
                   <CTableDataCell>{rfq.status || 'Pending'}</CTableDataCell>
                   <CTableDataCell>
-                    <CButton color="primary" href={`/rfq/${rfq._id}`} size="sm">
+                    <CButton
+                      color="primary"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => navigate(`/procurement/rfq/${rfq._id}`)}
+                    >
                       View
+                    </CButton>
+                    <CButton
+                      color="danger"
+                      size="sm"
+                      onClick={() => handleDelete(rfq._id)}
+                      disabled={deletingId === rfq._id}
+                    >
+                      {deletingId === rfq._id ? 'Deleting...' : 'Delete'}
                     </CButton>
                   </CTableDataCell>
                 </CTableRow>

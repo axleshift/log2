@@ -5,7 +5,7 @@ import { tokenMiddleware } from "../../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/", tokenMiddleware, createProcurement);
-router.get("/", getProcurements);
+router.get("/", tokenMiddleware, getProcurements);
 router.get("/:id", getProcurementById);
 router.put("/:id", updateProcurementById);
 router.delete("/:id", deleteProcurementById);

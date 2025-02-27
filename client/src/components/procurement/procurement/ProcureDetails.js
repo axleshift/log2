@@ -8,10 +8,6 @@ import {
   CButton,
   CBadge,
   CSpinner,
-  CModal,
-  CModalHeader,
-  CModalBody,
-  CModalFooter,
   CTable,
   CTableHead,
   CTableBody,
@@ -30,7 +26,6 @@ const ProcurementDetails = () => {
   const [procurement, setProcurement] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [rfqPoModal, setRfqPoModal] = useState(false)
 
   useEffect(() => {
     const fetchProcurement = async () => {
@@ -51,17 +46,6 @@ const ProcurementDetails = () => {
     }
     fetchProcurement()
   }, [id])
-
-  useEffect(() => {
-    console.log('Procurement Status:', procurement?.status)
-    console.log('Requested By:', procurement?.requestedBy?._id)
-    console.log('Current User:', user?._id)
-
-    if (procurement?.status === 'Approved' && procurement?.requestedBy?._id === user?._id) {
-      setApprovalModal(true)
-      setRfqPoModal(true)
-    }
-  }, [procurement, user])
 
   const handleCreateRFQ = () => {
     navigate(`/rfq/create/${procurement._id}`)
@@ -150,25 +134,6 @@ const ProcurementDetails = () => {
           </CTableBody>
         </CTable>
         <hr />
-
-        <CModal visible={true} onClose={() => setRfqPoModal(false)}>
-          <CModalHeader>Create RFQ or PO</CModalHeader>
-          <CModalBody>
-            Your procurement request has been approved. Would you like to create an RFQ or proceed
-            directly with a PO?
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="primary" onClick={handleCreateRFQ}>
-              Create RFQ
-            </CButton>
-            <CButton color="success" onClick={handleCreatePO}>
-              Create PO
-            </CButton>
-            <CButton color="secondary" onClick={() => setRfqPoModal(false)}>
-              Cancel
-            </CButton>
-          </CModalFooter>
-        </CModal>
       </CCardBody>
     </CCard>
   )

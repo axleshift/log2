@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const RFQSchema = new mongoose.Schema(
     {
         procurementId: { type: mongoose.Schema.Types.ObjectId, ref: "Procurement", required: true },
+        requestedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         vendors: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vendor" }],
         products: [
             {

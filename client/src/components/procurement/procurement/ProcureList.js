@@ -23,37 +23,28 @@ const PROCUREMENT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/procurement`
 
 const ProcurementList = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(true)
-  const [approvalModal, setApprovalModal] = useState(false)
-  const [approvedProcurement, setApprovedProcurement] = useState(null)
   const [deleteModal, setDeleteModal] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
   useEffect(() => {
     const fetchProcurements = async () => {
+      if (!accessToken) {
+        console.error('No authentication token found')
+        setLoading(false)
+        return
+      }
+
       try {
-        const response = await axios.get(PROCUREMENT_API_URL)
+        const response = await axios.get(PROCUREMENT_API_URL, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
         console.log('Procurements Data:', response.data)
         setProcurements(response.data)
-
-        // Check for new approvals for the logged-in user
-        if (user) {
-          const lastApproved = response.data.find(
-            (p) => p.status === 'Approved' && p.createdBy === user._id,
-          )
-
-          // Store approval check per procurement
-          const seenApprovals = JSON.parse(sessionStorage.getItem('seenApprovals') || '{}')
-
-          if (lastApproved && !seenApprovals[lastApproved._id]) {
-            setApprovedProcurement(lastApproved)
-            setApprovalModal(true)
-            seenApprovals[lastApproved._id] = true
-            sessionStorage.setItem('seenApprovals', JSON.stringify(seenApprovals))
-          }
-        }
       } catch (err) {
         console.error('Error fetching procurements:', err)
       } finally {
@@ -62,13 +53,17 @@ const ProcurementList = () => {
     }
 
     fetchProcurements()
-  }, [user]) // Depend on user to ensure it's available before fetching approvals
+  }, [accessToken])
 
   const handleDelete = async () => {
-    if (!deleteId) return
+    if (!deleteId || !accessToken) return
 
     try {
-      await axios.delete(`${PROCUREMENT_API_URL}/${deleteId}`)
+      await axios.delete(`${PROCUREMENT_API_URL}/${deleteId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
       setProcurements(procurements.filter((p) => p._id !== deleteId))
       setDeleteModal(false)
     } catch (err) {
@@ -117,26 +112,31 @@ const ProcurementList = () => {
                     }}
                   >
                     Delete
-                  </CButton>
+                  </CButton>{' '}
+                  {procurement.status === 'Approved' && (
+                    <>
+                      <CButton
+                        color="primary"
+                        size="sm"
+                        onClick={() => navigate(`/rfq/create/${procurement._id}`)}
+                      >
+                        Create RFQ
+                      </CButton>{' '}
+                      <CButton
+                        color="success"
+                        size="sm"
+                        onClick={() => navigate(`/po/create/${procurement._id}`)}
+                      >
+                        Create PO
+                      </CButton>
+                    </>
+                  )}
                 </CTableDataCell>
               </CTableRow>
             ))}
           </CTableBody>
         </CTable>
       </CCardBody>
-
-      {/* Approval Modal */}
-      <CModal visible={approvalModal} onClose={() => setApprovalModal(false)}>
-        <CModalHeader>Procurement Approved</CModalHeader>
-        <CModalBody>
-          Your procurement request <strong>{approvedProcurement?.title}</strong> has been approved!
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="primary" onClick={() => setApprovalModal(false)}>
-            OK
-          </CButton>
-        </CModalFooter>
-      </CModal>
 
       {/* Delete Confirmation Modal */}
       <CModal visible={deleteModal} onClose={() => setDeleteModal(false)}>

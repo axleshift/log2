@@ -31,17 +31,20 @@ export const createProcurement = async (req, res) => {
 // Get all Procurements
 export const getProcurements = async (req, res) => {
     try {
-        const query = {};
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "Unauthorized: No user found" });
+        }
+
+        const query = req.user.role === "super admin" ? {} : { requestedBy: req.user.id };
 
         if (req.query.status) {
             query.status = req.query.status;
         }
 
-        if (req.query.rfqRequired) {
-            query.rfqRequired = req.query.rfqRequired === "true";
-        }
+        console.log("Fetching procurements for user:", req.user.id, "Query:", query);
 
         const procurements = await Procurement.find(query).populate("requestedBy", "email username role");
+
         res.status(200).json(procurements);
     } catch (error) {
         console.error("Error fetching procurements:", error);
@@ -123,20 +126,3 @@ export const rejectProcurement = async (req, res) => {
         res.status(500).json({ message: "Error rejecting procurement", error });
     }
 };
-
-/*
-// Approve Procurement
-export const approveProcurement = async (req, res) => {
-    try {
-        const procurement = await Procurement.findById(req.params.procurementId);
-        if (!procurement) return res.status(404).json({ message: "Procurement not found" });
-        if (procurement.status === "Approved") return res.status(400).json({ message: "Procurement is already approved" });
-
-        procurement.status = "Approved";
-        await procurement.save();
-        res.status(200).json({ message: "Procurement approved successfully", procurement });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-*/

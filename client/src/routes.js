@@ -59,7 +59,7 @@ const routes = [
   { path: '/procurement/product/new', name: 'Product Creation', element: ProductCreation },
   { path: '/procurement/procurement', name: 'ProcurementPage', element: ProcurementPage },
   { path: '/procurement/:id', name: 'ProcurementDetails', element: ProcurementDetails },
-  { path: '/procurement/rfqs/:id', name: 'RFQDetails', element: RFQDetails },
+  { path: '/procurement/rfq/:id', name: 'RFQDetails', element: RFQDetails },
   { path: '/procurement/vendors', name: 'Vendor Management', element: Vendors },
   { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
   { path: '/procurement/shipments', name: 'Shipments Tracking', element: ShipmentsAndTracking },

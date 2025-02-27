@@ -115,7 +115,7 @@ const CreateProcurement = () => {
         products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
         estimatedCost: 0,
       })
-      setRequiresRFQ(false) // ✅ Reset RFQ checkbox
+      setRequiresRFQ(false)
 
       showToast('✅ Procurement Request created successfully! Wait for Approval', 'success')
     } catch (error) {

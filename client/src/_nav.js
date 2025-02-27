@@ -55,14 +55,14 @@ const _nav = [
     component: CNavItem,
     name: 'Procurement request',
     to: '/procurement/procurement',
-    role_exclude: ['vendor', 'super admin', 'admin', 'staff'],
+    role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'PR & RFQ List',
     to: '/procurement/rfq-management',
-    role_exclude: ['vendor', 'super admin', 'admin', 'staff'],
+    role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
   },
   {

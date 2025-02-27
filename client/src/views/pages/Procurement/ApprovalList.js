@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -20,11 +20,13 @@ import {
   CModalFooter,
   CFormTextarea,
 } from '@coreui/react'
+import { useAuth } from '../../../context/AuthContext'
 
 const PROCUREMENT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/procurement`
 
 const ApprovalList = () => {
   const navigate = useNavigate()
+  const { accessToken } = useAuth()
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -35,7 +37,9 @@ const ApprovalList = () => {
   useEffect(() => {
     const fetchProcurements = async () => {
       try {
-        const response = await axios.get(`${PROCUREMENT_API_URL}?status=Pending`)
+        const response = await axios.get(`${PROCUREMENT_API_URL}?status=Pending`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
         setProcurements(response.data)
       } catch (err) {
         console.error('Error fetching procurements:', err)
@@ -43,13 +47,20 @@ const ApprovalList = () => {
         setLoading(false)
       }
     }
+
     fetchProcurements()
-  }, [])
+  }, [accessToken])
 
   const handleApprove = async (id) => {
     try {
       setUpdating(true)
-      await axios.patch(`${PROCUREMENT_API_URL}/${id}/approve`)
+      await axios.patch(
+        `${PROCUREMENT_API_URL}/${id}/approve`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      )
       setProcurements(procurements.filter((p) => p._id !== id))
     } catch (err) {
       alert('Failed to approve procurement')
@@ -66,7 +77,13 @@ const ApprovalList = () => {
 
     try {
       setUpdating(true)
-      await axios.patch(`${PROCUREMENT_API_URL}/${selectedId}/reject`, { rejectionReason })
+      await axios.patch(
+        `${PROCUREMENT_API_URL}/${selectedId}/reject`,
+        { rejectionReason },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      )
 
       setProcurements(procurements.filter((p) => p._id !== selectedId))
 

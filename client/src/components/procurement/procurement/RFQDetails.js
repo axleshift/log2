@@ -35,8 +35,8 @@ const RFQDetails = () => {
 
       try {
         setLoading(true)
-        const response = await axios.get(`${RFQ_API_URL}/${id}`)
-        setRFQ(response.data)
+        const { data } = await axios.get(`${RFQ_API_URL}/${id}`)
+        setRFQ(data.rfq)
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load RFQ')
       } finally {
@@ -48,49 +48,53 @@ const RFQDetails = () => {
   }, [id])
 
   if (loading) return <CSpinner color="primary" />
-  if (error) return <div>{error}</div>
+  if (error) return <div className="text-danger">{error}</div>
   if (!rfq) return <div>No RFQ found.</div>
 
-  // Ensure these are defined before accessing .length
   const products = rfq.products || []
   const invitedVendors = rfq.invitedVendors || []
   const quotes = rfq.quotes || []
+  const selectedVendor = rfq.selectedVendor || null
 
   return (
     <CCard>
-      <CCardHeader>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h5>RFQ Details</h5>
         <CButton color="secondary" onClick={() => navigate(-1)}>
           Back to RFQ List
         </CButton>
       </CCardHeader>
       <CCardBody>
-        <h6>
-          <strong>RFQ ID:</strong> {rfq._id}
-        </h6>
-        <h6>
-          <strong>Title:</strong> {rfq.procurementId?.title || 'N/A'}
-        </h6>
-        <h6>
-          <strong>Description:</strong>{' '}
-          {rfq.procurementId?.description || 'No description available'}
-        </h6>
-        <h6>
-          <strong>Status:</strong>
-          <CBadge
-            color={
-              rfq.status === 'Open' ? 'success' : rfq.status === 'Closed' ? 'danger' : 'warning'
-            }
-          >
-            {rfq.status}
-          </CBadge>
-        </h6>
-        <h6>
-          <strong>Created By:</strong> {rfq.createdBy?.email || 'Unknown'}
-        </h6>
-        <h6>
-          <strong>Created At:</strong> {new Date(rfq.createdAt).toLocaleDateString()}
-        </h6>
+        {/* RFQ General Info */}
+        <div className="d-flex flex-wrap mb-3">
+          <div className="w-50">
+            <strong>RFQ ID:</strong> {rfq._id}
+          </div>
+          <div className="w-50">
+            <strong>Title:</strong> {rfq.procurementId?.title || 'N/A'}
+          </div>
+          <div className="w-50">
+            <strong>Description:</strong>{' '}
+            {rfq.procurementId?.description || 'No description available'}
+          </div>
+          <div className="w-50">
+            <strong>Status:</strong>
+            <CBadge
+              color={
+                rfq.status === 'Open' ? 'success' : rfq.status === 'Closed' ? 'danger' : 'warning'
+              }
+            >
+              {rfq.status}
+            </CBadge>
+          </div>
+          <div className="w-50">
+            <strong>Created By:</strong>{' '}
+            {rfq.requestedBy?.name || rfq.requestedBy?.email || 'Unknown'}
+          </div>
+          <div className="w-50">
+            <strong>Created At:</strong> {new Date(rfq.createdAt).toLocaleDateString()}
+          </div>
+        </div>
 
         <hr />
 
@@ -98,7 +102,7 @@ const RFQDetails = () => {
         <h6>
           <strong>Items</strong>
         </h6>
-        <CTable hover responsive>
+        <CTable hover responsive className="text-center">
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Name</CTableHeaderCell>
@@ -117,7 +121,9 @@ const RFQDetails = () => {
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="3">No products listed</CTableDataCell>
+                <CTableDataCell colSpan="3" className="text-center">
+                  No products listed
+                </CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -129,7 +135,7 @@ const RFQDetails = () => {
         <h6>
           <strong>Invited Vendors</strong>
         </h6>
-        <CTable hover responsive>
+        <CTable hover responsive className="text-center">
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Business Name</CTableHeaderCell>
@@ -145,12 +151,14 @@ const RFQDetails = () => {
                   <CTableDataCell>{vendor.businessName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.fullName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.contactNumber || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{vendor.userId?.email || 'No Email'}</CTableDataCell>
+                  <CTableDataCell>{vendor.user?.email || 'No Email'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="4">No vendors added yet.</CTableDataCell>
+                <CTableDataCell colSpan="4" className="text-center">
+                  No vendors added yet.
+                </CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -162,7 +170,7 @@ const RFQDetails = () => {
         <h6>
           <strong>Quotes</strong>
         </h6>
-        <CTable hover responsive>
+        <CTable hover responsive className="text-center">
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Vendor</CTableHeaderCell>
@@ -175,17 +183,17 @@ const RFQDetails = () => {
             {quotes.length > 0 ? (
               quotes.map((quote, index) => (
                 <CTableRow key={index}>
-                  <CTableDataCell>
-                    {quote.vendorId?.businessName || 'Unknown Vendor'}
-                  </CTableDataCell>
-                  <CTableDataCell>{quote.quoteDetails[0]?.pricePerUnit || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.quoteDetails[0]?.deliveryTime || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.status}</CTableDataCell>
+                  <CTableDataCell>{quote.vendorName || 'Unknown Vendor'}</CTableDataCell>
+                  <CTableDataCell>{quote.quoteDetails?.[0]?.pricePerUnit || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{quote.quoteDetails?.[0]?.deliveryTime || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{quote.status || 'Pending'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="4">No quotes submitted yet.</CTableDataCell>
+                <CTableDataCell colSpan="4" className="text-center">
+                  No quotes submitted yet.
+                </CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -194,14 +202,12 @@ const RFQDetails = () => {
         <hr />
 
         {/* Selected Vendor */}
-        {rfq.selectedVendor ? (
-          <h6>
-            <strong>Selected Vendor:</strong>{' '}
-            {rfq.selectedVendor.businessName || rfq.selectedVendor}
-          </h6>
-        ) : (
-          <p>No vendor selected yet.</p>
-        )}
+        <h6>
+          <strong>Selected Vendor:</strong>{' '}
+          {selectedVendor?.businessName || (
+            <span className="text-muted">No vendor selected yet.</span>
+          )}
+        </h6>
       </CCardBody>
     </CCard>
   )
