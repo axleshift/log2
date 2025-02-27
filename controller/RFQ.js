@@ -7,15 +7,20 @@ export const createRFQ = async (req, res) => {
     const { procurementId, vendors, deadline } = req.body;
 
     try {
-        // Fetch the procurement to link to the RFQ
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "Unauthorized! User not logged in." });
+        }
+
         const procurement = await Procurement.findById(procurementId);
+
         if (!procurement) {
             return res.status(404).json({ message: "Procurement not found!" });
         }
+        const requestedById = req.user.id;
 
-        // Create a new RFQ
         const rfq = new RFQ({
             procurementId: procurement._id,
+            requestedBy: requestedById,
             vendors: vendors,
             products: procurement.products,
             deadline: deadline,
@@ -46,6 +51,108 @@ export const getRFQs = async (req, res) => {
         return res.status(200).json({ message: "RFQs fetched successfully!", rfqs });
     } catch (error) {
         return res.status(500).json({ message: "Error fetching RFQs", error });
+    }
+};
+
+/*export const getRFQById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const rfq = await RFQ.findById(id)
+            .populate({
+                path: "procurementId",
+                select: "title description products",
+            })
+            .populate({
+                path: "vendors",
+                select: "businessName fullName contactNumber userId",
+                populate: { path: "userId", select: "email" },
+            })
+            .populate({
+                path: "quotes.vendorId",
+                select: "businessName",
+            })
+            .populate({
+                path: "selectedVendorId",
+                select: "businessName",
+            })
+            .exec();
+
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found!" });
+        }
+
+        return res.status(200).json({
+            message: "RFQ fetched successfully!",
+            rfq: {
+                _id: rfq._id,
+                procurementId: rfq.procurementId,
+                products: rfq.procurementId?.products || [], // Ensure products exist
+                invitedVendors: rfq.vendors.map((vendor) => ({
+                    _id: vendor._id,
+                    businessName: vendor.businessName,
+                    fullName: vendor.fullName,
+                    contactNumber: vendor.contactNumber,
+                    email: vendor.userId?.email || "No Email",
+                })),
+                quotes: rfq.quotes.map((quote) => ({
+                    vendorId: quote.vendorId?._id || null,
+                    vendorName: quote.vendorId?.businessName || "Unknown Vendor",
+                    quoteDetails: quote.quoteDetails || [],
+                    status: quote.status,
+                })),
+                selectedVendor: rfq.selectedVendorId || null,
+                status: rfq.status,
+                createdBy: rfq.createdBy || null,
+                createdAt: rfq.createdAt,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching RFQ", error });
+    }
+};
+*/
+
+export const deleteRFQ = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Find the RFQ by ID
+        const rfq = await RFQ.findById(id);
+
+        if (!rfq) {
+            return res.status(404).json({ message: "RFQ not found" });
+        }
+
+        // Delete the RFQ
+        await RFQ.findByIdAndDelete(id);
+
+        res.status(200).json({ message: "RFQ deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting RFQ:", error);
+        res.status(500).json({ message: "Server error, could not delete RFQ" });
+    }
+};
+
+export const getRFQById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const rfq = await RFQ.findById(id)
+            .populate("requestedBy", "email username role")
+            .populate({
+                path: "procurementId",
+                populate: { path: "requestedBy", select: "email username role" },
+            });
+
+        if (!rfq) {
+            return res.status(404).json({ error: "RFQ not found" });
+        }
+
+        res.status(200).json(rfq);
+    } catch (error) {
+        console.error("Error fetching RFQ:", error);
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -124,12 +231,10 @@ export const closeRFQ = async (req, res) => {
     }
 };
 
-// Fetch RFQ details (populate procurement and vendor data)
 export const getRFQDetails = async (req, res) => {
     const { rfqId } = req.params;
 
     try {
-        // Fetch RFQ with related procurement and vendors
         const rfq = await RFQ.findById(rfqId).populate("procurementId").populate("vendors").exec();
 
         if (!rfq) {
