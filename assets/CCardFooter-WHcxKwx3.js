@@ -1,0 +1,1 @@
+import{r as l,_ as t,a as i,b as n,c as m,P as r}from"./index-BtAkPo-w.js";var a=l.forwardRef(function(s,e){var c=s.children,o=s.className,d=t(s,["children","className"]);return i("div",{...n({className:m("card-footer",o)},d,{ref:e}),children:c})});a.propTypes={children:r.node,className:r.string};a.displayName="CCardFooter";export{a as C};
