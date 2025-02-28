@@ -29,6 +29,7 @@ const CreateRFQ = () => {
     department: '',
     deadline: '',
     procurementId: id,
+    requestedBy: '',
     products: [],
     vendors: [],
   })
@@ -43,22 +44,20 @@ const CreateRFQ = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/v1/procurement/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
+          { headers: { Authorization: `Bearer ${accessToken}` } },
         )
+        const data = response.data
         setRfqData((prev) => ({
           ...prev,
-          title: `RFQ for ${response.data.title}`,
-          description: response.data.description || '',
-          department: response.data.department,
-          requestedBy: response.data.requestedBy?.email || 'Unknown',
-          products: response.data.products.map((product) => ({
-            ...product,
-            unitPrice: product.unitPrice || '',
-          })),
+          title: `RFQ for ${data.title || ''}`,
+          description: data.description || '',
+          department: data.department || '',
+          requestedBy: data.requestedBy?.email || 'Unknown',
+          products:
+            data.products?.map((product) => ({
+              ...product,
+              unitPrice: product.unitPrice || '',
+            })) || [],
         }))
       } catch (err) {
         setError('Failed to load procurement details.')
@@ -83,7 +82,7 @@ const CreateRFQ = () => {
   }, [id, accessToken])
 
   const handleChange = (e) => {
-    setRfqData({ ...rfqData, [e.target.name]: e.target.value })
+    setRfqData({ ...rfqData, [e.target.name]: e.target.value || '' })
   }
 
   const handleVendorSelection = (selectedOptions) => {
@@ -112,7 +111,19 @@ const CreateRFQ = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
 
-      setToast({ visible: true, message: 'RFQ successfully created!', type: 'success' })
+      setToast({ visible: true, message: 'RFQ And Invites successfully created!', type: 'success' })
+
+      // Reset form after successful submission
+      setRfqData({
+        title: '',
+        description: '',
+        department: '',
+        deadline: '',
+        procurementId: id,
+        requestedBy: '',
+        products: [],
+        vendors: [],
+      })
     } catch (err) {
       console.error('Request Error:', err.response?.data || err.message)
       setToast({ visible: true, message: 'Failed to create RFQ.', type: 'danger' })
