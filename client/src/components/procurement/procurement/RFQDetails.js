@@ -52,9 +52,10 @@ const RFQDetails = () => {
   if (!rfq) return <div>No RFQ found.</div>
 
   const products = rfq.products || []
-  const invitedVendors = rfq.invitedVendors || []
+  const vendors = rfq.vendors || []
   const quotes = rfq.quotes || []
   const selectedVendor = rfq.selectedVendor || null
+  const requestedBy = rfq.requestedBy?.email || rfq.procurementId?.requestedBy?.email || 'Unknown'
 
   return (
     <CCard>
@@ -66,18 +67,18 @@ const RFQDetails = () => {
       </CCardHeader>
       <CCardBody>
         {/* RFQ General Info */}
-        <div className="d-flex flex-wrap mb-3">
-          <div className="w-50">
+        <div className="row mb-3">
+          <div className="col-md-6">
             <strong>RFQ ID:</strong> {rfq._id}
           </div>
-          <div className="w-50">
+          <div className="col-md-6">
             <strong>Title:</strong> {rfq.procurementId?.title || 'N/A'}
           </div>
-          <div className="w-50">
+          <div className="col-md-6">
             <strong>Description:</strong>{' '}
             {rfq.procurementId?.description || 'No description available'}
           </div>
-          <div className="w-50">
+          <div className="col-md-6">
             <strong>Status:</strong>
             <CBadge
               color={
@@ -87,11 +88,10 @@ const RFQDetails = () => {
               {rfq.status}
             </CBadge>
           </div>
-          <div className="w-50">
-            <strong>Created By:</strong>{' '}
-            {rfq.requestedBy?.name || rfq.requestedBy?.email || 'Unknown'}
+          <div className="col-md-6">
+            <strong>Created By:</strong> {requestedBy}
           </div>
-          <div className="w-50">
+          <div className="col-md-6">
             <strong>Created At:</strong> {new Date(rfq.createdAt).toLocaleDateString()}
           </div>
         </div>
@@ -106,8 +106,8 @@ const RFQDetails = () => {
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell>Name</CTableHeaderCell>
-              <CTableHeaderCell>Specs</CTableHeaderCell>
               <CTableHeaderCell>Quantity</CTableHeaderCell>
+              <CTableHeaderCell>Unit</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
           <CTableBody>
@@ -115,8 +115,8 @@ const RFQDetails = () => {
               products.map((product, index) => (
                 <CTableRow key={index}>
                   <CTableDataCell>{product.name || 'No name'}</CTableDataCell>
-                  <CTableDataCell>{product.specs || 'No specs'}</CTableDataCell>
                   <CTableDataCell>{product.quantity || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{product.unit || 'No Unit'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
@@ -145,54 +145,19 @@ const RFQDetails = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {invitedVendors.length > 0 ? (
-              invitedVendors.map((vendor, index) => (
+            {vendors.length > 0 ? (
+              vendors.map((vendor, index) => (
                 <CTableRow key={index}>
                   <CTableDataCell>{vendor.businessName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.fullName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.contactNumber || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{vendor.user?.email || 'No Email'}</CTableDataCell>
+                  <CTableDataCell>{vendor.userId?.email || 'No Email'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
                 <CTableDataCell colSpan="4" className="text-center">
                   No vendors added yet.
-                </CTableDataCell>
-              </CTableRow>
-            )}
-          </CTableBody>
-        </CTable>
-
-        <hr />
-
-        {/* Quotes Table */}
-        <h6>
-          <strong>Quotes</strong>
-        </h6>
-        <CTable hover responsive className="text-center">
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell>Vendor</CTableHeaderCell>
-              <CTableHeaderCell>Price Per Unit</CTableHeaderCell>
-              <CTableHeaderCell>Delivery Time</CTableHeaderCell>
-              <CTableHeaderCell>Status</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {quotes.length > 0 ? (
-              quotes.map((quote, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell>{quote.vendorName || 'Unknown Vendor'}</CTableDataCell>
-                  <CTableDataCell>{quote.quoteDetails?.[0]?.pricePerUnit || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.quoteDetails?.[0]?.deliveryTime || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{quote.status || 'Pending'}</CTableDataCell>
-                </CTableRow>
-              ))
-            ) : (
-              <CTableRow>
-                <CTableDataCell colSpan="4" className="text-center">
-                  No quotes submitted yet.
                 </CTableDataCell>
               </CTableRow>
             )}

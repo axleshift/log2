@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import Select from 'react-select'
 import {
   CCard,
   CCardBody,
@@ -7,22 +8,16 @@ import {
   CButton,
   CForm,
   CFormInput,
-  CFormTextarea,
   CSpinner,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
   CToaster,
   CToast,
   CToastBody,
   CToastHeader,
 } from '@coreui/react'
 import axios from 'axios'
-import InviteVendorModal from '../../Modal/InviteModal.js'
 import { useAuth } from '../../../context/AuthContext'
+
+const VENDOR_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/vendor`
 
 const CreateRFQ = () => {
   const { id } = useParams()
@@ -35,13 +30,13 @@ const CreateRFQ = () => {
     deadline: '',
     procurementId: id,
     products: [],
+    vendors: [],
   })
 
+  const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [toast, setToast] = useState({ visible: false, message: '', type: '' })
-  const [invitedVendors, setInvitedVendors] = useState([])
-  const [showVendorModal, setShowVendorModal] = useState(false)
 
   useEffect(() => {
     const fetchProcurement = async () => {
@@ -70,8 +65,20 @@ const CreateRFQ = () => {
       }
     }
 
+    const fetchVendors = async () => {
+      try {
+        const response = await axios.get(VENDOR_API_URL, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        setVendors(response.data)
+      } catch (err) {
+        console.error('Failed to load vendors:', err)
+      }
+    }
+
     if (accessToken) {
       fetchProcurement()
+      fetchVendors()
     }
   }, [id, accessToken])
 
@@ -79,14 +86,11 @@ const CreateRFQ = () => {
     setRfqData({ ...rfqData, [e.target.name]: e.target.value })
   }
 
-  const handleProductChange = (index, e) => {
-    const { name, value } = e.target
-    setRfqData((prev) => {
-      const updatedProducts = prev.products.map((product, idx) =>
-        idx === index ? { ...product, [name]: value } : product,
-      )
-      return { ...prev, products: updatedProducts }
-    })
+  const handleVendorSelection = (selectedOptions) => {
+    setRfqData((prev) => ({
+      ...prev,
+      vendors: selectedOptions ? selectedOptions.map((option) => option.value) : [],
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -100,22 +104,13 @@ const CreateRFQ = () => {
           ...product,
           unitPrice: Number(product.unitPrice) || 0,
         })),
-        invitedVendors: invitedVendors.map((vendor) => vendor._id),
       }
 
       console.log('RFQ Payload:', JSON.stringify(payload, null, 2))
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/v1/rfq/create`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      )
-
-      console.log('Server Response:', response.data)
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/rfq/create`, payload, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
 
       setToast({ visible: true, message: 'RFQ successfully created!', type: 'success' })
     } catch (err) {
@@ -128,10 +123,9 @@ const CreateRFQ = () => {
 
   return (
     <>
-      {/* Toast Notification */}
       <CToaster>
         {toast.visible && (
-          <CToast autohide={true} delay={3000} visible={toast.visible} color={toast.type}>
+          <CToast autohide delay={3000} visible color={toast.type}>
             <CToastHeader closeButton>
               {toast.type === 'success' ? 'Success' : 'Error'}
             </CToastHeader>
@@ -140,47 +134,6 @@ const CreateRFQ = () => {
         )}
       </CToaster>
 
-      {/* Invite Vendors Button */}
-      <CButton color="info" onClick={() => setShowVendorModal(true)}>
-        Invite Vendors
-      </CButton>
-
-      {/* Vendors Table */}
-      {invitedVendors.length > 0 && (
-        <>
-          <h5>Invited Vendors</h5>
-          <CTable striped bordered>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Business Name</CTableHeaderCell>
-                <CTableHeaderCell>Contact Person</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {invitedVendors.map((vendor, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell>{vendor.businessName}</CTableDataCell>
-                  <CTableDataCell>{vendor.fullName}</CTableDataCell>
-                  <CTableDataCell>{vendor.email}</CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </>
-      )}
-
-      {/* Invite Vendors Modal */}
-      <InviteVendorModal
-        visible={showVendorModal}
-        onClose={() => setShowVendorModal(false)}
-        onInvite={(vendors) => {
-          setInvitedVendors(vendors)
-          setShowVendorModal(false)
-        }}
-      />
-
-      {/* RFQ Form */}
       <CCard>
         <CCardHeader>Create RFQ</CCardHeader>
         <CCardBody>
@@ -204,7 +157,56 @@ const CreateRFQ = () => {
               required
             />
 
-            <CButton color="primary" type="submit" disabled={loading}>
+            <h5>Invite Vendors</h5>
+            <Select
+              isMulti
+              options={vendors.map((vendor) => ({
+                value: vendor._id,
+                label: `${vendor.businessName} (${vendor.userId?.email})`,
+              }))}
+              onChange={handleVendorSelection}
+              value={rfqData.vendors.map((vendorId) => {
+                const vendor = vendors.find((v) => v._id === vendorId)
+                return vendor
+                  ? { value: vendor._id, label: `${vendor.businessName} (${vendor.userId?.email})` }
+                  : null
+              })}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: '#f8f9fa',
+                  borderColor: '#ced4da',
+                  boxShadow: 'none',
+                  '&:hover': { borderColor: '#80bdff' },
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: 'white',
+                  border: '1px solid #ced4da',
+                }),
+                option: (base, { isFocused, isSelected }) => ({
+                  ...base,
+                  backgroundColor: isSelected ? '#007bff' : isFocused ? '#e9ecef' : 'white',
+                  color: isSelected ? 'white' : 'black',
+                }),
+                multiValue: (base) => ({
+                  ...base,
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                }),
+                multiValueLabel: (base) => ({
+                  ...base,
+                  color: 'white',
+                }),
+                multiValueRemove: (base) => ({
+                  ...base,
+                  color: 'white',
+                  '&:hover': { backgroundColor: '#0056b3', color: 'white' },
+                }),
+              }}
+            />
+
+            <CButton color="primary" type="submit" disabled={loading} className="mt-3">
               {loading ? <CSpinner size="sm" /> : 'Create RFQ'}
             </CButton>
           </CForm>
