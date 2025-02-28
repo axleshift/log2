@@ -54,7 +54,7 @@ export const clearOtp = (email) => {
 };
 
 // SEND RFQ INVITE
-export const sendEmail = async (vendorEmail, rfqId) => {
+export const sendInviteEmail = async (vendorEmail, rfqId) => {
     if (!vendorEmail) {
         console.error("❌ No vendor email provided.");
         return Promise.reject("No vendor email provided.");
