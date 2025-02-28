@@ -54,8 +54,8 @@ export const clearOtp = (email) => {
 };
 
 // SEND RFQ INVITE
-export const sendInviteEmail = async (vendorEmail, rfqId) => {
-    if (!vendorEmail) {
+export const sendInviteEmail = async (vendorEmails, procurement, rfq) => {
+    if (!vendorEmails || vendorEmails.length === 0) {
         console.error("❌ No vendor email provided.");
         return Promise.reject("No vendor email provided.");
     }
@@ -71,19 +71,21 @@ export const sendInviteEmail = async (vendorEmail, rfqId) => {
 
         const mailOptions = {
             from: `"Logistics 2: Vendor Portal" <${process.env.EMAIL_USER}>`,
-            to: vendorEmail,
-            subject: `Invitation to Submit a Quote for RFQ #${rfqId}`,
+            to: Array.isArray(vendorEmails) ? vendorEmails.join(",") : vendorEmails, // Ensure it's a comma-separated string
+            subject: `Invitation to Submit a Quote for RFQ #${rfq._id}`,
             html: `
-                <p>Dear Vendor,</p>
-                <p>You have been invited to submit a quotation for <strong>RFQ #${rfqId}</strong>.</p>
-                <p>Please <a href="http://localhost:3000/vendor/rfq/${rfqId}" target="_blank">click here</a> and log in to view the full RFQ details and submit your quote.</p>
-                <p>Best regards,</p>
-                <p>Logistics 2: Vendor Portal</p>
+                <p>Hello,</p>
+                <p>You have been invited to submit a quote for the following RFQ:</p>
+                <p><strong>Title:</strong> ${rfq.title || `RFQ for ${procurement.title}`}</p>
+                <p><strong>Description:</strong> ${procurement.description}</p>
+                <p><strong>Deadline:</strong> ${new Date(rfq.deadline).toLocaleString()}</p>
+                <p>Please log in to the vendor portal to submit your quote.</p>
+                <p>Best Regards,<br/>Procurement Team</p>
             `,
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent successfully to ${vendorEmail}: ${info.messageId}`);
+        console.log(`✅ Email sent successfully to ${vendorEmails}: ${info.messageId}`);
         return info;
     } catch (error) {
         console.error("❌ Error sending email:", error);

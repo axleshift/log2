@@ -1,8 +1,10 @@
 import RFQ from "../models/RFQ.js";
 import Procurement from "../models/procurement.js";
 import Vendor from "../models/vendor.js";
+import { sendInviteEmail } from "../utils/otpStore.js";
 
 // Create a new RFQ and link it to a procurement
+
 export const createRFQ = async (req, res) => {
     const { procurementId, vendors, deadline } = req.body;
 
@@ -12,10 +14,10 @@ export const createRFQ = async (req, res) => {
         }
 
         const procurement = await Procurement.findById(procurementId);
-
         if (!procurement) {
             return res.status(404).json({ message: "Procurement not found!" });
         }
+
         const requestedById = req.user.id;
 
         const rfq = new RFQ({
@@ -26,9 +28,16 @@ export const createRFQ = async (req, res) => {
             deadline: deadline,
         });
 
-        // Save the RFQ
         await rfq.save();
-        return res.status(201).json({ message: "RFQ created successfully!", rfq });
+
+        // Fetch vendor emails
+        const vendorDetails = await Vendor.find({ _id: { $in: vendors } }).populate("userId");
+        const vendorEmails = vendorDetails.map((vendor) => vendor.userId.email);
+
+        // Send email invitations
+        await sendInviteEmail(vendorEmails, procurement, rfq);
+
+        return res.status(201).json({ message: "RFQ created successfully, invitations sent!", rfq });
     } catch (error) {
         return res.status(500).json({ message: "Error creating RFQ", error });
     }
