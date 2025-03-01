@@ -1,136 +1,91 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { useAuth } from '../../../context/AuthContext'
+import { Link } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
-  CCardTitle,
-  CCardText,
-  CButton,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CFormInput,
+  CCardHeader,
+  CTable,
+  CTableHead,
+  CTableRow,
+  CTableHeaderCell,
+  CTableBody,
+  CTableDataCell,
+  CSpinner,
+  CAlert,
 } from '@coreui/react'
 
-// Mock RFQ Data
-const mockRFQs = [
-  {
-    _id: '1',
-    title: 'Office Supplies',
-    description: 'Need 500 units of A4 paper reams',
-    quantity: 500,
-    budget: 1000,
-  },
-  {
-    _id: '2',
-    title: 'Laptop Procurement',
-    description: 'Seeking 10 high-performance laptops',
-    quantity: 10,
-    budget: 15000,
-  },
-  {
-    _id: '3',
-    title: 'Logistics Service',
-    description: 'Require transportation for 200kg shipment',
-    quantity: 1,
-    budget: 5000,
-  },
-]
+const VendorRFQs = () => {
+  const { accessToken } = useAuth()
+  const [rfqs, setRfqs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-const VendorDashboard = () => {
-  const [rfqs] = useState(mockRFQs)
-  const [bidModal, setBidModal] = useState(false)
-  const [selectedRFQ, setSelectedRFQ] = useState(null)
-  const [bidDetails, setBidDetails] = useState({
-    price: '',
-    deliveryTime: '',
-  })
-
-  const openBidModal = (rfq) => {
-    setSelectedRFQ(rfq)
-    setBidModal(true)
-  }
-
-  const handleBidSubmit = () => {
-    if (!bidDetails.price || !bidDetails.deliveryTime) {
-      alert('Please fill in all fields.')
-      return
+  useEffect(() => {
+    const fetchVendorRFQs = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/rfq/vendor/rfqs`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        setRfqs(response.data)
+      } catch (err) {
+        setError('Failed to load RFQs.')
+      } finally {
+        setLoading(false)
+      }
     }
 
-    // Mock bid submission
-    console.log('Bid Submitted:', {
-      rfqId: selectedRFQ._id,
-      vendorId: 'VENDOR_ID_HERE', // Replace with real vendor ID
-      price: bidDetails.price,
-      deliveryTime: bidDetails.deliveryTime,
-    })
-
-    alert('Bid submitted successfully!')
-    setBidModal(false)
-    setBidDetails({ price: '', deliveryTime: '' })
-  }
+    if (accessToken) {
+      fetchVendorRFQs()
+    }
+  }, [accessToken])
 
   return (
-    <div className="container">
-      <h2 className="my-4">Vendor Dashboard</h2>
-      <div className="row">
-        {rfqs.map((rfq) => (
-          <div key={rfq._id} className="col-md-4 mb-4">
-            <CCard className="shadow-sm">
-              <CCardBody>
-                <CCardTitle>{rfq.title}</CCardTitle>
-                <CCardText>{rfq.description}</CCardText>
-                <CCardText>
-                  <strong>Quantity:</strong> {rfq.quantity}
-                </CCardText>
-                <CCardText>
-                  <strong>Budget:</strong> ${rfq.budget}
-                </CCardText>
-                <CButton color="primary" onClick={() => openBidModal(rfq)}>
-                  Submit Bid
-                </CButton>
-              </CCardBody>
-            </CCard>
+    <CCard className="shadow-sm">
+      <CCardHeader className="bg-primary text-white fw-bold">Your RFQs</CCardHeader>
+      <CCardBody>
+        {loading ? (
+          <div className="text-center my-3">
+            <CSpinner color="primary" />
           </div>
-        ))}
-      </div>
-
-      {/* Bid Submission Modal */}
-      <CModal visible={bidModal} onClose={() => setBidModal(false)}>
-        <CModalHeader>
-          <CModalTitle>Submit a Bid</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <p>
-            <strong>RFQ:</strong> {selectedRFQ?.title}
-          </p>
-          <CFormInput
-            type="number"
-            placeholder="Enter bid price"
-            value={bidDetails.price}
-            onChange={(e) => setBidDetails({ ...bidDetails, price: e.target.value })}
-            className="mb-3"
-          />
-          <CFormInput
-            type="text"
-            placeholder="Estimated delivery time"
-            value={bidDetails.deliveryTime}
-            onChange={(e) => setBidDetails({ ...bidDetails, deliveryTime: e.target.value })}
-          />
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setBidModal(false)}>
-            Cancel
-          </CButton>
-          <CButton color="success" onClick={handleBidSubmit}>
-            Submit Bid
-          </CButton>
-        </CModalFooter>
-      </CModal>
-    </div>
+        ) : error ? (
+          <CAlert color="danger" className="text-center">
+            {error}
+          </CAlert>
+        ) : rfqs.length === 0 ? (
+          <CAlert color="warning" className="text-center">
+            No RFQs available.
+          </CAlert>
+        ) : (
+          <CTable striped hover responsive>
+            <CTableHead color="light">
+              <CTableRow>
+                <CTableHeaderCell>#</CTableHeaderCell>
+                <CTableHeaderCell>Title</CTableHeaderCell>
+                <CTableHeaderCell>Due Date</CTableHeaderCell>
+                <CTableHeaderCell>Action</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {rfqs.map((rfq, index) => (
+                <CTableRow key={rfq._id}>
+                  <CTableHeaderCell>{index + 1}</CTableHeaderCell>
+                  <CTableDataCell>{rfq.procurementId?.title}</CTableDataCell>
+                  <CTableDataCell>{new Date(rfq.deadline).toLocaleDateString()}</CTableDataCell>
+                  <CTableDataCell>
+                    <Link to={`/vendor/rfqs/${rfq._id}`} className="btn btn-sm btn-primary">
+                      View Details
+                    </Link>
+                  </CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
+        )}
+      </CCardBody>
+    </CCard>
   )
 }
 
-export default VendorDashboard
+export default VendorRFQs

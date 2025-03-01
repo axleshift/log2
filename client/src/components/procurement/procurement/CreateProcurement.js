@@ -28,7 +28,7 @@ const CreateProcurement = () => {
     products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
     estimatedCost: 0,
   })
-  const [requiresRFQ, setRequiresRFQ] = useState(false)
+
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
   const [currency, setCurrency] = useState('PHP')
@@ -96,7 +96,6 @@ const CreateProcurement = () => {
 
       const procurementPayload = {
         ...procurementData,
-        requiresRFQ,
         deliveryDate: procurementData.deliveryDate
           ? new Date(procurementData.deliveryDate).toISOString()
           : null,
@@ -115,7 +114,6 @@ const CreateProcurement = () => {
         products: [{ name: '', quantity: 0, unit: '', unitPrice: 0 }],
         estimatedCost: 0,
       })
-      setRequiresRFQ(false)
 
       showToast('✅ Procurement Request created successfully! Wait for Approval', 'success')
     } catch (error) {
@@ -268,17 +266,6 @@ const CreateProcurement = () => {
           <CButton color="primary" onClick={addProduct}>
             Add Product
           </CButton>
-        </CCol>
-      </CRow>
-
-      <CRow className="mt-3">
-        <CCol>
-          <input
-            type="checkbox"
-            checked={requiresRFQ}
-            onChange={(e) => setRequiresRFQ(e.target.checked)}
-          />{' '}
-          Requires RFQ?
         </CCol>
       </CRow>
 

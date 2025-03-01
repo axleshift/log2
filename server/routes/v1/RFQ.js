@@ -1,5 +1,5 @@
 import express from "express";
-import { createRFQ, submitQuote, selectVendor, closeRFQ, getRFQDetails, getRFQs, deleteRFQ } from "../../controller/RFQ.js";
+import { createRFQ, submitQuote, selectVendor, closeRFQ, getRFQDetails, getRFQs, deleteRFQ, getVendorRFQs, getVendorRFQsByID } from "../../controller/RFQ.js";
 import { tokenMiddleware } from "../../middleware/authMiddleware.js";
 const router = express.Router();
 
@@ -10,5 +10,7 @@ router.post("/close", closeRFQ);
 router.get("/:rfqId", getRFQDetails);
 router.get("/", getRFQs);
 router.delete("/:id", deleteRFQ);
+router.get("/vendor/rfqs", tokenMiddleware, getVendorRFQs);
+router.get("/vendor/rfqs/:id", tokenMiddleware, getVendorRFQsByID);
 
 export default router;

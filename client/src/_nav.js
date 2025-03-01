@@ -101,7 +101,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'RFQ Announcements & Bidding',
-    to: '/vendor/rfq-bidding',
+    to: '/vendor/rfqs',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faBullhorn} className="nav-icon" />,
   },
