@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   CCard,
@@ -17,16 +17,30 @@ import {
   CTableDataCell,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
+import QuoteModal from '../../../components/Modal/QuoteModal'
+import { useToast } from '../../../components/Toast/Toast.js'
 
 const VendorRFQDetails = () => {
   const { id } = useParams()
   const { accessToken } = useAuth()
   const [rfq, setRFQ] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [quoteLoading, setQuoteLoading] = useState(false)
   const [error, setError] = useState(null)
+  const { showToast } = useToast()
+  const [showModal, setShowModal] = useState(false)
+  const [quote, setQuote] = useState({
+    totalPrice: '',
+    quantity: '',
+    leadTime: '',
+    terms: '',
+    validUntil: '',
+    status: 'Pending',
+  })
 
   useEffect(() => {
     const fetchRFQDetails = async () => {
+      setLoading(true)
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/v1/rfq/vendor/rfqs/${id}`,
@@ -47,10 +61,32 @@ const VendorRFQDetails = () => {
     }
   }, [id, accessToken])
 
-  const products = rfq?.products || []
-  const vendors = rfq?.vendors || []
-  const quotes = rfq?.quotes || []
-  const requestedBy = rfq?.requestedBy?.email || rfq?.procurementId?.requestedBy?.email || 'Unknown'
+  const handleQuoteChange = (e) => {
+    setQuote({ ...quote, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmitQuote = async () => {
+    if (!quote.totalPrice || !quote.quantity || !quote.leadTime) {
+      showToast('Please fill in all required fields.', 'warning')
+      return
+    }
+
+    try {
+      setQuoteLoading(true)
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/v1/rfq/vendor/rfqs/${id}/submit-quote`,
+        { ...quote, quoteDate: new Date() },
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      )
+
+      setShowModal(false)
+      setQuoteLoading(false)
+      showToast('Quote submitted successfully!', 'success')
+    } catch (err) {
+      setQuoteLoading(false)
+      showToast('Failed to submit quote.', 'error')
+    }
+  }
 
   return (
     <CCard className="shadow-sm">
@@ -65,8 +101,7 @@ const VendorRFQDetails = () => {
             {error}
           </CAlert>
         ) : rfq ? (
-          <div>
-            {/* RFQ General Info */}
+          <>
             <div className="row mb-3">
               <div className="col-md-6">
                 <strong>RFQ ID:</strong> {rfq._id}
@@ -93,16 +128,14 @@ const VendorRFQDetails = () => {
                 </CBadge>
               </div>
               <div className="col-md-6">
-                <strong>Requested By:</strong> {requestedBy}
+                <strong>Requested By:</strong>{' '}
+                {rfq?.requestedBy?.email || rfq?.procurementId?.requestedBy?.email || 'Unknown'}
               </div>
               <div className="col-md-6">
                 <strong>Created At:</strong> {new Date(rfq.createdAt).toLocaleDateString()}
               </div>
             </div>
-
             <hr />
-
-            {/* Products Table */}
             <h6>
               <strong>Items</strong>
             </h6>
@@ -115,8 +148,8 @@ const VendorRFQDetails = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {products.length > 0 ? (
-                  products.map((product, index) => (
+                {rfq.products?.length > 0 ? (
+                  rfq.products.map((product, index) => (
                     <CTableRow key={index}>
                       <CTableDataCell>{product.name || 'No name'}</CTableDataCell>
                       <CTableDataCell>{product.quantity || 'N/A'}</CTableDataCell>
@@ -133,12 +166,71 @@ const VendorRFQDetails = () => {
               </CTableBody>
             </CTable>
 
-            <Link to="/vendor/rfqs">
-              <CButton color="secondary" className="mt-3">
-                Back to RFQs
-              </CButton>
-            </Link>
-          </div>
+            {/* Quotes Table */}
+            <h6>
+              <strong>Submitted Quotes</strong>
+            </h6>
+            <CTable hover responsive className="text-center">
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell>Total Price</CTableHeaderCell>
+                  <CTableHeaderCell>Quantity</CTableHeaderCell>
+                  <CTableHeaderCell>Lead Time</CTableHeaderCell>
+                  <CTableHeaderCell>Terms</CTableHeaderCell>
+                  <CTableHeaderCell>Valid Until</CTableHeaderCell>
+                  <CTableHeaderCell>Status</CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {rfq.quotes.length > 0 ? (
+                  rfq.quotes.map((q, index) => (
+                    <CTableRow key={index}>
+                      <CTableDataCell>{q.totalPrice}</CTableDataCell>
+                      <CTableDataCell>{q.quantity}</CTableDataCell>
+                      <CTableDataCell>{q.leadTime}</CTableDataCell>
+                      <CTableDataCell>{q.terms || 'N/A'}</CTableDataCell>
+                      <CTableDataCell>
+                        {q.validUntil ? new Date(q.validUntil).toLocaleDateString() : 'N/A'}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge
+                          color={
+                            q.status === 'Approved'
+                              ? 'success'
+                              : q.status === 'Rejected'
+                                ? 'danger'
+                                : 'warning'
+                          }
+                        >
+                          {q.status}
+                        </CBadge>
+                      </CTableDataCell>
+                    </CTableRow>
+                  ))
+                ) : (
+                  <CTableRow>
+                    <CTableDataCell colSpan="6">No quotes submitted yet.</CTableDataCell>
+                  </CTableRow>
+                )}
+              </CTableBody>
+            </CTable>
+
+            <CButton
+              color="primary"
+              className="mt-3"
+              onClick={() => setShowModal(true)}
+              disabled={quoteLoading}
+            >
+              {quoteLoading ? <CSpinner size="sm" /> : 'Submit Quote'}
+            </CButton>
+            <QuoteModal
+              visible={showModal}
+              onClose={() => setShowModal(false)}
+              quote={quote}
+              onChange={handleQuoteChange}
+              onSubmit={handleSubmitQuote}
+            />
+          </>
         ) : (
           <CAlert color="warning" className="text-center">
             RFQ not found.

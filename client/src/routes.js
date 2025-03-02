@@ -33,6 +33,7 @@ const ShipmentsAndTracking = lazy(() => import('./views/pages/Procurement/Shipme
 const CreateRFQ = lazy(() => import('./components/procurement/procurement/CreateRFQ.js'))
 const CreatePO = lazy(() => import('./components/procurement/procurement/CreatePO.js'))
 const ApprovalList = lazy(() => import('./views/pages/Procurement/ApprovalList.js'))
+const SubmittedQuotesPage = lazy(() => import('./views/pages/Procurement/SubmitQuote.js'))
 
 // VENDOR SECTION
 const VendorRFQList = lazy(() => import('./views/pages/VendorManagement/Vendor.js'))
@@ -66,6 +67,7 @@ const routes = [
   { path: '/rfq/create/:id', name: 'RFQ', element: CreateRFQ },
   { path: '/po/create/:id', name: 'PO', element: CreatePO },
   { path: '/admin/approval', name: ' Approval Page', element: ApprovalList },
+  { path: '/procurement/submit-quote', name: 'Submit Quote Page', element: SubmittedQuotesPage },
 
   // VENDOR RELATED PATH SECTION :P
   { path: '/vendor/rfqs', name: 'Vendor RFQ List', element: VendorRFQList },

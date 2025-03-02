@@ -67,6 +67,13 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Vendor Quotes',
+    to: '/procurement/submit-quote',
+    role_exclude: ['vendor', 'staff'],
+    icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Purchase Order & Payment Tracking',
     to: '/procurement/po-payments',
     role_exclude: ['vendor', 'user', 'staff'],

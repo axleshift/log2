@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import { useAuth } from '../../../context/AuthContext'
 import { Link } from 'react-router-dom'
+import { apiService } from '../../../api/api.js'
 import {
   CCard,
   CCardBody,
@@ -25,12 +25,13 @@ const VendorRFQs = () => {
   useEffect(() => {
     const fetchVendorRFQs = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/rfq/vendor/rfqs`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        const response = await apiService.get('/api/v1/rfq/vendor/rfqs', null, {
+          Authorization: `Bearer ${accessToken}`,
         })
         setRfqs(response.data)
       } catch (err) {
-        setError('Failed to load RFQs.')
+        console.error('Failed to fetch RFQs:', err)
+        setError(err.response?.data?.message || 'Failed to load RFQs.')
       } finally {
         setLoading(false)
       }
@@ -71,8 +72,10 @@ const VendorRFQs = () => {
               {rfqs.map((rfq, index) => (
                 <CTableRow key={rfq._id}>
                   <CTableHeaderCell>{index + 1}</CTableHeaderCell>
-                  <CTableDataCell>{rfq.procurementId?.title}</CTableDataCell>
-                  <CTableDataCell>{new Date(rfq.deadline).toLocaleDateString()}</CTableDataCell>
+                  <CTableDataCell>{rfq.procurementId?.title || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>
+                    {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'N/A'}
+                  </CTableDataCell>
                   <CTableDataCell>
                     <Link to={`/vendor/rfqs/${rfq._id}`} className="btn btn-sm btn-primary">
                       View Details

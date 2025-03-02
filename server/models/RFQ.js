@@ -23,15 +23,19 @@ const RFQSchema = new mongoose.Schema(
             {
                 vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
                 totalPrice: { type: Number, required: true },
-                quoteDate: { type: Date, default: Date.now },
+                quantity: { type: Number, required: true },
+                leadTime: { type: String },
                 terms: { type: String },
+                validUntil: { type: Date },
+                quoteDate: { type: Date, default: Date.now },
                 status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" },
             },
         ],
-        selectedVendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
+        awardedVendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
     },
     { timestamps: true }
 );
+
 const RFQ = mongoose.models.RFQ || mongoose.model("RFQ", RFQSchema);
 
 export default RFQ;

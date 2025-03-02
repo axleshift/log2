@@ -84,61 +84,6 @@ export const deleteRFQ = async (req, res) => {
     }
 };
 
-// Submit a quote from a vendor
-export const submitQuote = async (req, res) => {
-    const { rfqId, vendorId, totalPrice, terms } = req.body;
-
-    try {
-        // Fetch the RFQ
-        const rfq = await RFQ.findById(rfqId);
-        if (!rfq) {
-            return res.status(404).json({ message: "RFQ not found!" });
-        }
-
-        // Check if the vendor is invited to submit a quote
-        if (!rfq.vendors.includes(vendorId)) {
-            return res.status(400).json({ message: "Vendor not invited to submit quote!" });
-        }
-
-        // Add the vendor's quote
-        rfq.quotes.push({
-            vendorId,
-            totalPrice,
-            terms,
-            status: "Pending",
-        });
-
-        // Save the RFQ with the new quote
-        await rfq.save();
-        return res.status(201).json({ message: "Quote submitted successfully!", rfq });
-    } catch (error) {
-        return res.status(500).json({ message: "Error submitting quote", error });
-    }
-};
-
-// Select a vendor for the RFQ
-export const selectVendor = async (req, res) => {
-    const { rfqId, selectedVendorId } = req.body;
-
-    try {
-        // Fetch the RFQ
-        const rfq = await RFQ.findById(rfqId);
-        if (!rfq) {
-            return res.status(404).json({ message: "RFQ not found!" });
-        }
-
-        // Set the selected vendor
-        rfq.selectedVendorId = selectedVendorId;
-        rfq.status = "Awarded";
-
-        // Save the RFQ with the selected vendor
-        await rfq.save();
-        return res.status(200).json({ message: "Vendor selected successfully!", rfq });
-    } catch (error) {
-        return res.status(500).json({ message: "Error selecting vendor", error });
-    }
-};
-
 // Close the RFQ (after vendor selection)
 export const closeRFQ = async (req, res) => {
     const { rfqId } = req.body;
@@ -253,21 +198,43 @@ export const getVendorRFQsByID = async (req, res) => {
     }
 };
 
-/* 
-
-export const getVendorRFQs = async (req, res) => {
+export const submitQuote = async (req, res) => {
     try {
-        const vendor = await Vendor.findOne({ userId: req.user.id });
+        const { totalPrice, quantity, leadTime, terms, validUntil } = req.body;
+        const rfqId = req.params.id;
 
+        const vendor = await Vendor.findOne({ userId: req.user.id });
         if (!vendor) {
             return res.status(404).json({ error: "Vendor not found." });
         }
 
-        const rfqs = await RFQ.find({ vendors: vendor._id });
-        res.json(rfqs);
+        const rfq = await RFQ.findById(rfqId);
+        if (!rfq) {
+            return res.status(404).json({ error: "RFQ not found." });
+        }
+
+        if (!rfq.vendors.includes(vendor._id)) {
+            return res.status(403).json({ error: "Vendor not invited to this RFQ." });
+        }
+
+        const newQuote = {
+            vendorId: vendor._id,
+            totalPrice,
+            quantity,
+            leadTime,
+            terms,
+            validUntil,
+            quoteDate: new Date(),
+            status: "Pending",
+        };
+
+        // Push quote to RFQ
+        rfq.quotes.push(newQuote);
+        await rfq.save();
+
+        res.status(201).json({ message: "Quote submitted successfully.", quote: newQuote });
     } catch (error) {
-        console.error("Error fetching vendor RFQs:", error);
-        res.status(500).json({ error: "Internal server error." });
+        console.error("Quote submission error:", error);
+        res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
-*/
