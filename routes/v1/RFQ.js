@@ -1,5 +1,5 @@
 import express from "express";
-import { createRFQ, closeRFQ, getRFQDetails, getRFQs, deleteRFQ, getVendorRFQs, getVendorRFQsByID, submitQuote } from "../../controller/RFQ.js";
+import { createRFQ, closeRFQ, getRFQDetails, getRFQs, deleteRFQ, getVendorRFQs, getVendorRFQsByID, submitQuote, acceptQuote } from "../../controller/RFQ.js";
 import { tokenMiddleware } from "../../middleware/authMiddleware.js";
 const router = express.Router();
 
@@ -14,5 +14,5 @@ router.get("/vendor/rfqs/:id", tokenMiddleware, getVendorRFQsByID);
 
 // New Route for submitting quotes
 router.post("/vendor/rfqs/:id/submit-quote", tokenMiddleware, submitQuote);
-
+router.put("/:id/accept-quote", acceptQuote);
 export default router;
