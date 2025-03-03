@@ -14,5 +14,5 @@ router.get("/vendor/rfqs/:id", tokenMiddleware, getVendorRFQsByID);
 
 // New Route for submitting quotes
 router.post("/vendor/rfqs/:id/submit-quote", tokenMiddleware, submitQuote);
-router.put('/:id/accept-quote', acceptQuote)
+router.put("/:id/accept-quote", acceptQuote);
 export default router;

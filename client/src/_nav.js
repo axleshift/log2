@@ -60,7 +60,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'RFQ List',
+    name: 'RFQ Management',
     to: '/procurement/rfq-management',
     role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
@@ -82,7 +82,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Reports & Dashboard',
-    to: '/procurement/analytics',
+    to: '/analytics',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faChartBar} className="nav-icon" />,
   },
@@ -93,17 +93,10 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'RFQ Announcements & Bidding',
+    name: 'RFQ Bidding',
     to: '/vendor/rfqs',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faBullhorn} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Order & Payment',
-    to: '/vendor/order-payment',
-    role_exclude: ['user', 'staff'],
-    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -111,6 +104,13 @@ const _nav = [
     to: '/vendor/shipments',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faShippingFast} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Order & Invoice',
+    to: '/vendor/order-payment',
+    role_exclude: ['user', 'staff'],
+    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -127,7 +127,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Logistics Dashboard',
-    to: '/logistics/dashboard',
+    to: '/logistics',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faTruckLoading} className="nav-icon" />,
   },
@@ -144,21 +144,21 @@ const _nav = [
     icon: <FontAwesomeIcon icon={faBoxes} className="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Audit management',
+    to: '/Audit',
+    role_exclude: ['vendor', 'user', 'staff'],
+    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
+  },
+  {
     component: CNavTitle,
-    name: 'ANALYTICS',
+    name: 'Settings',
     role_exclude: ['vendor', 'user', 'staff'],
   },
   {
     component: CNavItem,
     name: 'Settings',
     to: '/settings',
-    role_exclude: ['vendor', 'user', 'staff'],
-    icon: <FontAwesomeIcon icon={faCog} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'General Settings',
-    to: '/settings/general',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faCog} className="nav-icon" />,
   },

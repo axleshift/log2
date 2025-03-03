@@ -18,6 +18,7 @@ import {
   CModalBody,
   CModalFooter,
   CSpinner,
+  CBadge,
 } from '@coreui/react'
 
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -28,7 +29,6 @@ const VendorManagement = () => {
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [actionLoading, setActionLoading] = useState(null)
 
   useEffect(() => {
     if (!accessToken) return
@@ -70,17 +70,19 @@ const VendorManagement = () => {
     <>
       <CRow>
         <CCol xs="12">
-          <CCard className="shadow-lg">
+          <CCard className="shadow-lg border-0 rounded-3">
             <CCardBody>
-              <h4 className="text-primary">Vendor Management</h4>
+              <h4 className="text-primary fw-bold text-center mb-3">Vendor Management</h4>
+
               {loading ? (
-                <div className="d-flex justify-content-center">
-                  <CSpinner color="primary" />
+                <div className="d-flex justify-content-center py-4">
+                  <CSpinner color="primary" size="lg" />
                 </div>
               ) : (
-                <CTable striped bordered hover responsive>
-                  <CTableHead className="bg-light">
+                <CTable striped bordered hover responsive className="text-center">
+                  <CTableHead color="dark">
                     <CTableRow>
+                      <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>User ID</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
                       <CTableHeaderCell>Status</CTableHeaderCell>
@@ -90,17 +92,32 @@ const VendorManagement = () => {
                   </CTableHead>
                   <CTableBody>
                     {users.length > 0 ? (
-                      users.map((user) => (
-                        <CTableRow key={user._id} className="text-center">
+                      users.map((user, index) => (
+                        <CTableRow key={user._id}>
+                          <CTableDataCell>{index + 1}</CTableDataCell>
                           <CTableDataCell>{user._id}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
-                          <CTableDataCell>{user.status}</CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge
+                              color={
+                                user.status === 'Active'
+                                  ? 'success'
+                                  : user.status === 'Pending'
+                                    ? 'warning'
+                                    : user.status === 'Approved'
+                                      ? 'primary'
+                                      : 'danger'
+                              }
+                            >
+                              {user.status}
+                            </CBadge>
+                          </CTableDataCell>
                           <CTableDataCell>{user.role}</CTableDataCell>
                           <CTableDataCell>
                             <CButton
                               color="info"
+                              className="text-white fw-bold"
                               onClick={() => handleViewDetails(user)}
-                              className="mr-2"
                             >
                               View Details
                             </CButton>
@@ -109,7 +126,7 @@ const VendorManagement = () => {
                       ))
                     ) : (
                       <CTableRow>
-                        <CTableDataCell colSpan="5" className="text-center">
+                        <CTableDataCell colSpan="6" className="text-center text-muted">
                           No vendors found.
                         </CTableDataCell>
                       </CTableRow>
@@ -122,27 +139,44 @@ const VendorManagement = () => {
         </CCol>
       </CRow>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} className="bg-light">
+      {/* Modal for User Details */}
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader onClose={() => setModalVisible(false)}>
-          <CModalTitle>User Details</CModalTitle>
+          <CModalTitle>Vendor Details</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedUser && (
             <div>
-              <p>
-                <strong>User ID:</strong> {selectedUser._id}
+              <p className="fw-bold">
+                User ID: <span className="fw-normal">{selectedUser._id}</span>
               </p>
-              <p>
-                <strong>Name:</strong> {selectedUser?.name || 'N/A'}
+              <p className="fw-bold">
+                Name:{' '}
+                <span className="fw-normal">
+                  {selectedUser?.fullName || selectedUser?.username || 'N/A'}
+                </span>
               </p>
-              <p>
-                <strong>Email:</strong> {selectedUser.email}
+              <p className="fw-bold">
+                Email: <span className="fw-normal">{selectedUser.email}</span>
               </p>
-              <p>
-                <strong>Status:</strong> {selectedUser.status}
+              <p className="fw-bold">
+                Status:{' '}
+                <CBadge
+                  color={
+                    selectedUser.status === 'Active'
+                      ? 'success'
+                      : selectedUser.status === 'Pending'
+                        ? 'warning'
+                        : selectedUser.status === 'Approved'
+                          ? 'primary'
+                          : 'danger'
+                  }
+                >
+                  {selectedUser.status}
+                </CBadge>
               </p>
-              <p>
-                <strong>Role:</strong> {selectedUser.role}
+              <p className="fw-bold">
+                Role: <span className="fw-normal">{selectedUser.role}</span>
               </p>
             </div>
           )}

@@ -45,7 +45,6 @@ export const createRFQ = async (req, res) => {
     }
 };
 
-
 export const getRFQs = async (req, res) => {
     try {
         const { status, procurementId } = req.query;
@@ -246,24 +245,24 @@ export const submitQuote = async (req, res) => {
     }
 };
 
-// 
+//
 export const acceptQuote = async (req, res) => {
     try {
-      const { id } = req.params;
-      const { quoteId } = req.body;
-  
-      const rfq = await RFQ.findById(id);
-      if (!rfq) return res.status(404).json({ message: 'RFQ not found' });
-  
-      const quote = rfq.quotes.find(q => q._id.toString() === quoteId);
-      if (!quote) return res.status(404).json({ message: 'Quote not found' });
-  
-      rfq.selectedVendor = quote.vendorId; 
-      rfq.status = 'Closed';
-      await rfq.save();
-  
-      res.json({ message: 'Quote accepted successfully', rfq });
+        const { id } = req.params;
+        const { quoteId } = req.body;
+
+        const rfq = await RFQ.findById(id);
+        if (!rfq) return res.status(404).json({ message: "RFQ not found" });
+
+        const quote = rfq.quotes.find((q) => q._id.toString() === quoteId);
+        if (!quote) return res.status(404).json({ message: "Quote not found" });
+
+        rfq.selectedVendor = quote.vendorId;
+        rfq.status = "Closed";
+        await rfq.save();
+
+        res.json({ message: "Quote accepted successfully", rfq });
     } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: "Server error" });
     }
-  };
+};

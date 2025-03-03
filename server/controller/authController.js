@@ -282,4 +282,3 @@ export const logoutUser = (req, res) => {
 
     return res.json({ status: "success", message: "Successfully logged out." });
 };
-

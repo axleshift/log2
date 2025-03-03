@@ -8,9 +8,13 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CButton,
   CPagination,
   CPaginationItem,
+  CSpinner,
+  CBadge,
+  CCard,
+  CCardBody,
+  CCardHeader,
 } from '@coreui/react'
 
 const UserDashboard = () => {
@@ -40,9 +44,9 @@ const UserDashboard = () => {
         })
 
         setUsers(response.data.users)
-        setLoading(false)
       } catch (error) {
         setError('Error fetching user data.')
+      } finally {
         setLoading(false)
       }
     }
@@ -50,7 +54,6 @@ const UserDashboard = () => {
     fetchUsers()
   }, [accessToken])
 
-  // Pagination logic
   const indexOfLastRow = currentPage * rowsPerPage
   const indexOfFirstRow = indexOfLastRow - rowsPerPage
   const currentUsers = users.slice(indexOfFirstRow, indexOfLastRow)
@@ -59,80 +62,74 @@ const UserDashboard = () => {
     setCurrentPage(page)
   }
 
-  if (loading) {
-    return <div>Loading...</div>
-  }
-
-  if (error) {
-    return <div>{error}</div>
-  }
-
-  if (!user) {
-    return <div>Please log in to view the dashboard.</div>
-  }
-
   return (
-    <div className="user-dashboard">
-      <h2>Welcome {user.username}</h2>
-      <CTable hover responsive>
-        <CTableHead color="dark">
-          <CTableRow>
-            <CTableHeaderCell scope="col">#</CTableHeaderCell>
-            <CTableHeaderCell scope="col">UserName</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Email</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Role</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          {currentUsers.length > 0 ? (
-            currentUsers.map((user, index) => (
-              <CTableRow key={user.id || `user-${index}`}>
-                <CTableDataCell>{indexOfFirstRow + index + 1}</CTableDataCell>
-                <CTableDataCell>{user.username}</CTableDataCell>
-                <CTableDataCell>{user.email}</CTableDataCell>
-                <CTableDataCell>{user.role}</CTableDataCell>
-                <CTableDataCell>
-                  <span
-                    className={`badge ${user.status === 'Active' ? 'bg-success' : 'bg-danger'}`}
-                  >
-                    {user.status}
-                  </span>
-                </CTableDataCell>
-                <CTableDataCell>
-                  <CButton color="info" size="sm" className="me-2">
-                    View
-                  </CButton>
-                  <CButton color="warning" size="sm" className="me-2">
-                    Edit
-                  </CButton>
-                  <CButton color="danger" size="sm">
-                    Delete
-                  </CButton>
-                </CTableDataCell>
-              </CTableRow>
-            ))
+    <div className="user-dashboard p-4">
+      <CCard className="shadow-lg border-0 rounded-3">
+        <CCardHeader className="bg-primary text-white text-center fw-bold fs-4">
+          Welcome, {user?.username}!
+        </CCardHeader>
+        <CCardBody>
+          {loading ? (
+            <div className="text-center py-4">
+              <CSpinner color="primary" size="sm" />
+              <p>Loading users...</p>
+            </div>
+          ) : error ? (
+            <div className="alert alert-danger text-center">{error}</div>
           ) : (
-            <CTableRow>
-              <CTableDataCell colSpan="6">No users found</CTableDataCell>
-            </CTableRow>
-          )}
-        </CTableBody>
-      </CTable>
+            <>
+              <CTable hover responsive bordered className="mt-3">
+                <CTableHead color="dark">
+                  <CTableRow>
+                    <CTableHeaderCell>#</CTableHeaderCell>
+                    <CTableHeaderCell>Username</CTableHeaderCell>
+                    <CTableHeaderCell>Email</CTableHeaderCell>
+                    <CTableHeaderCell>Role</CTableHeaderCell>
+                    <CTableHeaderCell>Status</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((user, index) => (
+                      <CTableRow key={user.id || `user-${index}`}>
+                        <CTableDataCell>{indexOfFirstRow + index + 1}</CTableDataCell>
+                        <CTableDataCell>{user.username}</CTableDataCell>
+                        <CTableDataCell>{user.email}</CTableDataCell>
+                        <CTableDataCell>{user.role}</CTableDataCell>
+                        <CTableDataCell>
+                          <CBadge color={user.status === 'Approved' ? 'success' : 'danger'}>
+                            {user.status}
+                          </CBadge>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))
+                  ) : (
+                    <CTableRow>
+                      <CTableDataCell colSpan="5" className="text-center">
+                        No users found
+                      </CTableDataCell>
+                    </CTableRow>
+                  )}
+                </CTableBody>
+              </CTable>
 
-      {/* Pagination */}
-      <CPagination align="center" className="mt-3">
-        {[...Array(Math.ceil(users.length / rowsPerPage))].map((_, pageIndex) => (
-          <CPaginationItem
-            key={`page-${pageIndex}`}
-            active={currentPage === pageIndex + 1}
-            onClick={() => handlePageChange(pageIndex + 1)}
-          >
-            {pageIndex + 1}
-          </CPaginationItem>
-        ))}
-      </CPagination>
+              {/* Pagination */}
+              <CPagination align="center" className="mt-4">
+                {[...Array(Math.ceil(users.length / rowsPerPage))].map((_, pageIndex) => (
+                  <CPaginationItem
+                    key={`page-${pageIndex}`}
+                    active={currentPage === pageIndex + 1}
+                    onClick={() => handlePageChange(pageIndex + 1)}
+                    className="cursor-pointer"
+                  >
+                    {pageIndex + 1}
+                  </CPaginationItem>
+                ))}
+              </CPagination>
+            </>
+          )}
+        </CCardBody>
+      </CCard>
     </div>
   )
 }
