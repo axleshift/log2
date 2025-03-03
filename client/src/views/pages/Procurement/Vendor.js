@@ -48,7 +48,6 @@ const VendorManagement = () => {
         }
 
         const data = await response.json()
-
         const filteredVendors = data.users.filter((user) => user.role === 'vendor')
         setUsers(filteredVendors)
       } catch (error) {
@@ -62,75 +61,9 @@ const VendorManagement = () => {
     fetchUsers()
   }, [accessToken])
 
-  const updateUserStatus = (userId, newStatus) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user._id === userId ? { ...user, status: newStatus } : user)),
-    )
-  }
-
-  const handleApproval = async (userId) => {
-    if (!accessToken) return
-    setActionLoading(userId)
-    try {
-      const response = await fetch(`${USER_API_URL}/approve/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-
-      if (response.ok) {
-        updateUserStatus(userId, 'Approved')
-      } else {
-        console.error('Error approving user', response.statusText)
-      }
-    } catch (error) {
-      console.error('Error approving user:', error)
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  const handleCancelApproval = async (userId) => {
-    if (!accessToken) return
-    setActionLoading(userId)
-
-    try {
-      const response = await fetch(`${USER_API_URL}/cancel-approval/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-
-      if (response.ok) {
-        updateUserStatus(userId, 'Pending')
-      } else {
-        console.error('Error canceling approval:', response.statusText)
-      }
-    } catch (error) {
-      console.error('Error canceling approval:', error)
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
   const handleViewDetails = (user) => {
     setSelectedUser(user)
     setModalVisible(true)
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Approved':
-        return 'success'
-      case 'Pending':
-        return 'warning'
-      default:
-        return 'secondary'
-    }
   }
 
   return (
@@ -161,11 +94,7 @@ const VendorManagement = () => {
                         <CTableRow key={user._id} className="text-center">
                           <CTableDataCell>{user._id}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
-                          <CTableDataCell>
-                            <CButton color={getStatusColor(user.status)} className="mr-2">
-                              {user.status}
-                            </CButton>
-                          </CTableDataCell>
+                          <CTableDataCell>{user.status}</CTableDataCell>
                           <CTableDataCell>{user.role}</CTableDataCell>
                           <CTableDataCell>
                             <CButton
@@ -175,26 +104,6 @@ const VendorManagement = () => {
                             >
                               View Details
                             </CButton>
-
-                            {user.status === 'Approved' ? (
-                              <CButton
-                                color="warning"
-                                onClick={() => handleCancelApproval(user._id)}
-                                className="ml-2"
-                                disabled={actionLoading === user._id}
-                              >
-                                Cancel Approval
-                              </CButton>
-                            ) : (
-                              <CButton
-                                color="success"
-                                onClick={() => handleApproval(user._id)}
-                                className="ml-2"
-                                disabled={actionLoading === user._id}
-                              >
-                                Approve
-                              </CButton>
-                            )}
                           </CTableDataCell>
                         </CTableRow>
                       ))

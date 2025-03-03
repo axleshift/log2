@@ -12,7 +12,13 @@ import {
   CSpinner,
   CAlert,
   CButton,
+  CBadge,
+  CCard,
+  CCardBody,
+  CCardHeader,
 } from '@coreui/react'
+import { cilSearch, cilTrash } from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 
 const RFQList = () => {
   const [rfqs, setRfqs] = useState([])
@@ -25,7 +31,6 @@ const RFQList = () => {
     const fetchRFQs = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/rfq`)
-
         if (response.data && Array.isArray(response.data.rfqs)) {
           setRfqs(response.data.rfqs)
         } else if (Array.isArray(response.data)) {
@@ -60,62 +65,73 @@ const RFQList = () => {
 
   return (
     <CContainer className="mt-4">
-      <h2 className="mb-4">RFQ List</h2>
+      <CCard>
+        <CCardHeader className="bg-primary text-white">
+          <h4 className="mb-0">Request for Quotation (RFQ) List</h4>
+        </CCardHeader>
+        <CCardBody>
+          {loading && <CSpinner color="primary" className="d-block mx-auto my-3" />}
+          {error && <CAlert color="danger">{error}</CAlert>}
 
-      {loading && <CSpinner color="primary" />}
-      {error && <CAlert color="danger">{error}</CAlert>}
-
-      {!loading && !error && (
-        <CTable hover responsive striped borderColor="secondary">
-          <CTableHead color="dark">
-            <CTableRow>
-              <CTableHeaderCell>RFQ ID</CTableHeaderCell>
-              <CTableHeaderCell>Procurement</CTableHeaderCell>
-              <CTableHeaderCell>Deadline</CTableHeaderCell>
-              <CTableHeaderCell>Status</CTableHeaderCell>
-              <CTableHeaderCell>Actions</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {rfqs.length > 0 ? (
-              rfqs.map((rfq) => (
-                <CTableRow key={rfq._id}>
-                  <CTableDataCell>{rfq._id}</CTableDataCell>
-                  <CTableDataCell>{rfq.procurementId?.title || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>
-                    {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'No Deadline'}
-                  </CTableDataCell>
-                  <CTableDataCell>{rfq.status || 'Pending'}</CTableDataCell>
-                  <CTableDataCell>
-                    <CButton
-                      color="primary"
-                      size="sm"
-                      className="me-2"
-                      onClick={() => navigate(`/procurement/rfq/${rfq._id}`)}
-                    >
-                      View
-                    </CButton>
-                    <CButton
-                      color="danger"
-                      size="sm"
-                      onClick={() => handleDelete(rfq._id)}
-                      disabled={deletingId === rfq._id}
-                    >
-                      {deletingId === rfq._id ? 'Deleting...' : 'Delete'}
-                    </CButton>
-                  </CTableDataCell>
+          {!loading && !error && (
+            <CTable hover responsive bordered borderColor="secondary">
+              <CTableHead color="dark">
+                <CTableRow>
+                  <CTableHeaderCell>RFQ ID</CTableHeaderCell>
+                  <CTableHeaderCell>Title</CTableHeaderCell>
+                  <CTableHeaderCell>Deadline</CTableHeaderCell>
+                  <CTableHeaderCell>Status</CTableHeaderCell>
+                  <CTableHeaderCell className="text-center">Actions</CTableHeaderCell>
                 </CTableRow>
-              ))
-            ) : (
-              <CTableRow>
-                <CTableDataCell colSpan="5" className="text-center">
-                  No RFQs found
-                </CTableDataCell>
-              </CTableRow>
-            )}
-          </CTableBody>
-        </CTable>
-      )}
+              </CTableHead>
+              <CTableBody>
+                {rfqs.length > 0 ? (
+                  rfqs.map((rfq) => (
+                    <CTableRow key={rfq._id}>
+                      <CTableDataCell>{rfq._id}</CTableDataCell>
+                      <CTableDataCell>{rfq.procurementId?.title || 'N/A'}</CTableDataCell>
+                      <CTableDataCell>
+                        {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'No Deadline'}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge color={rfq.status === 'Approved' ? 'success' : 'warning'}>
+                          {rfq.status || 'Pending'}
+                        </CBadge>
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        <CButton
+                          color="info"
+                          size="sm"
+                          className="me-2"
+                          onClick={() => navigate(`/procurement/rfq/${rfq._id}`)}
+                        >
+                          <CIcon icon={cilSearch} className="me-1" />
+                          View
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          size="sm"
+                          onClick={() => handleDelete(rfq._id)}
+                          disabled={deletingId === rfq._id}
+                        >
+                          <CIcon icon={cilTrash} className="me-1" />
+                          {deletingId === rfq._id ? 'Deleting...' : 'Delete'}
+                        </CButton>
+                      </CTableDataCell>
+                    </CTableRow>
+                  ))
+                ) : (
+                  <CTableRow>
+                    <CTableDataCell colSpan="5" className="text-center">
+                      No RFQs found
+                    </CTableDataCell>
+                  </CTableRow>
+                )}
+              </CTableBody>
+            </CTable>
+          )}
+        </CCardBody>
+      </CCard>
     </CContainer>
   )
 }

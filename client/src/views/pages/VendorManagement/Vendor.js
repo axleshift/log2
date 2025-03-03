@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { apiService } from '../../../api/api.js'
+import axios from 'axios'
 import {
   CCard,
   CCardBody,
@@ -16,6 +16,8 @@ import {
   CAlert,
 } from '@coreui/react'
 
+const RFQ_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/rfq`
+
 const VendorRFQs = () => {
   const { accessToken } = useAuth()
   const [rfqs, setRfqs] = useState([])
@@ -25,8 +27,10 @@ const VendorRFQs = () => {
   useEffect(() => {
     const fetchVendorRFQs = async () => {
       try {
-        const response = await apiService.get('/api/v1/rfq/vendor/rfqs', null, {
-          Authorization: `Bearer ${accessToken}`,
+        const response = await axios.get(`${RFQ_API_URL}/vendor/rfqs`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         })
         setRfqs(response.data)
       } catch (err) {

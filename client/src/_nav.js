@@ -54,23 +54,16 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Procurement request',
-    to: '/procurement/procurement',
+    to: '/procurement',
     role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
   },
   {
     component: CNavItem,
-    name: 'PR & RFQ List',
+    name: 'RFQ List',
     to: '/procurement/rfq-management',
     role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Vendor Quotes',
-    to: '/procurement/submit-quote',
-    role_exclude: ['vendor', 'staff'],
-    icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -78,13 +71,6 @@ const _nav = [
     to: '/procurement/po-payments',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Shipment & Delivery Tracking',
-    to: '/procurement/shipments',
-    role_exclude: ['vendor', 'user', 'staff'],
-    icon: <FontAwesomeIcon icon={faTruck} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -122,7 +108,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Shipment & Delivery',
-    to: '/vendor/shipments-update',
+    to: '/vendor/shipments',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faShippingFast} className="nav-icon" />,
   },

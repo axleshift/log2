@@ -105,13 +105,17 @@ const CreateRFQ = () => {
         })),
       }
 
+      if (rfqData.vendors.length === 0) {
+        delete payload.vendors
+      }
+
       console.log('RFQ Payload:', JSON.stringify(payload, null, 2))
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/rfq/create`, payload, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
 
-      setToast({ visible: true, message: 'RFQ And Invites successfully created!', type: 'success' })
+      setToast({ visible: true, message: 'RFQ successfully created!', type: 'success' })
 
       // Reset form after successful submission
       setRfqData({
@@ -122,7 +126,7 @@ const CreateRFQ = () => {
         procurementId: id,
         requestedBy: '',
         products: [],
-        vendors: [],
+        vendors: [], // Reset vendors field
       })
     } catch (err) {
       console.error('Request Error:', err.response?.data || err.message)

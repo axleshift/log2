@@ -13,7 +13,6 @@ import {
   CTableHeaderCell,
   CTableDataCell,
 } from '@coreui/react'
-import UserDetailsModal from '../../components/Modal/UserDetails.js'
 
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
 
@@ -21,8 +20,6 @@ const UserManagement = () => {
   const { accessToken } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
 
   useEffect(() => {
@@ -110,11 +107,6 @@ const UserManagement = () => {
     }
   }
 
-  const handleViewDetails = (user) => {
-    setSelectedUser(user)
-    setModalVisible(true)
-  }
-
   return (
     <>
       <CRow>
@@ -129,7 +121,7 @@ const UserManagement = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>User ID</CTableHeaderCell>
-                      <CTableHeaderCell>Name</CTableHeaderCell>
+                      <CTableHeaderCell>Role</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
                       <CTableHeaderCell>Status</CTableHeaderCell>
                       <CTableHeaderCell>Actions</CTableHeaderCell>
@@ -140,14 +132,10 @@ const UserManagement = () => {
                       users.map((user) => (
                         <CTableRow key={user._id}>
                           <CTableDataCell>{user._id}</CTableDataCell>
-                          <CTableDataCell>{user?.name || 'N/A'}</CTableDataCell>
+                          <CTableDataCell>{user?.role || 'N/A'}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
                           <CTableDataCell>{user.status}</CTableDataCell>
                           <CTableDataCell>
-                            <CButton color="info" onClick={() => handleViewDetails(user)}>
-                              View Details
-                            </CButton>
-
                             {user.status === 'Approved' ? (
                               <CButton
                                 color="warning"
@@ -184,12 +172,6 @@ const UserManagement = () => {
           </CCard>
         </CCol>
       </CRow>
-
-      <UserDetailsModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        user={selectedUser}
-      />
     </>
   )
 }

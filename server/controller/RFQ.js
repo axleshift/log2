@@ -6,7 +6,7 @@ import { sendInviteEmail } from "../utils/otpStore.js";
 // Create a new RFQ and link it to a procurement
 
 export const createRFQ = async (req, res) => {
-    const { procurementId, vendors, deadline } = req.body;
+    const { procurementId, vendors, deadline, sendInvitations = false } = req.body;
 
     try {
         if (!req.user || !req.user.id) {
@@ -30,18 +30,21 @@ export const createRFQ = async (req, res) => {
 
         await rfq.save();
 
-        // Fetch vendor emails
-        const vendorDetails = await Vendor.find({ _id: { $in: vendors } }).populate("userId");
-        const vendorEmails = vendorDetails.map((vendor) => vendor.userId.email);
+        // If the sendInvitations flag is true, send email invitations
+        if (sendInvitations) {
+            const vendorDetails = await Vendor.find({ _id: { $in: vendors } }).populate("userId");
+            const vendorEmails = vendorDetails.map((vendor) => vendor.userId.email);
 
-        // Send email invitations
-        await sendInviteEmail(vendorEmails, procurement, rfq);
+            // Send email invitations
+            await sendInviteEmail(vendorEmails, procurement, rfq);
+        }
 
-        return res.status(201).json({ message: "RFQ created successfully, invitations sent!", rfq });
+        return res.status(201).json({ message: "RFQ created successfully!" + (sendInvitations ? " Invitations sent!" : ""), rfq });
     } catch (error) {
         return res.status(500).json({ message: "Error creating RFQ", error });
     }
 };
+
 
 export const getRFQs = async (req, res) => {
     try {
@@ -117,12 +120,16 @@ export const getRFQDetails = async (req, res) => {
                 },
             })
             .populate({
-                path: "vendors", // invited
+                path: "vendors",
                 populate: {
                     path: "userId",
-                    select: "email ",
+                    select: "email",
                 },
                 select: "businessName fullName contactNumber userId",
+            })
+            .populate({
+                path: "quotes.vendorId",
+                select: "businessName fullName contactNumber", // Fetch vendor details in quotes
             })
             .exec();
 
@@ -238,3 +245,25 @@ export const submitQuote = async (req, res) => {
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
+
+// 
+export const acceptQuote = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { quoteId } = req.body;
+  
+      const rfq = await RFQ.findById(id);
+      if (!rfq) return res.status(404).json({ message: 'RFQ not found' });
+  
+      const quote = rfq.quotes.find(q => q._id.toString() === quoteId);
+      if (!quote) return res.status(404).json({ message: 'Quote not found' });
+  
+      rfq.selectedVendor = quote.vendorId; 
+      rfq.status = 'Closed';
+      await rfq.save();
+  
+      res.json({ message: 'Quote accepted successfully', rfq });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
