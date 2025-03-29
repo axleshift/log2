@@ -25,6 +25,8 @@ const PurchaseOrderSchema = new mongoose.Schema(
         rfqId: { type: mongoose.Schema.Types.ObjectId, ref: "RFQ", default: null },
         vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
         additionalNotes: { type: String },
+        warehouse_id: { type: String },
+        received: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

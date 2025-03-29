@@ -30,7 +30,7 @@ export const tokenMiddleware = (req, res, next) => {
 
         // Extract token
         const token = req.cookies?.accessToken || req.headers["authorization"]?.split(" ")[1];
-        console.log("🟡 Extracted Token:", token);
+        // console.log("🟡 Extracted Token:", token);
 
         if (!token) {
             console.warn("Unauthorized access attempt: No token provided.");
@@ -43,7 +43,7 @@ export const tokenMiddleware = (req, res, next) => {
                 return res.status(401).json({ error: "Unauthorized: Invalid token." });
             }
 
-            console.log("🟢 Decoded Token Data:", decoded);
+            // console.log("🟢 Decoded Token Data:", decoded);
 
             if (!decoded?.userId) {
                 console.warn("❌ Invalid token payload: No userId found.");
@@ -56,7 +56,7 @@ export const tokenMiddleware = (req, res, next) => {
                 email: decoded.email || null,
             };
 
-            console.info(`✅ Token verified successfully for user: ${req.user.id}`);
+            // console.info(`✅ Token verified successfully for user: ${req.user.id}`);
             next();
         });
     } catch (error) {

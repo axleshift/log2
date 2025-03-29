@@ -28,4 +28,17 @@ const ProductSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export default mongoose.model("Product", ProductSchema);
+ProductSchema.virtual("inventory", {
+    ref: "Inventory",
+    localField: "_id",
+    foreignField: "product",
+});
+
+ProductSchema.virtual("purchaseOrders", {
+    ref: "PurchaseOrder",
+    localField: "_id",
+    foreignField: "details.productId",
+});
+
+const Product = mongoose.model("Product", ProductSchema);
+export default Product;
