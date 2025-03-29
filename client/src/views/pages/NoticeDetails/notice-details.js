@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   CContainer,
@@ -9,47 +9,40 @@ import {
   CCardTitle,
   CCardText,
   CButton,
+  CSpinner,
 } from '@coreui/react'
-
-const noticeData = [
-  {
-    id: 0,
-    title: 'Supply of Office Equipment',
-    amount: '1,500,000.00',
-    date: '2025-01-15',
-    details:
-      'Procurement of various office equipment including printers, computers, and furniture.',
-  },
-  {
-    id: 1,
-    title: 'Construction of New Facility',
-    amount: '10,750,000.00',
-    date: '2025-02-01',
-    details: 'Construction of a new corporate building with modern amenities.',
-  },
-  {
-    id: 2,
-    title: 'IT System Upgrade',
-    amount: '5,200,000.00',
-    date: '2025-03-10',
-    details: 'Upgrading IT infrastructure to enhance cybersecurity and system performance.',
-  },
-  {
-    id: 3,
-    title: 'Consultancy Services',
-    amount: '3,000,000.00',
-    date: '2025-04-05',
-    details: 'Consultancy services for strategic business planning and process optimization.',
-  },
-]
 
 const NoticeDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [notice, setNotice] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const notice = noticeData.find((item) => item.id.toString() === id)
+  useEffect(() => {
+    const fetchNotice = async () => {
+      try {
+        const res = await fetch(`http://localhost:5058/api/v1/awards/${id}`)
+        const data = await res.json()
+        setNotice(data)
+      } catch (err) {
+        console.error('Failed to fetch notice:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  if (!notice) {
+    fetchNotice()
+  }, [id])
+
+  if (loading) {
+    return (
+      <CContainer className="text-center mt-5">
+        <CSpinner color="primary" />
+      </CContainer>
+    )
+  }
+
+  if (!notice || !notice.title) {
     return (
       <CContainer className="text-center mt-5">
         <h3>Notice not found</h3>
@@ -70,13 +63,13 @@ const NoticeDetails = () => {
                 <h4>{notice.title}</h4>
               </CCardTitle>
               <CCardText>
-                <strong>Amount:</strong> PHP {notice.amount}
+                <strong>Amount:</strong> PHP {parseFloat(notice.amount).toLocaleString()}
               </CCardText>
               <CCardText>
-                <strong>Date:</strong> {notice.date}
+                <strong>Date:</strong> {new Date(notice.date).toLocaleDateString()}
               </CCardText>
               <CCardText>
-                <strong>Details:</strong> {notice.details}
+                <strong>Details:</strong> {notice.details || 'No additional details.'}
               </CCardText>
               <CButton color="primary" onClick={() => navigate(-1)}>
                 Go Back

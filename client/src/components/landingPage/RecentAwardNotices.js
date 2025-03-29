@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CContainer,
   CFormInput,
@@ -6,25 +6,30 @@ import {
   CAccordionItem,
   CAccordionHeader,
   CAccordionBody,
+  CSpinner,
 } from '@coreui/react'
 
 const RecentAwardNotices = () => {
-  const awardNotices = [
-    { title: 'Various Instruments', amount: '4,020,520.00' },
-    { title: 'INSTALLATION OF SOLAR', amount: '249,250.08' },
-    { title: 'SUPPLEMENTAL FEEDING', amount: '572,039.20' },
-    { title: 'Reed Diffuser', amount: '1,044,888.00' },
-    { title: 'Lot 17-QUEZON', amount: '714,164.00' },
-    { title: 'HYGIENIC AND SURGICAL HAND DISINFECTANT ALCOHOL BA', amount: '451,200.00' },
-    { title: 'POWERFUL NEUTRAL AND ECOLOGICAL CLEANING CONCENTRA', amount: '478,380.00' },
-    { title: 'Construction of Concrete Water Tank@Danipa', amount: '362,493.13' },
-    { title: 'ten (10) ea Brush (Metal Big) and 19 other L/I', amount: '946,450.00' },
-    { title: 'Smart TV', amount: '96,550.00' },
-  ]
-
+  const [awardNotices, setAwardNotices] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  // Filter notices based on search term
+  useEffect(() => {
+    const fetchAwardNotices = async () => {
+      try {
+        const res = await fetch('http://localhost:5058/api/v1/awards') // or update to correct route
+        const data = await res.json()
+        setAwardNotices(data)
+      } catch (err) {
+        console.error('Failed to fetch award notices:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAwardNotices()
+  }, [])
+
   const filteredNotices = awardNotices.filter((notice) =>
     notice.title.toLowerCase().includes(searchTerm.toLowerCase()),
   )
@@ -32,7 +37,7 @@ const RecentAwardNotices = () => {
   return (
     <CContainer className="p-5">
       <h3 className="mb-4 text-center">Recent Award Notices</h3>
-      {/* Search Bar */}
+
       <CFormInput
         type="text"
         placeholder="Search notices..."
@@ -40,24 +45,32 @@ const RecentAwardNotices = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="mb-4"
       />
-      {/* Accordion */}
-      <CAccordion alwaysOpen>
-        {filteredNotices.map((notice, index) => (
-          <CAccordionItem key={index} itemKey={index.toString()}>
-            <CAccordionHeader>
-              {index + 1}. {notice.title}
-            </CAccordionHeader>
-            <CAccordionBody>
-              <p>
-                <strong>Amount:</strong> PHP {notice.amount}
-              </p>
-              <p>Additional details about this notice can go here.</p>
-            </CAccordionBody>
-          </CAccordionItem>
-        ))}
-        {/* Show message if no results found */}
-        {filteredNotices.length === 0 && <p className="text-center">No notices found.</p>}
-      </CAccordion>
+
+      {loading ? (
+        <div className="text-center">
+          <CSpinner color="primary" />
+        </div>
+      ) : (
+        <CAccordion alwaysOpen>
+          {filteredNotices.map((notice, index) => (
+            <CAccordionItem key={notice._id || index} itemKey={index.toString()}>
+              <CAccordionHeader>
+                {index + 1}. {notice.title}
+              </CAccordionHeader>
+              <CAccordionBody>
+                <p>
+                  <strong>Amount:</strong> PHP {parseFloat(notice.amount).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Date:</strong> {new Date(notice.date).toLocaleDateString()}
+                </p>
+                <p>{notice.details || 'No additional details provided.'}</p>
+              </CAccordionBody>
+            </CAccordionItem>
+          ))}
+          {filteredNotices.length === 0 && <p className="text-center">No notices found.</p>}
+        </CAccordion>
+      )}
     </CContainer>
   )
 }

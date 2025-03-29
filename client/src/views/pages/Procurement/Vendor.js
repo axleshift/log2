@@ -18,7 +18,6 @@ import {
   CModalBody,
   CModalFooter,
   CSpinner,
-  CBadge,
 } from '@coreui/react'
 
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -29,6 +28,7 @@ const VendorManagement = () => {
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [actionLoading, setActionLoading] = useState(null)
 
   useEffect(() => {
     if (!accessToken) return
@@ -48,6 +48,7 @@ const VendorManagement = () => {
         }
 
         const data = await response.json()
+
         const filteredVendors = data.users.filter((user) => user.role === 'vendor')
         setUsers(filteredVendors)
       } catch (error) {
@@ -61,28 +62,92 @@ const VendorManagement = () => {
     fetchUsers()
   }, [accessToken])
 
+  const updateUserStatus = (userId, newStatus) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user._id === userId ? { ...user, status: newStatus } : user)),
+    )
+  }
+
+  const handleApproval = async (userId) => {
+    if (!accessToken) return
+    setActionLoading(userId)
+    try {
+      const response = await fetch(`${USER_API_URL}/approve/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      if (response.ok) {
+        updateUserStatus(userId, 'Approved')
+      } else {
+        console.error('Error approving user', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error approving user:', error)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleCancelApproval = async (userId) => {
+    if (!accessToken) return
+    setActionLoading(userId)
+
+    try {
+      const response = await fetch(`${USER_API_URL}/cancel-approval/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      if (response.ok) {
+        updateUserStatus(userId, 'Pending')
+      } else {
+        console.error('Error canceling approval:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error canceling approval:', error)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   const handleViewDetails = (user) => {
     setSelectedUser(user)
     setModalVisible(true)
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved':
+        return 'success'
+      case 'Pending':
+        return 'warning'
+      default:
+        return 'secondary'
+    }
   }
 
   return (
     <>
       <CRow>
         <CCol xs="12">
-          <CCard className="shadow-lg border-0 rounded-3">
+          <CCard className="shadow-lg">
             <CCardBody>
-              <h4 className="text-primary fw-bold text-center mb-3">Vendor Management</h4>
-
+              <h4 className="text-primary">Vendor Management</h4>
               {loading ? (
-                <div className="d-flex justify-content-center py-4">
-                  <CSpinner color="primary" size="lg" />
+                <div className="d-flex justify-content-center">
+                  <CSpinner color="primary" />
                 </div>
               ) : (
-                <CTable striped bordered hover responsive className="text-center">
-                  <CTableHead color="dark">
+                <CTable striped bordered hover responsive>
+                  <CTableHead className="bg-light">
                     <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>User ID</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
                       <CTableHeaderCell>Status</CTableHeaderCell>
@@ -92,41 +157,50 @@ const VendorManagement = () => {
                   </CTableHead>
                   <CTableBody>
                     {users.length > 0 ? (
-                      users.map((user, index) => (
-                        <CTableRow key={user._id}>
-                          <CTableDataCell>{index + 1}</CTableDataCell>
+                      users.map((user) => (
+                        <CTableRow key={user._id} className="text-center">
                           <CTableDataCell>{user._id}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
                           <CTableDataCell>
-                            <CBadge
-                              color={
-                                user.status === 'Active'
-                                  ? 'success'
-                                  : user.status === 'Pending'
-                                    ? 'warning'
-                                    : user.status === 'Approved'
-                                      ? 'primary'
-                                      : 'danger'
-                              }
-                            >
+                            <CButton color={getStatusColor(user.status)} className="mr-2">
                               {user.status}
-                            </CBadge>
+                            </CButton>
                           </CTableDataCell>
                           <CTableDataCell>{user.role}</CTableDataCell>
                           <CTableDataCell>
                             <CButton
                               color="info"
-                              className="text-white fw-bold"
                               onClick={() => handleViewDetails(user)}
+                              className="mr-2"
                             >
                               View Details
                             </CButton>
+
+                            {user.status === 'Approved' ? (
+                              <CButton
+                                color="warning"
+                                onClick={() => handleCancelApproval(user._id)}
+                                className="ml-2"
+                                disabled={actionLoading === user._id}
+                              >
+                                Cancel Approval
+                              </CButton>
+                            ) : (
+                              <CButton
+                                color="success"
+                                onClick={() => handleApproval(user._id)}
+                                className="ml-2"
+                                disabled={actionLoading === user._id}
+                              >
+                                Approve
+                              </CButton>
+                            )}
                           </CTableDataCell>
                         </CTableRow>
                       ))
                     ) : (
                       <CTableRow>
-                        <CTableDataCell colSpan="6" className="text-center text-muted">
+                        <CTableDataCell colSpan="5" className="text-center">
                           No vendors found.
                         </CTableDataCell>
                       </CTableRow>
@@ -139,44 +213,27 @@ const VendorManagement = () => {
         </CCol>
       </CRow>
 
-      {/* Modal for User Details */}
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} className="bg-light">
         <CModalHeader onClose={() => setModalVisible(false)}>
-          <CModalTitle>Vendor Details</CModalTitle>
+          <CModalTitle>User Details</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedUser && (
             <div>
-              <p className="fw-bold">
-                User ID: <span className="fw-normal">{selectedUser._id}</span>
+              <p>
+                <strong>User ID:</strong> {selectedUser._id}
               </p>
-              <p className="fw-bold">
-                Name:{' '}
-                <span className="fw-normal">
-                  {selectedUser?.fullName || selectedUser?.username || 'N/A'}
-                </span>
+              <p>
+                <strong>Name:</strong> {selectedUser?.name || 'N/A'}
               </p>
-              <p className="fw-bold">
-                Email: <span className="fw-normal">{selectedUser.email}</span>
+              <p>
+                <strong>Email:</strong> {selectedUser.email}
               </p>
-              <p className="fw-bold">
-                Status:{' '}
-                <CBadge
-                  color={
-                    selectedUser.status === 'Active'
-                      ? 'success'
-                      : selectedUser.status === 'Pending'
-                        ? 'warning'
-                        : selectedUser.status === 'Approved'
-                          ? 'primary'
-                          : 'danger'
-                  }
-                >
-                  {selectedUser.status}
-                </CBadge>
+              <p>
+                <strong>Status:</strong> {selectedUser.status}
               </p>
-              <p className="fw-bold">
-                Role: <span className="fw-normal">{selectedUser.role}</span>
+              <p>
+                <strong>Role:</strong> {selectedUser.role}
               </p>
             </div>
           )}

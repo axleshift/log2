@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const inventorySchema = new mongoose.Schema(
     {
         shipment: { type: mongoose.Schema.Types.ObjectId, ref: "Shipment" },
-        warehouse_id: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse" },
+        warehouse_id: { type: String },
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
         sku: { type: String, required: true },
         quantity: { type: Number, required: true, min: 0 },

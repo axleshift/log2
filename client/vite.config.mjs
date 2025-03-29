@@ -11,9 +11,7 @@ export default defineConfig(() => {
     },
     css: {
       postcss: {
-        plugins: [
-          autoprefixer({}), 
-        ],
+        plugins: [autoprefixer({})],
       },
     },
     esbuild: {
@@ -40,10 +38,8 @@ export default defineConfig(() => {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.scss'],
     },
     server: {
-      port: 3000,
-      proxy: {
-        // https://vitejs.dev/config/server-options.html
-      },
+      // host: '192.168.1.102',
+      // allowedHosts: ['log2.chysev.cloud'],
     },
   }
 })

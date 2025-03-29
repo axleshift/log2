@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -12,17 +12,13 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
+  CBadge,
+  CSpinner,
   CModal,
   CModalHeader,
   CModalBody,
   CModalFooter,
   CFormTextarea,
-  CSpinner,
-  CTooltip,
-  CToast,
-  CToastBody,
-  CToaster,
-  CToastHeader,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
 
@@ -37,7 +33,6 @@ const ApprovalList = () => {
   const [rejectModal, setRejectModal] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
-  const [toast, setToast] = useState({ visible: false, message: '', color: '' })
 
   useEffect(() => {
     const fetchProcurements = async () => {
@@ -52,13 +47,9 @@ const ApprovalList = () => {
         setLoading(false)
       }
     }
+
     fetchProcurements()
   }, [accessToken])
-
-  const showToast = (message, color) => {
-    setToast({ visible: true, message, color })
-    setTimeout(() => setToast({ visible: false, message: '', color: '' }), 3000)
-  }
 
   const handleApprove = async (id) => {
     try {
@@ -71,9 +62,8 @@ const ApprovalList = () => {
         },
       )
       setProcurements(procurements.filter((p) => p._id !== id))
-      showToast('Procurement approved successfully!', 'success')
     } catch (err) {
-      showToast('Failed to approve procurement', 'danger')
+      alert('Failed to approve procurement')
     } finally {
       setUpdating(false)
     }
@@ -81,7 +71,7 @@ const ApprovalList = () => {
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      showToast('Please provide a rejection reason.', 'warning')
+      alert('Please provide a rejection reason.')
       return
     }
 
@@ -94,12 +84,14 @@ const ApprovalList = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         },
       )
+
       setProcurements(procurements.filter((p) => p._id !== selectedId))
-      showToast('Procurement rejected.', 'danger')
+
       setRejectModal(false)
       setRejectReason('')
     } catch (err) {
-      showToast('Failed to reject procurement', 'danger')
+      console.error('Failed to reject procurement:', err)
+      alert('Failed to reject procurement')
     } finally {
       setUpdating(false)
     }
@@ -108,74 +100,56 @@ const ApprovalList = () => {
   if (loading) return <CSpinner color="primary" />
 
   return (
-    <>
-      <CToaster position="top-end">
-        {toast.visible && (
-          <CToast color={toast.color} autohide>
-            <CToastHeader closeButton>
-              {toast.color === 'danger' ? 'Error' : 'Success'}
-            </CToastHeader>
-            <CToastBody>{toast.message}</CToastBody>
-          </CToast>
-        )}
-      </CToaster>
-      <CCard>
-        <CCardHeader>
-          <h5>Approval List</h5>
-        </CCardHeader>
-        <CCardBody>
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Title</CTableHeaderCell>
-                <CTableHeaderCell>Department</CTableHeaderCell>
-                <CTableHeaderCell>Requested By</CTableHeaderCell>
-                <CTableHeaderCell>Actions</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {procurements.length > 0 ? (
-                procurements.map((p) => (
-                  <CTableRow key={p._id}>
-                    <CTableDataCell>{p.title}</CTableDataCell>
-                    <CTableDataCell>{p.department}</CTableDataCell>
-                    <CTableDataCell>{p.requestedBy?.email || 'Unknown'}</CTableDataCell>
-                    <CTableDataCell>
-                      <CTooltip content="Approve procurement request">
-                        <CButton
-                          color="success"
-                          className="me-2"
-                          onClick={() => handleApprove(p._id)}
-                          disabled={updating}
-                        >
-                          {updating ? <CSpinner size="sm" /> : 'Approve'}
-                        </CButton>
-                      </CTooltip>
-                      <CTooltip content="Reject with a reason">
-                        <CButton
-                          color="danger"
-                          onClick={() => {
-                            setSelectedId(p._id)
-                            setRejectModal(true)
-                          }}
-                        >
-                          Reject
-                        </CButton>
-                      </CTooltip>
-                    </CTableDataCell>
-                  </CTableRow>
-                ))
-              ) : (
-                <CTableRow>
-                  <CTableDataCell colSpan="4" className="text-center text-muted">
-                    No pending Procurement Requests.
+    <CCard>
+      <CCardHeader>
+        <h5>Approval List</h5>
+      </CCardHeader>
+      <CCardBody>
+        <CTable hover responsive>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>Title</CTableHeaderCell>
+              <CTableHeaderCell>Department</CTableHeaderCell>
+              <CTableHeaderCell>Requested By</CTableHeaderCell>
+              <CTableHeaderCell>Actions</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {procurements.length > 0 ? (
+              procurements.map((p) => (
+                <CTableRow key={p._id}>
+                  <CTableDataCell>{p.title}</CTableDataCell>
+                  <CTableDataCell>{p.department}</CTableDataCell>
+                  <CTableDataCell>{p.requestedBy?.email || 'Unknown'}</CTableDataCell>
+                  <CTableDataCell>
+                    <CButton
+                      color="success"
+                      className="me-2"
+                      onClick={() => handleApprove(p._id)}
+                      disabled={updating}
+                    >
+                      {updating ? <CSpinner size="sm" /> : 'Approve'}
+                    </CButton>
+                    <CButton
+                      color="danger"
+                      onClick={() => {
+                        setSelectedId(p._id)
+                        setRejectModal(true)
+                      }}
+                    >
+                      Reject
+                    </CButton>
                   </CTableDataCell>
                 </CTableRow>
-              )}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+              ))
+            ) : (
+              <CTableRow>
+                <CTableDataCell colSpan="4">No pending Procurement Request.</CTableDataCell>
+              </CTableRow>
+            )}
+          </CTableBody>
+        </CTable>
+      </CCardBody>
       {/* Reject Modal */}
       <CModal visible={rejectModal} onClose={() => setRejectModal(false)}>
         <CModalHeader>Reject Procurement</CModalHeader>
@@ -195,7 +169,7 @@ const ApprovalList = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-    </>
+    </CCard>
   )
 }
 

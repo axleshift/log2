@@ -16,12 +16,13 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
   return (
     <CForm onSubmit={handleSubmit}>
       {error && <CAlert color="danger">{error}</CAlert>}
-      <CRow>
+
+      <CRow className="mb-3">
         <CCol md={6}>
           <CFormInput
-            name="itemName"
-            label="Item Name"
-            value={formData.itemName || ''}
+            name="name"
+            label="Product Name"
+            value={formData.name || ''}
             onChange={handleChange}
             required
           />
@@ -36,7 +37,8 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
           />
         </CCol>
       </CRow>
-      <CRow>
+
+      <CRow className="mb-3">
         <CCol md={6}>
           <CFormInput
             name="price"
@@ -47,6 +49,18 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
             required
           />
         </CCol>
+        <CCol md={6}>
+          <CFormInput
+            name="stockQuantity"
+            type="number"
+            label="Stock Quantity"
+            value={formData.stockQuantity || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+      </CRow>
+
+      <CRow className="mb-3">
         <CCol md={6}>
           <CFormSelect
             name="category"
@@ -63,21 +77,109 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
             <option value="Office Supplies">Office Supplies</option>
           </CFormSelect>
         </CCol>
+        <CCol md={6}>
+          <CFormSelect
+            name="status"
+            label="Status"
+            value={formData.status || ''}
+            onChange={handleChange}
+          >
+            <option value="Available">Available</option>
+            <option value="Out of Stock">Out of Stock</option>
+            <option value="Discontinued">Discontinued</option>
+          </CFormSelect>
+        </CCol>
       </CRow>
+
       <CFormTextarea
         name="description"
         label="Description"
+        rows={3}
         value={formData.description || ''}
         onChange={handleChange}
+        className="mb-3"
         required
       />
+
+      <CRow className="mb-3">
+        <CCol md={3}>
+          <CFormInput
+            name="length"
+            label="Length (cm)"
+            value={formData.length || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormInput
+            name="width"
+            label="Width (cm)"
+            value={formData.width || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormInput
+            name="height"
+            label="Height (cm)"
+            value={formData.height || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormInput
+            name="weight"
+            label="Weight (kg)"
+            value={formData.weight || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+      </CRow>
+
+      <CRow className="mb-3">
+        <CCol md={6}>
+          <CFormInput
+            name="manufacturer"
+            label="Manufacturer"
+            value={formData.manufacturer || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormInput
+            name="color"
+            label="Color"
+            value={formData.color || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormInput
+            name="size"
+            label="Size"
+            value={formData.size || ''}
+            onChange={handleChange}
+          />
+        </CCol>
+      </CRow>
+
+      <CFormInput
+        name="tags"
+        label="Tags (comma-separated)"
+        value={formData.tags || ''}
+        onChange={handleChange}
+        className="mb-3"
+      />
+
       <CFormInput
         name="images"
         type="file"
         label="Product Images"
         multiple
         onChange={handleFileChange}
+        className="mb-4"
       />
+
       <CButton color="success" type="submit" disabled={loading}>
         {loading ? <CSpinner size="sm" /> : 'Create Product'}
       </CButton>
@@ -87,7 +189,7 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
 
 ProductForm.propTypes = {
   formData: PropTypes.shape({
-    itemName: PropTypes.string,
+    name: PropTypes.string,
     sku: PropTypes.string,
     price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     category: PropTypes.string,

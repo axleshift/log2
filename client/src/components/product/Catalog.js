@@ -39,7 +39,7 @@ function ProductCatalog() {
         const uniqueCategories = ['All', ...new Set(data.map((p) => p.category).filter(Boolean))]
         setCategories(uniqueCategories)
 
-        const maxPrice = Math.max(...data.map((p) => p.price), 20000)
+        const maxPrice = Math.max(...data.map((p) => parseFloat(p.price || 0)), 20000)
         setPriceRange([0, maxPrice])
       } catch (err) {
         setError(err.message)
@@ -47,21 +47,27 @@ function ProductCatalog() {
         setLoading(false)
       }
     }
+
     fetchProducts()
   }, [])
 
   useEffect(() => {
-    const filtered = products.filter((product) => {
-      const isCategoryMatch = selectedCategory === 'All' || product.category === selectedCategory
-      const isPriceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
-      const searchTerm = searchQuery.toLowerCase()
-      const isSearchMatch =
-        searchQuery === '' ||
-        product.itemName.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm)
+    const term = searchQuery.toLowerCase()
 
-      return isCategoryMatch && isPriceMatch && isSearchMatch
+    const filtered = products.filter((product) => {
+      const categoryMatch = selectedCategory === 'All' || product.category === selectedCategory
+
+      const price = parseFloat(product.price || 0)
+      const priceMatch = price >= priceRange[0] && price <= priceRange[1]
+
+      const searchMatch =
+        !term ||
+        product.name?.toLowerCase().includes(term) ||
+        product.description?.toLowerCase().includes(term)
+
+      return categoryMatch && priceMatch && searchMatch
     })
+
     setFilteredProducts(filtered)
   }, [searchQuery, selectedCategory, priceRange, products])
 
@@ -112,7 +118,7 @@ function ProductCatalog() {
           <input
             type="range"
             min="0"
-            max="10000"
+            max={priceRange[1]}
             value={priceRange[1]}
             onChange={(e) => setPriceRange([0, Number(e.target.value)])}
             className="form-range"
@@ -120,6 +126,7 @@ function ProductCatalog() {
         </CCol>
       </CRow>
 
+      {/* Results */}
       {error && <CAlert color="danger">{error}</CAlert>}
       {loading ? (
         <div className="text-center">
@@ -137,20 +144,19 @@ function ProductCatalog() {
                   {product.images?.length > 0 && (
                     <img
                       src={product.images[0]}
-                      alt={product.itemName}
+                      alt={product.name}
                       className="card-img-top"
                       style={{ height: '180px', objectFit: 'cover' }}
                     />
                   )}
-                  <CCardHeader className="fw-bold">{product.itemName}</CCardHeader>
+                  <CCardHeader className="fw-bold">{product.name}</CCardHeader>
                   <CCardBody>
                     <p className="text-muted">{product.description?.slice(0, 60)}...</p>
                     <p>
                       <strong>Category:</strong> {product.category || 'Uncategorized'}
                     </p>
                     <p>
-                      <strong>Price:</strong> $
-                      {product.price ? Number(product.price).toFixed(2) : '0.00'}
+                      <strong>Price:</strong> ${parseFloat(product.price || 0).toFixed(2)}
                     </p>
                     <p>
                       <strong>Stock:</strong> {product.stockQuantity ?? 'N/A'}

@@ -1,163 +1,164 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CSpinner,
-  CAlert,
-  CBadge,
+  CButton,
+  CFormInput,
+  CFormSelect,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CButton,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
-import { useToast } from '../../../components/Toast/Toast.js'
 
-const BuyerRFQDetails = () => {
-  const { id } = useParams()
+const API_URL = import.meta.env.VITE_API_URL
+const QUOTE_API_URL = `${API_URL}/api/v1/vendor-quotes`
+
+const VendorQuotes = () => {
   const { accessToken } = useAuth()
-  const [rfq, setRFQ] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const { showToast } = useToast()
+  const [quotes, setQuotes] = useState([])
+  const [filteredQuotes, setFilteredQuotes] = useState([])
+  const [selectedQuote, setSelectedQuote] = useState(null)
+  const [filter, setFilter] = useState('All')
+  const [search, setSearch] = useState('')
+  const [modalVisible, setModalVisible] = useState(false)
+
+  const fetchQuotes = async () => {
+    try {
+      const res = await axios.get(QUOTE_API_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      setQuotes(res.data)
+      setFilteredQuotes(res.data)
+    } catch (err) {
+      console.error('Failed to fetch vendor quotes')
+    }
+  }
 
   useEffect(() => {
-    const fetchRFQDetails = async () => {
-      setLoading(true)
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/rfq/${id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        setRFQ(response.data)
-      } catch (err) {
-        setError('Failed to load RFQ details.')
-      } finally {
-        setLoading(false)
-      }
-    }
+    fetchQuotes()
+  }, [])
 
-    if (accessToken) {
-      fetchRFQDetails()
-    }
-  }, [id, accessToken])
+  const handleFilterChange = (value) => {
+    setFilter(value)
+    setFilteredQuotes(value === 'All' ? quotes : quotes.filter((q) => q.status === value))
+  }
 
-  const handleQuoteStatus = async (quoteId, status) => {
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value)
+    setFilteredQuotes(
+      quotes.filter((q) => q.vendorName.toLowerCase().includes(e.target.value.toLowerCase())),
+    )
+  }
+
+  const handleStatusChange = async (id, status) => {
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL}/api/v1/rfq/${id}/quotes/${quoteId}`,
+      await axios.put(
+        `${QUOTE_API_URL}/${id}/status`,
         { status },
-        { headers: { Authorization: `Bearer ${accessToken}` } },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
       )
-
-      setRFQ((prev) => ({
-        ...prev,
-        quotes: prev.quotes.map((q) => (q._id === quoteId ? { ...q, status } : q)),
-      }))
-
-      showToast(`Quote ${status.toLowerCase()} successfully!`, 'success')
+      fetchQuotes()
     } catch (err) {
-      showToast('Failed to update quote status.', 'error')
+      console.error('Failed to update status')
     }
   }
 
   return (
-    <CCard className="shadow-sm">
-      <CCardHeader className="bg-primary text-white fw-bold">RFQ Details</CCardHeader>
-      <CCardBody>
-        {loading ? (
-          <div className="text-center my-3">
-            <CSpinner color="primary" />
-          </div>
-        ) : error ? (
-          <CAlert color="danger" className="text-center">
-            {error}
-          </CAlert>
-        ) : rfq ? (
-          <>
-            <h6>
-              <strong>Submitted Quotes</strong>
-            </h6>
-            <CTable hover responsive className="text-center">
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Total Price</CTableHeaderCell>
-                  <CTableHeaderCell>Quantity</CTableHeaderCell>
-                  <CTableHeaderCell>Lead Time</CTableHeaderCell>
-                  <CTableHeaderCell>Terms</CTableHeaderCell>
-                  <CTableHeaderCell>Valid Until</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Action</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {rfq.quotes.length > 0 ? (
-                  rfq.quotes.map((q, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>{q.totalPrice}</CTableDataCell>
-                      <CTableDataCell>{q.quantity}</CTableDataCell>
-                      <CTableDataCell>{q.leadTime}</CTableDataCell>
-                      <CTableDataCell>{q.terms || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>
-                        {q.validUntil ? new Date(q.validUntil).toLocaleDateString() : 'N/A'}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge
-                          color={
-                            q.status === 'Approved'
-                              ? 'success'
-                              : q.status === 'Rejected'
-                                ? 'danger'
-                                : 'warning'
-                          }
-                        >
-                          {q.status}
-                        </CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {q.status === 'Pending' && (
-                          <>
-                            <CButton
-                              color="success"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => handleQuoteStatus(q._id, 'Approved')}
-                            >
-                              Approve
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              size="sm"
-                              onClick={() => handleQuoteStatus(q._id, 'Rejected')}
-                            >
-                              Reject
-                            </CButton>
-                          </>
-                        )}
-                      </CTableDataCell>
-                    </CTableRow>
-                  ))
-                ) : (
-                  <CTableRow>
-                    <CTableDataCell colSpan="7">No quotes submitted yet.</CTableDataCell>
-                  </CTableRow>
+    <div className="p-4 max-w-4xl mx-auto">
+      <h1 className="mb-4 fw-bold">RFQ Details – Submitted Quotes</h1>
+      <div className="d-flex justify-content-between mb-3">
+        <CFormSelect value={filter} onChange={(e) => handleFilterChange(e.target.value)}>
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
+        </CFormSelect>
+        <CFormInput placeholder="Search Vendor" value={search} onChange={handleSearchChange} />
+      </div>
+
+      <CTable striped hover responsive>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>Vendor Name</CTableHeaderCell>
+            <CTableHeaderCell>Price</CTableHeaderCell>
+            <CTableHeaderCell>Status</CTableHeaderCell>
+            <CTableHeaderCell>Actions</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {filteredQuotes.map((quote) => (
+            <CTableRow key={quote._id}>
+              <CTableDataCell>{quote.vendorName}</CTableDataCell>
+              <CTableDataCell>${quote.price}</CTableDataCell>
+              <CTableDataCell>{quote.status}</CTableDataCell>
+              <CTableDataCell>
+                <CButton
+                  color="info"
+                  onClick={() => {
+                    setSelectedQuote(quote)
+                    setModalVisible(true)
+                  }}
+                >
+                  View
+                </CButton>
+                {quote.status === 'Pending' && (
+                  <>
+                    <CButton
+                      color="success"
+                      className="ms-2"
+                      onClick={() => handleStatusChange(quote._id, 'Accepted')}
+                    >
+                      Accept
+                    </CButton>
+                    <CButton
+                      color="danger"
+                      className="ms-2"
+                      onClick={() => handleStatusChange(quote._id, 'Rejected')}
+                    >
+                      Reject
+                    </CButton>
+                  </>
                 )}
-              </CTableBody>
-            </CTable>
-          </>
-        ) : (
-          <CAlert color="warning" className="text-center">
-            RFQ not found.
-          </CAlert>
-        )}
-      </CCardBody>
-    </CCard>
+              </CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
+
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+        <CModalHeader closeButton>Quote Details</CModalHeader>
+        <CModalBody>
+          {selectedQuote && (
+            <>
+              <p>
+                <strong>Vendor:</strong> {selectedQuote.vendorName}
+              </p>
+              <p>
+                <strong>Price:</strong> ${selectedQuote.price}
+              </p>
+              <p>
+                <strong>Details:</strong> {selectedQuote.details}
+              </p>
+            </>
+          )}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+            Close
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </div>
   )
 }
 
-export default BuyerRFQDetails
+export default VendorQuotes

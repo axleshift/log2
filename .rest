@@ -1,0 +1,27 @@
+### Create Award Notice
+POST http://localhost:5058/api/v1/awards
+Content-Type: application/json
+
+{
+  "title": "Supply of Office Equipment",
+  "amount": 1500000.00,
+  "date": "2025-01-15",
+  "details": "Procurement of various office equipment including printers, computers, and furniture.",
+  "vendorId": "67df0d270e569b4642aa7e1b",
+  "poId": "67df10d0c20892aff7d34020"
+}
+
+### Get All Award Notices
+GET http://localhost:5000/api/v1/awards
+
+
+###
+GET https://backend-log1.axleshift.com/api/v1/warehouseLoc/locations
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2UyZGI2MDJlMjg2MTI1YzU1MDJmMGEiLCJyb2xlIjoic3VwZXIgYWRtaW4iLCJlbWFpbCI6IkpvaG5sYXlkYTkyQGdtYWlsLmNvbSIsImlhdCI6MTc0MjkyMTA3NSwiZXhwIjoxNzQyOTI0Njc1fQ.Mj5O1RnMPyxwh1jemOaCcjlJYW-jWY8CSZXZpLi-wAw
+x-api-key: 0ad3f5c013c42d2d0537672a260978c71dcd5a7d508019d748f991deee3d65665a477e3523c6bbc83fd6a51a71dd5003
+
+
+
+###
+GET http://localhost:5058/api/v1/notifications
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2RmMGIwOTBlNTY5YjQ2NDJhYTdkZmYiLCJyb2xlIjoic3VwZXIgYWRtaW4iLCJlbWFpbCI6IkNoeXNldjQ3NUBnbWFpbC5jb20iLCJpYXQiOjE3NDMxOTgxMTQsImV4cCI6MTc0MzIwMTcxNH0.s8PmAMKFtuP13nvUANaPUoueYNvoUQpt59XT0EBIoWI

@@ -1,329 +1,396 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import {
   CButton,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalTitle,
   CForm,
   CFormInput,
   CFormSelect,
   CRow,
   CCol,
+  CTable,
+  CTableHead,
+  CTableBody,
+  CTableRow,
+  CTableHeaderCell,
+  CTableDataCell,
   CToast,
   CToastBody,
   CToastHeader,
   CToaster,
   CSpinner,
 } from '@coreui/react'
+import { useAuth } from '../../context/AuthContext'
 
-const MOCK_VENDORS = [
-  { _id: '1', companyName: 'Vendor A' },
-  { _id: '2', companyName: 'Vendor B' },
-  { _id: '3', companyName: 'Vendor C' },
-]
+const BASE_URL = import.meta.env.VITE_API_URL
+const PO_API_URL = `${BASE_URL}/api/v1/purchaseOrder`
+const PROCUREMENT_API_URL = `${BASE_URL}/api/v1/procurement`
+const VENDOR_API_URL = `${BASE_URL}/api/v1/vendor`
+const PRODUCT_API_URL = `${BASE_URL}/api/v1/product`
+const WAREHOUSE_API_URL = `https://backend-log1.axleshift.com/api/v1/warehouseLoc/locations`
 
-const MOCK_PRODUCTS = [
-  { _id: '1', description: 'Product A', unitPrice: 10 },
-  { _id: '2', description: 'Product B', unitPrice: 20 },
-  { _id: '3', description: 'Product C', unitPrice: 30 },
-]
+const PurchaseOrderPage = () => {
+  const { accessToken } = useAuth()
 
-const MOCK_PO_API_RESPONSE = {
-  message: 'Purchase order successfully created!',
-}
+  const [modalVisible, setModalVisible] = useState(false)
+  const [purchaseOrders, setPurchaseOrders] = useState([])
+  const [procurements, setProcurements] = useState([])
+  const [vendors, setVendors] = useState([])
+  const [productsCatalog, setProductsCatalog] = useState([])
+  const [warehouses, setWarehouses] = useState([])
 
-const PurchaseOrder = () => {
   const [poData, setPoData] = useState({
+    procurementId: '',
+    vendorId: '',
+    shipTo: '',
+    rfqId: '',
     poNumber: '',
     orderDate: '',
     receiveDate: '',
     carrier: '',
-    vendorId: '',
-    shipTo: {
-      companyName: '',
-      receiver: '',
-      address: '',
-      phone: '',
-    },
-    vendor: {
-      companyName: '',
-      address: '',
-      phone: '',
-    },
-    details: [{ productId: '', quantity: '', subTotal: 0 }],
+    additionalNotes: '',
+    products: [{ productId: '', description: '', quantity: 0, unitPrice: 0 }],
   })
 
-  const [vendors, setVendors] = useState([])
-  const [products, setProducts] = useState([])
+  const [toast, setToast] = useState({ show: false, message: '', color: '' })
   const [loading, setLoading] = useState(false)
-  const [toastVisible, setToastVisible] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastColor, setToastColor] = useState('')
 
-  // Fetch vendors and products when the component mounts (using mock data)
-  useEffect(() => {
-    setVendors(MOCK_VENDORS)
-    setProducts(MOCK_PRODUCTS)
-  }, [])
+  // useEffect(() => {
+  //   fetchData()
+  // }, [])
+
+  const fetchData = async () => {
+    try {
+      const [poRes, procRes, vendorRes, prodRes, warehouseRes] = await Promise.all([
+        axios.get(PO_API_URL, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        axios.get(PROCUREMENT_API_URL, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        axios.get(VENDOR_API_URL, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        axios.get(PRODUCT_API_URL, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        axios.get(WAREHOUSE_API_URL, {
+          headers: {
+            // Authorization: `Bearer ${accessToken}`,
+
+            'Content-Type': 'application/json',
+            'x-api-key':
+              '0ad3f5c013c42d2d0537672a260978c71dcd5a7d508019d748f991deee3d65665a477e3523c6bbc83fd6a51a71dd5003',
+          },
+          withCredentials: true,
+        }),
+      ])
+      setPurchaseOrders(poRes.data)
+      setProcurements(procRes.data)
+      setVendors(vendorRes.data)
+      setProductsCatalog(prodRes.data)
+      setWarehouses(warehouseRes.data)
+    } catch (err) {
+      console.error('Failed to fetch data:', err)
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    if (name.includes('shipTo') || name.includes('vendor')) {
-      const [prefix, field] = name.split('.')
-      setPoData({
-        ...poData,
-        [prefix]: {
-          ...poData[prefix],
-          [field]: value,
-        },
-      })
-    } else if (name.includes('details')) {
-      const [prefix, index, field] = name.split('.')
-      const updatedDetails = [...poData.details]
-      updatedDetails[index][field] = value
-      if (field === 'quantity') {
-        updatedDetails[index].subTotal =
-          updatedDetails[index].quantity *
-            products.find((p) => p._id === poData.details[index].productId)?.unitPrice || 0
-      }
-      setPoData({ ...poData, details: updatedDetails })
-    } else {
-      setPoData({ ...poData, [name]: value })
-    }
+    setPoData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleProductsChange = (e, index) => {
+    const { name, value } = e.target
+    const updated = [...poData.products]
+    updated[index][name] = ['quantity', 'unitPrice'].includes(name) ? parseFloat(value) : value
+    setPoData((prev) => ({ ...prev, products: updated }))
+  }
+
+  const addProduct = () => {
+    setPoData((prev) => ({
+      ...prev,
+      products: [...prev.products, { productId: '', description: '', quantity: 0, unitPrice: 0 }],
+    }))
+  }
+
+  const resetForm = () => {
+    setPoData({
+      procurementId: '',
+      vendorId: '',
+      shipTo: '',
+      rfqId: '',
+      poNumber: '',
+      orderDate: '',
+      receiveDate: '',
+      carrier: '',
+      additionalNotes: '',
+      warehouse_id: '',
+      products: [{ productId: '', description: '', quantity: 0, unitPrice: 0 }],
+    })
+  }
+
+  const showToast = (message, color) => {
+    setToast({ show: true, message, color })
+    setTimeout(() => setToast({ show: false, message: '', color: '' }), 5000)
+  }
+
+  const getWarehouseName = (id) => {
+    return warehouses?.data?.find((w) => w._id === id)?.warehouseName || '—'
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!accessToken) return showToast('Not authenticated.', 'danger')
+
     setLoading(true)
 
     try {
-      // Simulate an API call to create a purchase order (using mock response)
-      const response = MOCK_PO_API_RESPONSE
+      const payload = { ...poData, warehouse_id: poData.shipTo }
 
-      // Mock success response
-      setToastMessage(response.message)
-      setToastColor('success')
-      setToastVisible(true)
-      setTimeout(() => setToastVisible(false), 5000)
+      if (!payload.shipTo) delete payload.shipTo
+      if (!payload.rfqId) delete payload.rfqId
 
-      // Reset form
-      setPoData({
-        poNumber: '',
-        orderDate: '',
-        receiveDate: '',
-        carrier: '',
-        vendorId: '',
-        shipTo: {
-          companyName: '',
-          receiver: '',
-          address: '',
-          phone: '',
+      if (
+        !payload.products.length ||
+        payload.products.some((p) => !p.productId || !p.description)
+      ) {
+        showToast('Each product must have a product and description', 'danger')
+        setLoading(false)
+        return
+      }
+
+      await axios.post(PO_API_URL, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        vendor: {
-          companyName: '',
-          address: '',
-          phone: '',
-        },
-        details: [{ productId: '', quantity: '', subTotal: 0 }],
       })
-    } catch (error) {
-      setToastMessage('Error creating purchase order')
-      setToastColor('danger')
-      setToastVisible(true)
-      setTimeout(() => setToastVisible(false), 5000)
+
+      showToast('Purchase Order Created!', 'success')
+      resetForm()
+      fetchData()
+      setModalVisible(false)
+    } catch (err) {
+      console.error('❌ PO creation error:', err)
+      showToast(err.response?.data?.message || 'Error creating Purchase Order', 'danger')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const openModal = () => {
+    setModalVisible(true)
+  }
+
   return (
     <>
-      <CForm onSubmit={handleSubmit}>
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="poNumber"
-              value={poData.poNumber}
-              onChange={handleChange}
-              label="PO Number"
-              required
-            />
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="date"
-              name="orderDate"
-              value={poData.orderDate}
-              onChange={handleChange}
-              label="Order Date"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="date"
-              name="receiveDate"
-              value={poData.receiveDate}
-              onChange={handleChange}
-              label="Receive Date"
-              required
-            />
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="carrier"
-              value={poData.carrier}
-              onChange={handleChange}
-              label="Carrier"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormSelect
-              name="vendorId"
-              value={poData.vendorId}
-              onChange={handleChange}
-              label="Select Vendor"
-              required
-            >
-              <option value="">Choose Vendor</option>
-              {vendors.map((vendor) => (
-                <option key={vendor._id} value={vendor._id}>
-                  {vendor.companyName}
-                </option>
-              ))}
-            </CFormSelect>
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="vendor.address"
-              value={poData.vendor.address}
-              onChange={handleChange}
-              label="Vendor Address"
-              required
-            />
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="vendor.phone"
-              value={poData.vendor.phone}
-              onChange={handleChange}
-              label="Vendor Phone"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="shipTo.companyName"
-              value={poData.shipTo.companyName}
-              onChange={handleChange}
-              label="Ship To Company"
-              required
-            />
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="shipTo.receiver"
-              value={poData.shipTo.receiver}
-              onChange={handleChange}
-              label="Receiver"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="shipTo.address"
-              value={poData.shipTo.address}
-              onChange={handleChange}
-              label="Ship To Address"
-              required
-            />
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="shipTo.phone"
-              value={poData.shipTo.phone}
-              onChange={handleChange}
-              label="Receiver Phone"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormSelect
-              name="details.0.productId"
-              value={poData.details[0].productId}
-              onChange={handleChange}
-              label="Select Product"
-              required
-            >
-              <option value="">Choose Product</option>
-              {products.map((product) => (
-                <option key={product._id} value={product._id}>
-                  {product.description}
-                </option>
-              ))}
-            </CFormSelect>
-          </CCol>
-          <CCol md={6}>
-            <CFormInput
-              type="number"
-              name="details.0.quantity"
-              value={poData.details[0].quantity}
-              onChange={handleChange}
-              label="Quantity"
-              required
-            />
-          </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
-          <CCol md={6}>
-            <CFormInput
-              type="text"
-              name="details.0.subTotal"
-              value={poData.details[0].subTotal}
-              disabled
-              label="Sub Total"
-            />
-          </CCol>
-        </CRow>
-
-        <CButton color="primary" type="submit" disabled={loading}>
-          {loading ? <CSpinner size="sm" /> : 'Submit PO'}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4>Purchase Orders</h4>
+        <CButton type="button" color="primary" onClick={() => openModal()}>
+          + Create Purchase Order
         </CButton>
-      </CForm>
+      </div>
 
-      <CToaster position="top-center" visible={toastVisible ? 'true' : undefined}>
-        <CToast color={toastColor}>
-          <CToastHeader closeButton>{toastColor === 'success' ? 'Success' : 'Error'}</CToastHeader>
-          <CToastBody>{toastMessage}</CToastBody>
-        </CToast>
+      <CTable striped responsive hover>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>#</CTableHeaderCell>
+            <CTableHeaderCell>PO Number</CTableHeaderCell>
+            <CTableHeaderCell>Vendor</CTableHeaderCell>
+            <CTableHeaderCell>Procurement</CTableHeaderCell>
+            <CTableHeaderCell>Ship To</CTableHeaderCell>
+            <CTableHeaderCell>Products</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {purchaseOrders.map((po, index) => (
+            <CTableRow key={po._id}>
+              <CTableDataCell>{index + 1}</CTableDataCell>
+              <CTableDataCell>{po.poNumber || '—'}</CTableDataCell>
+              <CTableDataCell>{po.vendor?.businessName || '—'}</CTableDataCell>
+              <CTableDataCell>{po.procurementId?.title || '—'}</CTableDataCell>
+              <CTableDataCell>{getWarehouseName(po.shipTo)}</CTableDataCell>
+              <CTableDataCell>
+                {po.details?.map((d, i) => (
+                  <div key={i}>
+                    {d.description} — {d.quantity} @ {d.unitPrice}
+                  </div>
+                )) || '—'}
+              </CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
+
+      {/* Modal */}
+      <CModal
+        visible={modalVisible}
+        onClose={async () => {
+          setModalVisible(false)
+        }}
+        size="lg"
+      >
+        <CModalHeader>
+          <CModalTitle>Create Purchase Order</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CForm onSubmit={handleSubmit}>
+            <CRow className="mb-3">
+              <CCol md={6}>
+                <CFormInput
+                  name="poNumber"
+                  value={poData.poNumber}
+                  onChange={handleChange}
+                  label="PO Number"
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormInput
+                  type="date"
+                  name="orderDate"
+                  value={poData.orderDate}
+                  onChange={handleChange}
+                  label="Order Date"
+                  required
+                />
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-3">
+              <CCol md={6}>
+                <CFormSelect
+                  name="procurementId"
+                  value={poData.procurementId}
+                  onChange={handleChange}
+                  label="Procurement"
+                  required
+                >
+                  <option value="">Select Procurement</option>
+                  {procurements.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+              <CCol md={6}>
+                <CFormSelect
+                  name="vendorId"
+                  value={poData.vendorId}
+                  onChange={handleChange}
+                  label="Vendor"
+                  required
+                >
+                  <option value="">Select Vendor</option>
+                  {vendors.map((v) => (
+                    <option key={v._id} value={v._id}>
+                      {v.businessName}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CRow>
+
+            {warehouses ? (
+              <CRow className="mb-3">
+                <CCol md={6}>
+                  <CFormSelect
+                    name="shipTo"
+                    value={poData.shipTo}
+                    onChange={handleChange}
+                    label="Ship To (Warehouse)"
+                  >
+                    <option value="">Select Warehouse</option>
+                    {Array.isArray(warehouses?.data) &&
+                      warehouses.data.map((w) => (
+                        <option key={w._id} value={w._id}>
+                          {w.warehouseName}
+                        </option>
+                      ))}
+                  </CFormSelect>
+                </CCol>
+              </CRow>
+            ) : (
+              <div></div>
+            )}
+
+            <h6 className="mt-3">Products</h6>
+            {poData.products.map((product, index) => (
+              <CRow className="mb-3" key={index}>
+                <CCol md={4}>
+                  <CFormSelect
+                    name="productId"
+                    label="Product"
+                    value={product.productId}
+                    onChange={(e) => handleProductsChange(e, index)}
+                    required
+                  >
+                    <option value="">Select Product</option>
+                    {productsCatalog.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
+                <CCol md={4}>
+                  <CFormInput
+                    type="text"
+                    name="description"
+                    label="Description"
+                    value={product.description}
+                    onChange={(e) => handleProductsChange(e, index)}
+                    required
+                  />
+                </CCol>
+                <CCol md={2}>
+                  <CFormInput
+                    type="number"
+                    name="quantity"
+                    label="Qty"
+                    value={product.quantity}
+                    onChange={(e) => handleProductsChange(e, index)}
+                    required
+                  />
+                </CCol>
+                <CCol md={2}>
+                  <CFormInput
+                    type="number"
+                    name="unitPrice"
+                    label="Unit Price"
+                    value={product.unitPrice}
+                    onChange={(e) => handleProductsChange(e, index)}
+                    required
+                  />
+                </CCol>
+              </CRow>
+            ))}
+            <CButton onClick={addProduct} color="secondary" className="mb-3">
+              + Add Product
+            </CButton>
+
+            <div className="text-end">
+              <CButton type="submit" color="success" disabled={loading}>
+                {loading ? <CSpinner size="sm" /> : 'Create PO'}
+              </CButton>
+            </div>
+          </CForm>
+        </CModalBody>
+      </CModal>
+
+      <CToaster placement="top-end">
+        {toast.show && (
+          <CToast autohide={true} visible={true} color={toast.color}>
+            <CToastHeader closeButton>
+              {toast.color === 'success' ? 'Success' : 'Error'}
+            </CToastHeader>
+            <CToastBody>{toast.message}</CToastBody>
+          </CToast>
+        )}
       </CToaster>
     </>
   )
 }
 
-export default PurchaseOrder
+export default PurchaseOrderPage

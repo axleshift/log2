@@ -114,13 +114,22 @@ const ProcurementList = () => {
                     Delete
                   </CButton>{' '}
                   {procurement.status === 'Approved' && (
-                    <CButton
-                      color="primary"
-                      size="sm"
-                      onClick={() => navigate(`/rfq/create/${procurement._id}`)}
-                    >
-                      Create RFQ
-                    </CButton>
+                    <>
+                      <CButton
+                        color="primary"
+                        size="sm"
+                        onClick={() => navigate(`/rfq/create/${procurement._id}`)}
+                      >
+                        Create RFQ
+                      </CButton>{' '}
+                      <CButton
+                        color="success"
+                        size="sm"
+                        onClick={() => navigate(`/po/create/${procurement._id}`)}
+                      >
+                        Create PO
+                      </CButton>
+                    </>
                   )}
                 </CTableDataCell>
               </CTableRow>

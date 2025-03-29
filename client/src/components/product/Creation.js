@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react'
 import ProductForm from '../Forms/ProductForm'
-import { useAuth } from '../../context/AuthContext.js'
+import { useAuth } from '../../context/AuthContext'
 import axios from 'axios'
 
 const PRODUCT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/product/create`
 
 function ProductCreation() {
   const { accessToken } = useAuth()
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState({
-    itemName: '',
+    name: '',
     description: '',
     price: '',
     category: '',
@@ -27,89 +29,83 @@ function ProductCreation() {
     color: '',
     size: '',
   })
+
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const [toastMessage, setToastMessage] = useState('')
   const [toastColor, setToastColor] = useState('success')
   const [toastVisible, setToastVisible] = useState(false)
-  const navigate = useNavigate()
 
   const generateSKU = () => {
-    const skuBase = formData.itemName ? formData.itemName.substring(0, 3).toUpperCase() : 'XXX'
-    const randomNum = Math.floor(Math.random() * 10000)
-    return `${skuBase}${randomNum}`
+    const base = formData.name ? formData.name.slice(0, 3).toUpperCase() : 'XXX'
+    const rand = Math.floor(1000 + Math.random() * 9000)
+    return `${base}${rand}`
   }
 
   const generateTags = () => {
-    const itemWords = formData.itemName ? formData.itemName.split(' ') : []
-    const categoryWords = formData.category ? formData.category.split(' ') : []
-    const allWords = [...new Set([...itemWords, ...categoryWords])].map((word) =>
-      word.toLowerCase(),
-    )
-    return allWords.join(', ')
+    const nameWords = formData.name?.split(' ') || []
+    const categoryWords = formData.category?.split(' ') || []
+    return [...new Set([...nameWords, ...categoryWords])].map((w) => w.toLowerCase()).join(', ')
   }
 
   useEffect(() => {
-    if (formData.itemName && !formData.sku) {
-      const newSKU = generateSKU()
-      setFormData((prevData) => ({ ...prevData, sku: newSKU }))
+    if (formData.name && !formData.sku) {
+      setFormData((prev) => ({ ...prev, sku: generateSKU() }))
     }
-    if (formData.itemName || formData.category) {
-      const newTags = generateTags()
-      setFormData((prevData) => ({ ...prevData, tags: newTags }))
+    if (formData.name || formData.category) {
+      setFormData((prev) => ({ ...prev, tags: generateTags() }))
     }
-  }, [formData.itemName, formData.category])
+  }, [formData.name, formData.category])
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prevData) => ({ ...prevData, [name]: value !== undefined ? value : '' }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, images: e.target.files ? Array.from(e.target.files) : [] })
+    const files = e.target.files ? Array.from(e.target.files) : []
+    setFormData((prev) => ({ ...prev, images: files }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
-
     if (!accessToken) {
-      setToastMessage('Authentication error. Please log in again.')
-      setToastColor('danger')
-      setToastVisible(true)
-      setTimeout(() => setToastVisible(false), 5000)
-      setLoading(false)
-      return
+      return showToast('Authentication error. Please log in again.', 'danger')
     }
 
-    const formDataToSend = new FormData()
+    setLoading(true)
 
-    Object.keys(formData).forEach((key) => {
-      if (key === 'images' && formData.images.length > 0) {
-        formData.images.forEach((file) => formDataToSend.append('images', file))
+    const payload = new FormData()
+
+    // Append regular fields
+    for (const key in formData) {
+      if (key === 'images') {
+        formData.images.forEach((file) => payload.append('images', file))
+      } else if (['length', 'width', 'height'].includes(key)) {
+        continue // handle dimensions separately
       } else if (formData[key]) {
-        formDataToSend.append(key, formData[key])
+        payload.append(key, formData[key])
       }
-    })
+    }
 
+    // Append nested dimensions
     const dimensions = JSON.stringify({
       length: formData.length || 0,
       width: formData.width || 0,
       height: formData.height || 0,
     })
-    formDataToSend.append('dimensions', dimensions)
+    payload.append('dimensions', dimensions)
 
     try {
-      const headers = {
-        Authorization: `Bearer ${accessToken}`,
-      }
+      const headers = { Authorization: `Bearer ${accessToken}` }
+      await axios.post(PRODUCT_API_URL, payload, { headers })
 
-      const response = await axios.post(PRODUCT_API_URL, formDataToSend, { headers })
-      console.log(response.data)
+      showToast('✅ Product created successfully!', 'success')
+      setTimeout(() => {
+        navigate('/procurement/product-catalog')
+      }, 2000)
 
       setFormData({
-        itemName: '',
+        name: '',
         description: '',
         price: '',
         category: '',
@@ -126,25 +122,19 @@ function ProductCreation() {
         color: '',
         size: '',
       })
-
-      setToastMessage('Product created successfully!')
-      setToastColor('success')
-      setToastVisible(true)
-
-      setTimeout(() => {
-        setToastVisible(false)
-        navigate('/procurement/product-catalog')
-      }, 2000)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to create product'
-      console.error(errorMessage)
-      setToastMessage(errorMessage)
-      setToastColor('danger')
-      setToastVisible(true)
-      setTimeout(() => setToastVisible(false), 5000)
+      const msg = err.response?.data?.message || err.message || 'Failed to create product'
+      showToast(`🚨 ${msg}`, 'danger')
     } finally {
       setLoading(false)
     }
+  }
+
+  const showToast = (msg, color) => {
+    setToastMessage(msg)
+    setToastColor(color)
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 5000)
   }
 
   return (
@@ -160,10 +150,9 @@ function ProductCreation() {
                 handleFileChange={handleFileChange}
                 handleSubmit={handleSubmit}
                 loading={loading}
-                error={error}
               />
               {toastVisible && (
-                <div className={`alert alert-${toastColor}`} role="alert">
+                <div className={`alert alert-${toastColor} mt-3`} role="alert">
                   {toastMessage}
                 </div>
               )}

@@ -7,7 +7,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
-        sameSite: "Strict",
+        sameSite: "lax",
         cookie: { maxAge: 86400000 },
     },
 });

@@ -47,6 +47,13 @@ const _nav = [
     icon: <FontAwesomeIcon icon={faUsers} className="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Award Management',
+    to: '/award',
+    role_exclude: ['vendor', 'user', 'staff'],
+    icon: <FontAwesomeIcon icon={faBullhorn} className="nav-icon" />,
+  },
+  {
     component: CNavTitle,
     name: 'Procurement',
     role_exclude: ['vendor', 'user', 'staff'],
@@ -54,16 +61,23 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Procurement request',
-    to: '/procurement',
+    to: '/procurement/procurement',
     role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
   },
   {
     component: CNavItem,
-    name: 'RFQ Management',
+    name: 'PR & RFQ List',
     to: '/procurement/rfq-management',
     role_exclude: ['vendor', 'staff'],
     icon: <FontAwesomeIcon icon={faFileText} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Vendor Quotes',
+    to: '/procurement/submit-quote',
+    role_exclude: ['vendor', 'staff'],
+    icon: <FontAwesomeIcon icon={faBox} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -71,6 +85,13 @@ const _nav = [
     to: '/procurement/po-payments',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Shipment & Delivery Tracking',
+    to: '/procurement/shipments',
+    role_exclude: ['vendor', 'user', 'staff'],
+    icon: <FontAwesomeIcon icon={faTruck} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -82,7 +103,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Reports & Dashboard',
-    to: '/analytics',
+    to: '/procurement/analytics',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faChartBar} className="nav-icon" />,
   },
@@ -93,10 +114,24 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'RFQ Bidding',
+    name: 'RFQ Announcements & Bidding',
     to: '/vendor/rfqs',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faBullhorn} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Quotes Requests',
+    to: '/vendor/quotes',
+    role_exclude: ['user', 'staff'],
+    icon: <FontAwesomeIcon icon={faBullhorn} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Order & Payment',
+    to: '/vendor/order-payment',
+    role_exclude: ['user', 'staff'],
+    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -104,13 +139,6 @@ const _nav = [
     to: '/vendor/shipments',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faShippingFast} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Order & Invoice',
-    to: '/vendor/order-payment',
-    role_exclude: ['user', 'staff'],
-    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -127,7 +155,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Logistics Dashboard',
-    to: '/logistics',
+    to: '/logistics/dashboard',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faTruckLoading} className="nav-icon" />,
   },
@@ -144,21 +172,21 @@ const _nav = [
     icon: <FontAwesomeIcon icon={faBoxes} className="nav-icon" />,
   },
   {
-    component: CNavItem,
-    name: 'Audit management',
-    to: '/Audit',
-    role_exclude: ['vendor', 'user', 'staff'],
-    icon: <FontAwesomeIcon icon={faReceipt} className="nav-icon" />,
-  },
-  {
     component: CNavTitle,
-    name: 'Settings',
+    name: 'ANALYTICS',
     role_exclude: ['vendor', 'user', 'staff'],
   },
   {
     component: CNavItem,
     name: 'Settings',
     to: '/settings',
+    role_exclude: ['vendor', 'user', 'staff'],
+    icon: <FontAwesomeIcon icon={faCog} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'General Settings',
+    to: '/settings/general',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faCog} className="nav-icon" />,
   },
