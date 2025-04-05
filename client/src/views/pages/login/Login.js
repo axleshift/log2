@@ -124,7 +124,7 @@ const Login = () => {
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
           >
-            <h2>VENDOR LOGIN PORTAL</h2>
+            <h2>VENDOR PORTAL</h2>
             <p>Logistic Management System</p>
             <Link to="/" className="text-white">
               Landing Page →

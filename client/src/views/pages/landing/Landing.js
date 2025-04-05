@@ -41,7 +41,7 @@ const Landing = () => {
   // Carousel images
   const images = [
     { src: '/image/Freight-Land.jpg', caption: 'Land Freight' },
-    { src: '/image/Freight-Air.png', caption: 'Air Freight' },
+    { src: '/image/Freight-Air.png' },
   ]
 
   return (
