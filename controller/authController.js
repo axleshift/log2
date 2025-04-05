@@ -51,7 +51,7 @@ export const verifyOtp = async (req, res, next) => {
 export const registerUser = async (req, res, next) => {
     const { email, username, password, role, vendorDetails } = req.body;
 
-    const validRoles = ["user", "admin", "super admin", "vendor", "buyer", "finance"];
+    const validRoles = ["staff", "admin", "super admin", "vendor"];
     const userRole = validRoles.includes(role) ? role : "user";
 
     try {

@@ -6,7 +6,7 @@ const connectedUsers = {};
 const initializeSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: ["https://log2.axleshift.com", "http://localhost:3000"],
+            origin: ["https://log2.axleshift.com", "https://backend-log2.axleshift.com"],
             methods: ["GET", "POST"],
             credentials: true,
         },
