@@ -1,1 +1,0 @@
-import{r as o,_ as p,a as i,b as n,c as m,P as r}from"./index-DCoqRajk.js";var a=o.forwardRef(function(s,e){var c=s.children,d=s.className,l=p(s,["children","className"]);return i("div",{...n({className:m("card-group",d)},l,{ref:e}),children:c})});a.propTypes={children:r.node,className:r.string};a.displayName="CCardGroup";export{a as C};
