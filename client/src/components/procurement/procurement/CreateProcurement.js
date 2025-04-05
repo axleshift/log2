@@ -375,6 +375,7 @@ const CreateProcurement = () => {
                     >
                       View
                     </CButton>{' '}
+                    {/** 
                     <CButton
                       color="danger"
                       size="sm"
@@ -385,6 +386,7 @@ const CreateProcurement = () => {
                     >
                       Delete
                     </CButton>{' '}
+                    */}
                     {proc.status === 'Approved' && (
                       <>
                         <CButton
@@ -410,7 +412,7 @@ const CreateProcurement = () => {
           </CTable>
         </CCardBody>
       </CCard>
-
+      {/** 
       <CModal visible={deleteModal} onClose={() => setDeleteModal(false)}>
         <CModalHeader>Confirm Deletion</CModalHeader>
         <CModalBody>Are you sure you want to delete this procurement request?</CModalBody>
@@ -418,12 +420,13 @@ const CreateProcurement = () => {
           <CButton color="secondary" onClick={() => setDeleteModal(false)}>
             Cancel
           </CButton>
-          <CButton color="danger" onClick={handleDelete}>
+        <CButton color="danger" onClick={handleDelete}>
             Delete
           </CButton>
+          
         </CModalFooter>
       </CModal>
-
+ */}
       <CToaster placement="top-end">
         {toasts.map((toast) => (
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
