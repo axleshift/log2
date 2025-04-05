@@ -155,7 +155,9 @@ function Register() {
                         <CInputGroupText>Role</CInputGroupText>
                         <CFormSelect {...register('role')}>
                           <option value="super admin">Super Admin</option>
+                          <option value="admin">Admin</option>
                           <option value="vendor">Vendor</option>
+                          <option value="Staff">Staff</option>
                         </CFormSelect>
                       </CInputGroup>
 
