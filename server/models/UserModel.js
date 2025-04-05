@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true, match: /.+\@.+\..+/ },
         username: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        role: { type: String, enum: ["admin", "super admin", "user", "vendor", "buyer", "finance"], required: true },
+        role: { type: String, enum: ["admin", "super admin", "staff", "vendor"], required: true },
         status: { type: String, enum: ["Pending", "Approved", "Rejected", "Active"], default: "Active" }, // Ensure "Active" is a valid option
         resetPasswordOtp: { type: String },
         resetPasswordOtpExpires: { type: Date },

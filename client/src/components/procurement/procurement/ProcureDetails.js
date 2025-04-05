@@ -47,14 +47,6 @@ const ProcurementDetails = () => {
     fetchProcurement()
   }, [id])
 
-  const handleCreateRFQ = () => {
-    navigate(`/rfq/create/${procurement._id}`)
-  }
-
-  const handleCreatePO = () => {
-    navigate(`/po/create/${procurement._id}`)
-  }
-
   if (loading) return <CSpinner color="primary" />
   if (error) return <div>{error}</div>
   if (!procurement) return <div>No Procurement found.</div>
@@ -123,7 +115,7 @@ const ProcurementDetails = () => {
                   <CTableDataCell>{product.name}</CTableDataCell>
                   <CTableDataCell>{product.quantity}</CTableDataCell>
                   <CTableDataCell>{product.unit}</CTableDataCell>
-                  <CTableDataCell>${product.unitPrice?.toFixed(2) || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{product.unitPrice?.toFixed(2) || 'N/A'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (

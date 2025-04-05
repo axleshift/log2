@@ -106,6 +106,7 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
           <CFormInput
             name="length"
             label="Length (cm)"
+            type="number"
             value={formData.length || ''}
             onChange={handleChange}
           />
@@ -114,6 +115,7 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
           <CFormInput
             name="width"
             label="Width (cm)"
+            type="number"
             value={formData.width || ''}
             onChange={handleChange}
           />
@@ -121,6 +123,7 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
         <CCol md={3}>
           <CFormInput
             name="height"
+            type="number"
             label="Height (cm)"
             value={formData.height || ''}
             onChange={handleChange}
@@ -129,6 +132,7 @@ function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, l
         <CCol md={3}>
           <CFormInput
             name="weight"
+            type="number"
             label="Weight (kg)"
             value={formData.weight || ''}
             onChange={handleChange}

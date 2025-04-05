@@ -62,7 +62,7 @@ const DeliveryTracking = () => {
   return (
     <CCard className="shadow-sm">
       <CCardHeader className="bg-primary text-white">
-        <h5 className="mb-0">📦 Delivery Tracking</h5>
+        <h5 className="mb-0">📦 Delivery Tracking </h5>
       </CCardHeader>
       <CCardBody>
         <CRow className="mb-3">

@@ -1,42 +1,30 @@
 import React, { useState, useEffect } from 'react'
-import {
-  CContainer,
-  CRow,
-  CCol,
-  CSpinner,
-  CTable,
-  CTableBody,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableDataCell,
-} from '@coreui/react'
+import { CContainer, CRow, CCol, CSpinner, CWidgetStatsA } from '@coreui/react'
 import axios from 'axios'
-import { CWidgetStatsA } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
-import WidgetComponent from '../widgets/WidgetComponent'
 import UserDashboard from './UserDashboard'
 import MainChart from './MainChart'
 
 const Dashboard = () => {
-  const [warehouse, setWarehouse] = useState([])
+  const [purchaseOrders, setPurchaseOrders] = useState([])
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const WAREHOUSE_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/warehouse`
-  const INVENTORY_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/inventory`
+  const BASE_URL = import.meta.env.VITE_API_URL
+  const PO_API_URL = `${BASE_URL}/api/v1/purchaseOrder`
+  const INVENTORY_API_URL = `${BASE_URL}/api/v1/inventory`
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [warehouses, inventoryData] = await Promise.all([
-          axios.get(WAREHOUSE_API_URL),
+        const [purchaseOrdersData, inventoryData] = await Promise.all([
+          axios.get(PO_API_URL),
           axios.get(INVENTORY_API_URL),
         ])
-        setWarehouse(warehouses.data)
+        setPurchaseOrders(purchaseOrdersData.data)
         setInventory(inventoryData.data)
       } catch (err) {
         setError('Failed to load data. Please try again later.')
@@ -45,7 +33,7 @@ const Dashboard = () => {
       }
     }
     fetchData()
-  }, [WAREHOUSE_API_URL, INVENTORY_API_URL])
+  }, [PO_API_URL, INVENTORY_API_URL])
 
   if (loading) {
     return (
@@ -71,16 +59,16 @@ const Dashboard = () => {
     <CContainer fluid className="px-5 py-4">
       <h1 className="mb-4">Dashboard</h1>
 
-      {/* Warehouses and Inventory Widgets */}
+      {/* Purchase Orders and Inventory Widgets */}
       <CRow>
         <CCol sm="12" md="6" lg="4">
           <CWidgetStatsA
             className="mb-4"
             color="primary"
-            value={warehouse.length}
-            title="Warehouses"
-            icon={<i className="cil-building" />}
-            onClick={() => navigate('/warehouse')}
+            value={purchaseOrders.length}
+            title="Purchase Orders"
+            icon={<i className="cil-list-numbered" />}
+            onClick={() => navigate('/procurement/po-payments')}
             style={{ cursor: 'pointer', padding: '3rem' }}
           />
         </CCol>
@@ -99,11 +87,10 @@ const Dashboard = () => {
 
       {/* Other Widgets */}
       <CRow className="mt-4">
-        <CCol xs={12}>
-          <WidgetComponent />
-        </CCol>
+        <CCol xs={12}></CCol>
       </CRow>
       <MainChart />
+
       {/* User Dashboard Table */}
       <CRow className="mt-5">
         <CCol xs={12}>

@@ -17,7 +17,7 @@ const RecentAwardNotices = () => {
   useEffect(() => {
     const fetchAwardNotices = async () => {
       try {
-        const res = await fetch('http://localhost:5058/api/v1/awards') // or update to correct route
+        const res = await fetch('https://backend-log2.axleshift.com/api/v1/awards') // or update to correct route
         const data = await res.json()
         setAwardNotices(data)
       } catch (err) {

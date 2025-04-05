@@ -5,6 +5,9 @@ import VendorQuotes from './views/pages/Quotes/Quotes.js'
 import ShipmentsList from './views/pages/shipment/ShipmentList.js'
 import CreateAnnouncement from './views/pages/Announcement/announcement.js'
 import CreateNotification from './views/pages/Notification/Notification.js'
+import BudgetRequestPage from './views/pages/budgetRequest/budgetRequest.js'
+import InvoicePage from './views/invoice/invoice.js'
+import ChatbotCard from './views/pages/chatbot/chatbot.js'
 
 const Dashboard = lazy(() => import('./views/dashboard/Dashboard'))
 const Alerts = lazy(() => import('./views/pages/Alerts/Alerts.js'))
@@ -36,7 +39,7 @@ const RFQDetails = lazy(() => import('./components/procurement/procurement/RFQDe
 const PurchaseManagement = lazy(() => import('./views/pages/Procurement/PurchaseManagement.js'))
 const ShipmentsAndTracking = lazy(() => import('./views/pages/Procurement/Shipments.js'))
 const CreateRFQ = lazy(() => import('./components/procurement/procurement/CreateRFQ.js'))
-const CreatePO = lazy(() => import('./components/procurement/procurement/CreatePO.js'))
+//const CreatePO = lazy(() => import('./components/procurement/procurement/CreatePO.js'))
 const ApprovalList = lazy(() => import('./views/pages/Procurement/ApprovalList.js'))
 const SubmittedQuotesPage = lazy(() => import('./views/pages/Procurement/SubmitQuote.js'))
 
@@ -64,22 +67,25 @@ const routes = [
   // PROCUREMENT PATH SECTION -_-
   { path: '/procurement/rfq-management', name: 'RFQManagement', element: RFQManagement },
   { path: '/procurement/product-catalog', name: 'Product', element: product },
+  { path: '/budget/request', name: 'Announcement', element: BudgetRequestPage },
   { path: '/procurement/product/:id', name: 'Product Details', element: ProductDetails },
   { path: '/procurement/product/new', name: 'Product Creation', element: ProductCreation },
-  { path: '/procurement/procurement', name: 'ProcurementPage', element: ProcurementPage },
+  { path: '/procurement', name: 'ProcurementPage', element: ProcurementPage },
   { path: '/procurement/:id', name: 'ProcurementDetails', element: ProcurementDetails },
   { path: '/procurement/rfq/:id', name: 'RFQDetails', element: RFQDetails },
   { path: '/procurement/vendors', name: 'Vendor Management', element: VendorManagement },
   { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
   { path: '/procurement/shipments', name: 'Shipments Tracking', element: ShipmentsAndTracking },
   { path: '/rfq/create/:id', name: 'RFQ', element: CreateRFQ },
-  { path: '/po/create/:id', name: 'PO', element: CreatePO },
+  //{ path: '/po/create/:id', name: 'PO', element: CreatePO },
   { path: '/admin/approval', name: ' Approval Page', element: ApprovalList },
   { path: '/procurement/submit-quote', name: 'Submit Quote Page', element: SubmittedQuotesPage },
 
   // VENDOR RELATED PATH SECTION :P
   { path: '/vendor/rfqs', name: 'Vendor RFQ List', element: VendorRFQList },
   { path: '/vendor/quotes', name: 'Quotes Request', element: VendorQuotes },
+  { path: '/vendor/invoice', name: 'Invoice', element: InvoicePage },
+  { path: '/vendor/communication', name: 'Communcation', element: ChatbotCard },
   { path: '/vendor/shipments', name: 'Shipment and Delivery', element: ShipmentsList },
   { path: '/vendor/rfqs/:id', name: 'Vendor RFQ Details', element: VendorRFQDetails },
 ]

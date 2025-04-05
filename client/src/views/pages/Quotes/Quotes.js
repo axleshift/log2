@@ -19,6 +19,10 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
 
@@ -31,6 +35,7 @@ const VendorQuotes = () => {
   const [form, setForm] = useState({ vendorName: '', price: '', details: '', status: 'Pending' })
   const [loading, setLoading] = useState(false)
   const [toasts, setToasts] = useState([])
+  const [modalVisible, setModalVisible] = useState(false)
 
   const showToast = (message, color = 'success') => {
     setToasts((prev) => [...prev, { id: Date.now(), message, color }])
@@ -68,6 +73,7 @@ const VendorQuotes = () => {
         },
       })
       setForm({ vendorName: '', price: '', details: '', status: 'Pending' })
+      setModalVisible(false)
       fetchQuotes()
       showToast('Vendor quote created!')
     } catch (err) {
@@ -79,51 +85,68 @@ const VendorQuotes = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <CRow className="mb-3">
-          <CCol md={4}>
-            <CFormLabel>Vendor Name</CFormLabel>
-            <CFormInput
-              name="vendorName"
-              value={form.vendorName}
-              onChange={handleChange}
-              required
-            />
-          </CCol>
-          <CCol md={4}>
-            <CFormLabel>Price</CFormLabel>
-            <CFormInput
-              name="price"
-              type="number"
-              value={form.price}
-              onChange={handleChange}
-              required
-            />
-          </CCol>
-          <CCol md={4}>
-            <CFormLabel>Status</CFormLabel>
-            <CFormSelect name="status" value={form.status} onChange={handleChange}>
-              <option value="Pending">Pending</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Rejected">Rejected</option>
-            </CFormSelect>
-          </CCol>
-        </CRow>
-        <CRow className="mb-3">
-          <CCol>
-            <CFormLabel>Details</CFormLabel>
-            <CFormTextarea name="details" value={form.details} onChange={handleChange} />
-          </CCol>
-        </CRow>
-        <CRow className="text-center">
-          <CCol>
-            <CButton color="primary" type="submit" disabled={loading}>
-              {loading ? <CSpinner size="sm" /> : 'Submit Quote'}
-            </CButton>
-          </CCol>
-        </CRow>
-      </form>
+      {/* Button to open modal */}
+      <CButton color="primary" onClick={() => setModalVisible(true)} className="mb-3">
+        + Create Quote
+      </CButton>
 
+      {/* Modal for quote creation */}
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+        <CModalHeader>Create Vendor Quote</CModalHeader>
+        <CModalBody>
+          <form onSubmit={handleSubmit}>
+            <CRow className="mb-3">
+              <CCol md={4}>
+                <CFormLabel>Vendor Name</CFormLabel>
+                <CFormInput
+                  name="vendorName"
+                  value={form.vendorName}
+                  onChange={handleChange}
+                  required
+                />
+              </CCol>
+              <CCol md={4}>
+                <CFormLabel>Price</CFormLabel>
+                <CFormInput
+                  name="price"
+                  type="number"
+                  value={form.price}
+                  onChange={handleChange}
+                  required
+                />
+              </CCol>
+              <CCol md={4}>
+                <CFormLabel>Status</CFormLabel>
+                <CFormSelect name="status" value={form.status} onChange={handleChange}>
+                  <option value="Pending">Pending</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                </CFormSelect>
+              </CCol>
+            </CRow>
+            <CRow className="mb-3">
+              <CCol>
+                <CFormLabel>Details</CFormLabel>
+                <CFormTextarea name="details" value={form.details} onChange={handleChange} />
+              </CCol>
+            </CRow>
+            <CRow className="text-center">
+              <CCol>
+                <CButton color="primary" type="submit" disabled={loading}>
+                  {loading ? <CSpinner size="sm" /> : 'Submit Quote'}
+                </CButton>
+              </CCol>
+            </CRow>
+          </form>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+            Cancel
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* Vendor Quote Table */}
       <CTable striped>
         <CTableHead>
           <CTableRow>
@@ -145,6 +168,7 @@ const VendorQuotes = () => {
         </CTableBody>
       </CTable>
 
+      {/* Toasts */}
       <CToaster placement="top-end">
         {toasts.map((toast) => (
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>

@@ -41,7 +41,6 @@ const Landing = () => {
   // Carousel images
   const images = [
     { src: '/image/Freight-Land.jpg', caption: 'Land Freight' },
-    { src: '/image/Freight-Sea.jpg', caption: 'Sea Freight' },
     { src: '/image/Freight-Air.png', caption: 'Air Freight' },
   ]
 
@@ -150,11 +149,13 @@ const Landing = () => {
                 Home
               </CNavLink>
             </CNavItem>
+            {/**  
             <CNavItem>
               <CNavLink active={activeTab === 2} onClick={() => setActiveTab(2)}>
                 Opportunities
               </CNavLink>
             </CNavItem>
+            */}
             <CNavItem>
               <CDropdown>
                 <CDropdownToggle caret>Award Notice</CDropdownToggle>
@@ -165,17 +166,20 @@ const Landing = () => {
                   <CDropdownItem active={activeTab === 5} onClick={() => setActiveTab(5)}>
                     Notice of Award
                   </CDropdownItem>
-                  <CDropdownItem active={activeTab === 6} onClick={() => setActiveTab(6)}>
+                  {/**<CDropdownItem active={activeTab === 6} onClick={() => setActiveTab(6)}>
                     Notice To Proceed
                   </CDropdownItem>
+                  */}
                 </CDropdownMenu>
               </CDropdown>
             </CNavItem>
+            {/**
             <CNavItem>
               <CNavLink active={activeTab === 4} onClick={() => setActiveTab(4)}>
                 Bid Document Uploader
               </CNavLink>
             </CNavItem>
+             */}
           </CNav>
           <CTabContent>
             <CTabPane visible={activeTab === 1}>

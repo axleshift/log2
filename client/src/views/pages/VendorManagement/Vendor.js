@@ -25,10 +25,13 @@ const VendorRFQs = () => {
   useEffect(() => {
     const fetchVendorRFQs = async () => {
       try {
-        const response = await apiService.get('/api/v1/rfq/vendor/rfqs', null, {
+        const response = await apiService.get('/api/v1/rfq/vendor/my-rfqs', null, {
           Authorization: `Bearer ${accessToken}`,
         })
-        setRfqs(response.data)
+
+        setRfqs(response.data.rfqs || [])
+
+        console.log('Fetched RFQs:', response.data.rfqs)
       } catch (err) {
         console.error('Failed to fetch RFQs:', err)
         setError(err.response?.data?.message || 'Failed to load RFQs.')

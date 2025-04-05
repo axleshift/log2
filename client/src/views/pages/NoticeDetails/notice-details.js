@@ -21,7 +21,7 @@ const NoticeDetails = () => {
   useEffect(() => {
     const fetchNotice = async () => {
       try {
-        const res = await fetch(`http://localhost:5058/api/v1/awards/${id}`)
+        const res = await fetch(`https://backend-log2.axleshift.com/api/v1/awards/${id}`)
         const data = await res.json()
         setNotice(data)
       } catch (err) {

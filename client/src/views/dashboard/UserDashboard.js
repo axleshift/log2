@@ -82,7 +82,7 @@ const UserDashboard = () => {
             <CTableHeaderCell scope="col">Email</CTableHeaderCell>
             <CTableHeaderCell scope="col">Role</CTableHeaderCell>
             <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-            <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
+            {/** <CTableHeaderCell scope="col">Actions</CTableHeaderCell> */}
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -100,6 +100,7 @@ const UserDashboard = () => {
                     {user.status}
                   </span>
                 </CTableDataCell>
+                {/***
                 <CTableDataCell>
                   <CButton color="info" size="sm" className="me-2">
                     View
@@ -110,7 +111,9 @@ const UserDashboard = () => {
                   <CButton color="danger" size="sm">
                     Delete
                   </CButton>
+
                 </CTableDataCell>
+               */}
               </CTableRow>
             ))
           ) : (

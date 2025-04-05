@@ -31,7 +31,7 @@ const API_BASE = import.meta.env.VITE_API_URL
 const INVENTORY_API_URL = `${API_BASE}/api/v1/inventory`
 const SHIPMENT_API_URL = `${API_BASE}/api/v1/shipment`
 const PRODUCT_API_URL = `${API_BASE}/api/v1/product`
-const WAREHOUSE_API_URL = `${API_BASE}/api/v1/warehouse`
+const WAREHOUSE_API_URL = `https://backend-log1.axleshift.com/api/v1/warehouseLoc/locations`
 
 const Inventory = () => {
   const { accessToken } = useAuth()
@@ -102,11 +102,16 @@ const Inventory = () => {
   const fetchWarehouses = async () => {
     try {
       const res = await axios.get(WAREHOUSE_API_URL, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key':
+            '0ad3f5c013c42d2d0537672a260978c71dcd5a7d508019d748f991deee3d65665a477e3523c6bbc83fd6a51a71dd5003',
+        },
       })
-      setWarehouses(res.data || [])
+      // Accessing the "data" array from the response
+      setWarehouses(res.data?.data || [])
     } catch (error) {
-      console.error('Failed to fetch warehouses')
+      console.error('Failed to fetch warehouses', error)
     }
   }
 
@@ -313,7 +318,8 @@ const Inventory = () => {
                 {Array.isArray(warehouses) &&
                   warehouses.map((w) => (
                     <option key={w._id} value={w._id}>
-                      {w.location || 'Unnamed Warehouse'}
+                      {w.warehouseName} - {w.address}{' '}
+                      {/* You can display the warehouse name and address */}
                     </option>
                   ))}
               </CFormSelect>

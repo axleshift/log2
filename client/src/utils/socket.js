@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:5058', {
+const socket = io('https://backend-log2.axleshift.com', {
   withCredentials: true,
 })
 

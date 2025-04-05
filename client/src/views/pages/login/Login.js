@@ -93,12 +93,9 @@ const Login = () => {
 
       if (user.role === 'admin' || user.role === 'super admin') {
         navigate('/dashboard')
-      } else if (
-        user.role === 'staff' ||
-        user.role === 'buyer' ||
-        user.role === 'staff' ||
-        user.role === 'user'
-      ) {
+      } else if (user.role === 'staff') {
+        navigate('/procurement')
+      } else if (user.role === 'vendor') {
         navigate('/inventory')
       } else {
         setNotification({
@@ -127,11 +124,8 @@ const Login = () => {
             md={4}
             className="d-flex flex-column align-items-center justify-content-center bg-primary text-white"
           >
-            <h2>LOGIN PORTAL</h2>
+            <h2>VENDOR LOGIN PORTAL</h2>
             <p>Logistic Management System</p>
-            <Link to="/VendorLogin" className="text-white">
-              Vendor Portal →
-            </Link>
             <Link to="/" className="text-white">
               Landing Page →
             </Link>

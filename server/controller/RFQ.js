@@ -136,17 +136,10 @@ export const getRFQDetails = async (req, res) => {
     }
 };
 
-// GET VENDOR RFQ
 export const getVendorRFQs = async (req, res) => {
     try {
-        const vendor = await Vendor.findOne({ userId: req.user.id });
-
-        if (!vendor) {
-            return res.status(404).json({ error: "Vendor not found." });
-        }
-
-        // Fetch RFQs where the vendor is invited and populate procurement details
-        const rfqs = await RFQ.find({ vendors: vendor._id })
+        // Fetch all RFQs and populate procurement and vendor details
+        const rfqs = await RFQ.find()
             .populate({
                 path: "procurementId",
                 select: "title description requestedBy procurementDate deliveryDate status",
@@ -158,7 +151,7 @@ export const getVendorRFQs = async (req, res) => {
 
         res.json(rfqs);
     } catch (error) {
-        console.error("Error fetching vendor RFQs:", error);
+        console.error("Error fetching RFQs:", error);
         res.status(500).json({ error: "Internal server error." });
     }
 };
@@ -166,14 +159,15 @@ export const getVendorRFQs = async (req, res) => {
 // GET VENDOR RFQ DETAILS BY ID
 export const getVendorRFQsByID = async (req, res) => {
     try {
+        // Get vendor based on authenticated user
         const vendor = await Vendor.findOne({ userId: req.user.id });
 
         if (!vendor) {
             return res.status(404).json({ error: "Vendor not found." });
         }
 
-        // Find the RFQ that matches the requested ID and check if the vendor is invited
-        const rfq = await RFQ.findOne({ _id: req.params.id, vendors: vendor._id })
+        // Find all RFQs where this vendor was invited
+        const rfqs = await RFQ.find({ vendors: vendor._id })
             .populate({
                 path: "procurementId",
                 populate: {
@@ -187,13 +181,9 @@ export const getVendorRFQsByID = async (req, res) => {
                 select: "username email",
             });
 
-        if (!rfq) {
-            return res.status(404).json({ error: "RFQ not found or you are not authorized to view it." });
-        }
-
-        res.json(rfq);
+        res.status(200).json({ message: "RFQs fetched for vendor", rfqs });
     } catch (error) {
-        console.error("Error fetching RFQ details for vendor:", error);
+        console.error("Error fetching vendor RFQs:", error);
         res.status(500).json({ error: "Internal server error." });
     }
 };

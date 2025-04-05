@@ -34,10 +34,12 @@ const ShipmentsList = () => {
       const res = await axios.get(SHIPMENT_API_URL, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-      setShipments(res.data)
-      setFilteredShipments(res.data)
+
+      const fetched = res.data?.shipments || []
+      setShipments(fetched)
+      setFilteredShipments(fetched)
     } catch (err) {
-      console.error('Failed to fetch shipments')
+      console.error('Failed to fetch shipments', err)
     }
   }
 
@@ -47,19 +49,23 @@ const ShipmentsList = () => {
 
   const handleFilterChange = (value) => {
     setFilter(value)
-    setFilteredShipments(value === 'All' ? shipments : shipments.filter((s) => s.status === value))
+    if (value === 'All') {
+      setFilteredShipments(shipments)
+    } else {
+      setFilteredShipments(shipments.filter((s) => s.status === value))
+    }
   }
 
   const handleSearchChange = (e) => {
-    setSearch(e.target.value)
-    setFilteredShipments(
-      shipments.filter((s) => s.vendorName.toLowerCase().includes(e.target.value.toLowerCase())),
-    )
+    const keyword = e.target.value.toLowerCase()
+    setSearch(keyword)
+    setFilteredShipments(shipments.filter((s) => s.vendorName?.toLowerCase().includes(keyword)))
   }
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="mb-4 fw-bold">Shipment Records</h1>
+
       <div className="d-flex justify-content-between mb-3">
         <CFormSelect value={filter} onChange={(e) => handleFilterChange(e.target.value)}>
           <option value="All">All</option>
@@ -67,37 +73,49 @@ const ShipmentsList = () => {
           <option value="In Transit">In Transit</option>
           <option value="Delivered">Delivered</option>
         </CFormSelect>
+
         <CFormInput placeholder="Search Vendor" value={search} onChange={handleSearchChange} />
       </div>
 
       <CTable striped hover responsive>
         <CTableHead>
           <CTableRow>
+            <CTableHeaderCell>#</CTableHeaderCell>
             <CTableHeaderCell>Vendor Name</CTableHeaderCell>
-            <CTableHeaderCell>Tracking Number</CTableHeaderCell>
+            <CTableHeaderCell>Tracking ID</CTableHeaderCell>
             <CTableHeaderCell>Status</CTableHeaderCell>
             <CTableHeaderCell>Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {filteredShipments.map((shipment) => (
-            <CTableRow key={shipment._id}>
-              <CTableDataCell>{shipment.vendorName}</CTableDataCell>
-              <CTableDataCell>{shipment.trackingNumber}</CTableDataCell>
-              <CTableDataCell>{shipment.status}</CTableDataCell>
-              <CTableDataCell>
-                <CButton
-                  color="info"
-                  onClick={() => {
-                    setSelectedShipment(shipment)
-                    setModalVisible(true)
-                  }}
-                >
-                  View
-                </CButton>
+          {Array.isArray(filteredShipments) && filteredShipments.length > 0 ? (
+            filteredShipments.map((shipment, index) => (
+              <CTableRow key={shipment._id}>
+                <CTableDataCell>{index + 1}</CTableDataCell>
+                <CTableDataCell>{shipment.vendorName || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{shipment.tracking_id || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{shipment.status || 'Unknown'}</CTableDataCell>
+                <CTableDataCell>
+                  <CButton
+                    color="info"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedShipment(shipment)
+                      setModalVisible(true)
+                    }}
+                  >
+                    View
+                  </CButton>
+                </CTableDataCell>
+              </CTableRow>
+            ))
+          ) : (
+            <CTableRow>
+              <CTableDataCell colSpan={5} className="text-center text-muted">
+                No shipments found.
               </CTableDataCell>
             </CTableRow>
-          ))}
+          )}
         </CTableBody>
       </CTable>
 
@@ -107,13 +125,13 @@ const ShipmentsList = () => {
           {selectedShipment && (
             <>
               <p>
-                <strong>Vendor:</strong> {selectedShipment.vendorName}
+                <strong>Vendor:</strong> {selectedShipment.vendorName || 'N/A'}
               </p>
               <p>
-                <strong>Tracking Number:</strong> {selectedShipment.trackingNumber}
+                <strong>Tracking ID:</strong> {selectedShipment.tracking_id || 'N/A'}
               </p>
               <p>
-                <strong>Status:</strong> {selectedShipment.status}
+                <strong>Status:</strong> {selectedShipment.status || 'Unknown'}
               </p>
               <p>
                 <strong>Details:</strong> {selectedShipment.details || 'N/A'}
