@@ -41,6 +41,20 @@ const PurchaseOrderPage = () => {
   const [vendors, setVendors] = useState([])
   const [productsCatalog, setProductsCatalog] = useState([])
   const [warehouses, setWarehouses] = useState([])
+  const [lastId, setLastId] = useState('PO-123456')
+  const [currentId, setCurrentId] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+
+  const generateNextId = () => {
+    const [prefix, number] = lastId.split('-')
+    const numericPart = parseInt(number.replace(/^0+/, '')) || 0
+    const nextNumber = String(numericPart + 1).padStart(6, '0') // pad to 5 digits
+    const newId = `${prefix}-${nextNumber}`
+    setLastId(newId)
+    setCurrentId(newId)
+    return newId
+  }
 
   const [poData, setPoData] = useState({
     procurementId: '',
@@ -85,6 +99,15 @@ const PurchaseOrderPage = () => {
       setVendors(vendorRes.data)
       setProductsCatalog(prodRes.data)
       setWarehouses(warehouseRes.data)
+
+      const poNumbers = poRes.data
+        .map((po) => po.poNumber)
+        .filter(Boolean)
+        .sort()
+      const latestPo = poNumbers[poNumbers.length - 1]
+      if (latestPo) {
+        setLastId(latestPo)
+      }
     } catch (err) {
       console.error('Failed to fetch data:', err)
     }
@@ -179,8 +202,26 @@ const PurchaseOrderPage = () => {
   }, [])
 
   const openModal = () => {
+    const nextId = generateNextId()
+    setPoData((prev) => ({
+      ...prev,
+      poNumber: nextId,
+    }))
     setModalVisible(true)
   }
+
+  const handlePageChange = (direction) => {
+    const totalPages = Math.ceil(purchaseOrders.length / itemsPerPage)
+    if (direction === 'next' && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    } else if (direction === 'prev' && currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedOrders = purchaseOrders.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(purchaseOrders.length / itemsPerPage)
 
   return (
     <>
@@ -203,9 +244,9 @@ const PurchaseOrderPage = () => {
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {purchaseOrders.map((po, index) => (
+          {paginatedOrders.map((po, index) => (
             <CTableRow key={po._id}>
-              <CTableDataCell>{index + 1}</CTableDataCell>
+              <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
               <CTableDataCell>{po.poNumber || '—'}</CTableDataCell>
               <CTableDataCell>{po.vendor?.businessName || '—'}</CTableDataCell>
               <CTableDataCell>{po.procurementId?.title || '—'}</CTableDataCell>
@@ -221,6 +262,31 @@ const PurchaseOrderPage = () => {
           ))}
         </CTableBody>
       </CTable>
+
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <div>
+          <CButton
+            color="secondary"
+            className="me-2"
+            size="sm"
+            onClick={() => handlePageChange('prev')}
+            disabled={currentPage === 1}
+          >
+            ← Prev
+          </CButton>
+          <CButton
+            color="secondary"
+            size="sm"
+            onClick={() => handlePageChange('next')}
+            disabled={currentPage >= totalPages}
+          >
+            Next →
+          </CButton>
+        </div>
+      </div>
 
       {/* Modal */}
       <CModal

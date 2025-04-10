@@ -33,7 +33,25 @@ const ShipmentManagerPage = () => {
 
   const [modalVisible, setModalVisible] = useState(false)
   const [editMode, setEditMode] = useState(false)
+  const [lastId, setLastId] = useState('TR-123456') // starting Id
   const [currentId, setCurrentId] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+
+  const generateNextId = () => {
+    const [prefix, number] = lastId.split('-')
+    let nextNumber = String(parseInt(number) + 1).padStart(5, '0')
+    let newId = `${prefix}-${nextNumber}`
+
+    while (shipments.some((shipment) => shipment.tracking_id === newId)) {
+      nextNumber = String(parseInt(nextNumber) + 1).padStart(5, '0')
+      newId = `${prefix}-${nextNumber}`
+    }
+
+    setLastId(newId)
+    setCurrentId(newId)
+    return newId
+  }
 
   const [formData, setFormData] = useState({
     tracking_id: '',
@@ -210,6 +228,19 @@ const ShipmentManagerPage = () => {
     }
   }
 
+  const handlePageChange = (direction) => {
+    const totalPages = Math.ceil(shipments.length / itemsPerPage)
+    if (direction === 'next' && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    } else if (direction === 'prev' && currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedShipments = shipments.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(shipments.length / itemsPerPage)
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -219,7 +250,9 @@ const ShipmentManagerPage = () => {
           onClick={() => {
             setEditMode(false)
             setCurrentId(null)
+            const newTrackingId = generateNextId()
             resetForm()
+            setFormData((prev) => ({ ...prev, tracking_id: newTrackingId }))
             setModalVisible(true)
           }}
         >
@@ -433,9 +466,9 @@ const ShipmentManagerPage = () => {
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {shipments.map((shipment, index) => (
+          {paginatedShipments.map((shipment, index) => (
             <CTableRow key={shipment._id}>
-              <CTableDataCell>{index + 1}</CTableDataCell>
+              <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
               <CTableDataCell>{shipment.tracking_id}</CTableDataCell>
               <CTableDataCell>{shipment.shipper?.shipper_company_name}</CTableDataCell>
               <CTableDataCell>{shipment.consignee?.consignee_company_name}</CTableDataCell>
@@ -461,6 +494,31 @@ const ShipmentManagerPage = () => {
           ))}
         </CTableBody>
       </CTable>
+
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <div>
+          <CButton
+            color="secondary"
+            className="me-2"
+            size="sm"
+            onClick={() => handlePageChange('prev')}
+            disabled={currentPage === 1}
+          >
+            ← Prev
+          </CButton>
+          <CButton
+            color="secondary"
+            size="sm"
+            onClick={() => handlePageChange('next')}
+            disabled={currentPage >= totalPages}
+          >
+            Next →
+          </CButton>
+        </div>
+      </div>
 
       <CToaster position="top-end">
         {toast.visible && (

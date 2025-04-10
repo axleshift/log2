@@ -113,7 +113,7 @@ function ProductCatalog() {
         </CCol>
         <CCol md={4}>
           <label>
-            Price Range: ${priceRange[0]} - ${priceRange[1]}
+            Price Range: {priceRange[0]} - {priceRange[1]}
           </label>
           <input
             type="range"
@@ -156,7 +156,7 @@ function ProductCatalog() {
                       <strong>Category:</strong> {product.category || 'Uncategorized'}
                     </p>
                     <p>
-                      <strong>Price:</strong> ${parseFloat(product.price || 0).toFixed(2)}
+                      <strong>Price:</strong> {parseFloat(product.price || 0).toFixed(2)}
                     </p>
                     <p>
                       <strong>Stock:</strong> {product.stockQuantity ?? 'N/A'}

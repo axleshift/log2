@@ -80,7 +80,7 @@ function ProductDetails() {
                   <strong>Category:</strong> {product?.category ?? 'Uncategorized'}
                 </p>
                 <p>
-                  <strong>Price:</strong> $
+                  <strong>Price: </strong>
                   {product?.price ? Number(product.price).toFixed(2) : '0.00'}
                 </p>
                 <p>
