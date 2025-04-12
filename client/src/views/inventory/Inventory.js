@@ -46,6 +46,7 @@ const Inventory = () => {
   const [message, setMessage] = useState('')
   const [deleteConfirmation, setDeleteConfirmation] = useState(false)
   const [createModalVisible, setCreateModalVisible] = useState(false)
+
   const [newItem, setNewItem] = useState({
     shipment: '',
     warehouse_id: '',
@@ -212,7 +213,20 @@ const Inventory = () => {
           </CInputGroup>
 
           <div className="d-flex gap-2">
-            <CButton color="success" onClick={() => setCreateModalVisible(true)}>
+            <CButton
+              color="success"
+              onClick={() => {
+                const timestamp = Date.now()
+                const uniqueId = `In-${timestamp}`
+                const autoSku = `${uniqueId}-SKU`
+
+                setNewItem((prev) => ({
+                  ...prev,
+                  sku: autoSku,
+                }))
+                setCreateModalVisible(true)
+              }}
+            >
               + New Item
             </CButton>
             <CButton color="danger" onClick={() => setDeleteConfirmation(true)}>
