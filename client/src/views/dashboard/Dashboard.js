@@ -35,6 +35,14 @@ const Dashboard = () => {
     fetchData()
   }, [PO_API_URL, INVENTORY_API_URL])
 
+  // Check if we are in a browser environment before using storage or related APIs
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Safe to use localStorage or other browser storage APIs
+      localStorage.setItem('dashboardLoaded', 'true')
+    }
+  }, [])
+
   if (loading) {
     return (
       <CContainer fluid>
@@ -85,17 +93,13 @@ const Dashboard = () => {
         </CCol>
       </CRow>
 
-      {/* Other Widgets */}
-      <CRow className="mt-4">
-        <CCol xs={12}></CCol>
-      </CRow>
-      <MainChart />
+      {/* Main Chart with both inventory and purchase orders */}
+      <MainChart inventory={inventory} purchaseOrders={purchaseOrders} />
 
-      {/* User Dashboard Table */}
+      {/* User Management Section */}
       <CRow className="mt-5">
         <CCol xs={12}>
           <h3>User Management</h3>
-
           <UserDashboard />
         </CCol>
       </CRow>

@@ -109,7 +109,6 @@ const Inventory = () => {
             '0ad3f5c013c42d2d0537672a260978c71dcd5a7d508019d748f991deee3d65665a477e3523c6bbc83fd6a51a71dd5003',
         },
       })
-      // Accessing the "data" array from the response
       setWarehouses(res.data?.data || [])
     } catch (error) {
       console.error('Failed to fetch warehouses', error)
@@ -364,7 +363,10 @@ const Inventory = () => {
                 required
               />
             </div>
-            <div className="mb-3">
+            <div
+              className="
+              mb-3"
+            >
               <CFormLabel>Status</CFormLabel>
               <CFormSelect
                 value={newItem.status}
@@ -372,7 +374,6 @@ const Inventory = () => {
               >
                 <option value="In Stock">In Stock</option>
                 <option value="Out of Stock">Out of Stock</option>
-                <option value="Pending">Pending</option>
               </CFormSelect>
             </div>
           </CModalBody>
@@ -386,13 +387,12 @@ const Inventory = () => {
           </CModalFooter>
         </CForm>
       </CModal>
-
       {/* Delete Confirmation Modal */}
       <CModal visible={deleteConfirmation} onClose={() => setDeleteConfirmation(false)}>
         <CModalHeader>
-          <CModalTitle>Confirm Delete</CModalTitle>
+          <CModalTitle>Confirm Deletion</CModalTitle>
         </CModalHeader>
-        <CModalBody>Are you sure you want to delete the selected item(s)?</CModalBody>
+        <CModalBody>Are you sure you want to delete selected inventory items?</CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setDeleteConfirmation(false)}>
             Cancel

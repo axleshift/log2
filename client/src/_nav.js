@@ -18,6 +18,8 @@ import {
   faBoxes,
   faCog,
   faUserCog,
+  faUser,
+  faAddressBook,
 } from '@fortawesome/free-solid-svg-icons'
 
 const _nav = [
@@ -115,6 +117,13 @@ const _nav = [
     icon: <FontAwesomeIcon icon={faChartBar} className="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Creat Vendor Profile',
+    to: '/vendor/CreateVendorProfile',
+    role_exclude: ['vendor', 'user'],
+    icon: <FontAwesomeIcon icon={faUser} className="nav-icon" />,
+  },
+  {
     component: CNavTitle,
     name: 'VENDOR MANAGEMENT',
     role_exclude: ['user', 'staff'],
@@ -153,6 +162,13 @@ const _nav = [
     to: '/vendor/communication',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faComments} className="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Vendor List',
+    to: '/Procurement/VendorList',
+    role_exclude: ['vendor'],
+    icon: <FontAwesomeIcon icon={faAddressBook} className="nav-icon" />,
   },
   // {
   //   component: CNavTitle,

@@ -24,6 +24,8 @@ import {
   CModalHeader,
   CModalBody,
   CModalFooter,
+  CFormInput,
+  CFormSelect,
 } from '@coreui/react'
 import ProcurementInput from './ProcurementInput'
 
@@ -45,83 +47,37 @@ const CreateProcurement = () => {
     estimatedCost: 0,
   })
 
-  // const [currency, setCurrency] = useState('PHP')
-  //  const currencyOptions = ['PHP', 'USD', 'EUR', 'GBP', 'JPY']
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
-
   const [modalVisible, setModalVisible] = useState(false)
-
   const [procurements, setProcurements] = useState([])
-  const [deleteModal, setDeleteModal] = useState(false)
-  const [deleteId, setDeleteId] = useState(null)
+  const [filters, setFilters] = useState({ title: '', department: '', status: '' })
 
-  // Fetch existing procurements
+  const fetchProcurements = async () => {
+    if (!accessToken) return
+
+    try {
+      const params = new URLSearchParams()
+      if (filters.title) params.append('title', filters.title)
+      if (filters.department) params.append('department', filters.department)
+      if (filters.status) params.append('status', filters.status)
+
+      const res = await axios.get(`${PROCUREMENT_API_URL}?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      setProcurements(res.data)
+    } catch (err) {
+      console.error('Error fetching procurements:', err)
+    }
+  }
+
   useEffect(() => {
-    const fetchProcurements = async () => {
-      if (!accessToken) return
-
-      try {
-        const res = await axios.get(PROCUREMENT_API_URL, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        setProcurements(res.data)
-      } catch (err) {
-        console.error('Error fetching procurements:', err)
-      }
-    }
-
     fetchProcurements()
-  }, [accessToken])
+  }, [accessToken, filters])
 
-  const handleChange = (e) => {
+  const handleFilterChange = (e) => {
     const { name, value } = e.target
-    setProcurementData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleProductChange = (index, e) => {
-    const { name, value } = e.target
-    const updatedProducts = [...procurementData.products]
-
-    updatedProducts[index] = {
-      ...updatedProducts[index],
-      [name]:
-        name === 'quantity' || name === 'unitPrice'
-          ? value === ''
-            ? ''
-            : parseFloat(value)
-          : value,
-    }
-
-    const estimatedCost = updatedProducts.reduce(
-      (total, product) => total + (product.unitPrice || 0) * (product.quantity || 0),
-      0,
-    )
-
-    setProcurementData((prev) => ({
-      ...prev,
-      products: updatedProducts,
-      estimatedCost: parseFloat(estimatedCost.toFixed(2)),
-    }))
-  }
-
-  const addProduct = () => {
-    setProcurementData((prev) => ({
-      ...prev,
-      products: [...prev.products, { name: '', quantity: 0, unit: '', unitPrice: 0 }],
-    }))
-  }
-
-  const removeProduct = (index) => {
-    const updatedProducts = procurementData.products.filter((_, i) => i !== index)
-    setProcurementData((prev) => ({
-      ...prev,
-      products: updatedProducts,
-      estimatedCost: updatedProducts.reduce(
-        (total, product) => total + (product.unitPrice * product.quantity || 0),
-        0,
-      ),
-    }))
+    setFilters((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
@@ -145,8 +101,7 @@ const CreateProcurement = () => {
       }
 
       const res = await axios.post(PROCUREMENT_API_URL, procurementPayload, { headers })
-
-      setProcurements((prev) => [...prev, res.data]) // Optimistically add to list
+      setProcurements((prev) => [...prev, res.data])
 
       setProcurementData({
         title: '',
@@ -168,20 +123,6 @@ const CreateProcurement = () => {
     }
   }
 
-  const handleDelete = async () => {
-    if (!deleteId || !accessToken) return
-
-    try {
-      await axios.delete(`${PROCUREMENT_API_URL}/${deleteId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      setProcurements((prev) => prev.filter((p) => p._id !== deleteId))
-      setDeleteModal(false)
-    } catch (err) {
-      console.error('Error deleting procurement:', err)
-    }
-  }
-
   const showToast = (message, color) => {
     setToasts((prev) => [...prev, { id: Date.now(), message, color }])
     setTimeout(() => setToasts((prev) => prev.slice(1)), 5000)
@@ -193,158 +134,37 @@ const CreateProcurement = () => {
         + Create Procurement
       </CButton>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg">
-        <CModalHeader>Create Procurement Request</CModalHeader>
-        <CModalBody>
-          <form onSubmit={handleSubmit}>
-            <CRow className="mb-3">
-              <CCol md={6}>
-                <ProcurementInput
-                  label="Title"
-                  name="title"
-                  value={procurementData.title}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <ProcurementInput
-                  label="Procurement Date"
-                  type="date"
-                  name="procurementDate"
-                  value={procurementData.procurementDate}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-            </CRow>
-            <ProcurementInput
-              label="Description"
-              type="textarea"
-              name="description"
-              value={procurementData.description}
-              onChange={handleChange}
-              required
-              rows={3}
-            />
-            <CRow className="mb-3">
-              <CCol md={6}>
-                <ProcurementInput
-                  label="Expected Delivery Date"
-                  type="date"
-                  name="deliveryDate"
-                  value={procurementData.deliveryDate}
-                  onChange={handleChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <ProcurementInput
-                  label="Department"
-                  type="select"
-                  name="department"
-                  value={procurementData.department}
-                  onChange={handleChange}
-                  options={['HR', 'Finance', 'Logistics', 'IT', 'Procurement']}
-                  required
-                />
-              </CCol>
-            </CRow>
+      {/* FILTERS */}
+      <CRow className="mb-3">
+        <CCol md={3}>
+          <CFormInput
+            placeholder="Filter by Title"
+            name="title"
+            value={filters.title}
+            onChange={handleFilterChange}
+          />
+        </CCol>
+        <CCol md={3}>
+          <CFormSelect name="department" value={filters.department} onChange={handleFilterChange}>
+            <option value="">All Departments</option>
+            <option value="HR">HR</option>
+            <option value="Finance">Finance</option>
+            <option value="Logistics">Logistics</option>
+            <option value="IT">IT</option>
+            <option value="Procurement">Procurement</option>
+          </CFormSelect>
+        </CCol>
+        <CCol md={3}>
+          <CFormSelect name="status" value={filters.status} onChange={handleFilterChange}>
+            <option value="">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </CFormSelect>
+        </CCol>
+      </CRow>
 
-            <h5>Products</h5>
-            {procurementData.products.map((product, index) => (
-              <CRow key={index} className="mb-2">
-                <CCol md={2}>
-                  <ProcurementInput
-                    label="Product Name"
-                    name="name"
-                    value={product.name}
-                    onChange={(e) => handleProductChange(index, e)}
-                    required
-                  />
-                </CCol>
-                <CCol md={2}>
-                  <ProcurementInput
-                    label="Quantity"
-                    type="number"
-                    name="quantity"
-                    value={product.quantity}
-                    min="0"
-                    onChange={(e) => handleProductChange(index, e)}
-                    required
-                  />
-                </CCol>
-                <CCol md={2}>
-                  <ProcurementInput
-                    label="Unit"
-                    type="select"
-                    name="unit"
-                    value={product.unit}
-                    onChange={(e) => handleProductChange(index, e)}
-                    options={['KG', 'L', 'M', 'PCS', 'BOX', 'PACK']}
-                    required
-                  />
-                </CCol>
-                <CCol md={2}>
-                  <ProcurementInput
-                    label="Unit Price"
-                    type="number"
-                    name="unitPrice"
-                    value={product.unitPrice}
-                    min="0"
-                    onChange={(e) => handleProductChange(index, e)}
-                    required
-                  />
-                </CCol>
-                <CCol md={2}>
-                  <CButton color="danger" onClick={() => removeProduct(index)}>
-                    Remove
-                  </CButton>
-                </CCol>
-              </CRow>
-            ))}
-
-            <CRow className="mt-3">
-              <CCol md={6}>
-                <CButton color="primary" onClick={addProduct}>
-                  Add Product
-                </CButton>
-              </CCol>
-              {/**     <CCol md={6}>
-                <label htmlFor="currency">Select Currency:</label>
-                <select
-                  id="currency"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="form-control"
-                >
-                  {currencyOptions.map((cur) => (
-                    <option key={cur} value={cur}>
-                      {cur}
-                    </option>
-                  ))}
-                </select>
-              </CCol>
-     remove currency         */}
-            </CRow>
-
-            <CRow className="mt-3 text-end">
-              <CCol>
-                <h5>Estimated Cost: {procurementData.estimatedCost.toFixed(2)}</h5>
-              </CCol>
-            </CRow>
-
-            <CRow className="mt-4">
-              <CCol md={12} className="text-center">
-                <CButton color="success" type="submit" disabled={loading}>
-                  {loading ? <CSpinner size="sm" /> : 'Submit'}
-                </CButton>
-              </CCol>
-            </CRow>
-          </form>
-        </CModalBody>
-      </CModal>
-
-      {/** PROCUREMENT LIST  */}
+      {/* PROCUREMENT LIST */}
       <CCard>
         <CCardBody>
           <h5>Procurement Requests</h5>
@@ -374,19 +194,7 @@ const CreateProcurement = () => {
                       onClick={() => navigate(`/procurement/${proc._id}`)}
                     >
                       View
-                    </CButton>{' '}
-                    {/** 
-                    <CButton
-                      color="danger"
-                      size="sm"
-                      onClick={() => {
-                        setDeleteId(proc._id)
-                        setDeleteModal(true)
-                      }}
-                    >
-                      Delete
-                    </CButton>{' '}
-                    */}
+                    </CButton>
                     {proc.status === 'Approved' && (
                       <>
                         <CButton
@@ -395,7 +203,7 @@ const CreateProcurement = () => {
                           onClick={() => navigate(`/rfq/create/${proc._id}`)}
                         >
                           Create RFQ
-                        </CButton>{' '}
+                        </CButton>
                         <CButton
                           color="success"
                           size="sm"
@@ -412,21 +220,7 @@ const CreateProcurement = () => {
           </CTable>
         </CCardBody>
       </CCard>
-      {/** 
-      <CModal visible={deleteModal} onClose={() => setDeleteModal(false)}>
-        <CModalHeader>Confirm Deletion</CModalHeader>
-        <CModalBody>Are you sure you want to delete this procurement request?</CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setDeleteModal(false)}>
-            Cancel
-          </CButton>
-        <CButton color="danger" onClick={handleDelete}>
-            Delete
-          </CButton>
-          
-        </CModalFooter>
-      </CModal>
- */}
+
       <CToaster placement="top-end">
         {toasts.map((toast) => (
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
