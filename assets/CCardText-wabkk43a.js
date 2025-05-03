@@ -1,0 +1,1 @@
+import{r as o,_ as p,a as i,b as m,c as N,P as a}from"./index-DTPz0M71.js";var r=o.forwardRef(function(s,c){var t=s.children,e=s.as,n=e===void 0?"p":e,l=s.className,d=p(s,["children","as","className"]);return i(n,{...m({className:N("card-text",l)},d,{ref:c}),children:t})});r.propTypes={as:a.elementType,children:a.node,className:a.string};r.displayName="CCardText";export{r as C};
