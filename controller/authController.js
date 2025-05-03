@@ -162,21 +162,26 @@ export const loginUser = async (req, res, next) => {
     try {
         const user = await findUserByUsername(username);
         if (!user) {
-            return res.status(401).json({ status: "error", message: "Invalid credentials" });
+            return res.status(401).json({ status: "error", message: "Invalid credentials." });
         }
 
         if (user.role === "vendor" && user.status === "Pending") {
-            return res.status(403).json({ status: "error", message: "Your account is pending approval by an admin." });
+            return res.status(403).json({ status: "error", message: "Your account is pending admin approval." });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ status: "error", message: "Invalid credentials" });
+            return res.status(401).json({ status: "error", message: "Invalid credentials." });
         }
 
-        // Generate 6-digit 2FA code
+        // Generate a temporary 6-digit 2FA code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        pending2FA.set(user.username, { code, expires: Date.now() + 5 * 60 * 1000 }); // 5 mins expiry
+
+        // Save code with expiry (5 minutes)
+        pending2FA.set(user.username, {
+            code,
+            expires: Date.now() + 5 * 60 * 1000,
+        });
 
         await send2FACode(user.email, code);
 
@@ -186,7 +191,7 @@ export const loginUser = async (req, res, next) => {
             username: user.username,
         });
     } catch (error) {
-        handleError(error, next, "Login error");
+        return handleError(error, next, "Login error");
     }
 };
 
@@ -197,12 +202,22 @@ export const verify2FA = async (req, res, next) => {
     try {
         const user = await findUserByUsername(username);
         if (!user) {
-            return res.status(401).json({ status: "error", message: "Invalid username" });
+            return res.status(401).json({ status: "error", message: "Invalid username." });
         }
 
         const record = pending2FA.get(username);
-        if (!record || record.code !== code || Date.now() > record.expires) {
-            return res.status(401).json({ status: "error", message: "Invalid or expired 2FA code" });
+
+        if (!record) {
+            return res.status(401).json({ status: "error", message: "No 2FA request found. Please login again." });
+        }
+
+        if (record.code !== code) {
+            return res.status(401).json({ status: "error", message: "Invalid 2FA code." });
+        }
+
+        if (Date.now() > record.expires) {
+            pending2FA.delete(username);
+            return res.status(401).json({ status: "error", message: "2FA code has expired." });
         }
 
         pending2FA.delete(username);
@@ -210,6 +225,7 @@ export const verify2FA = async (req, res, next) => {
         const accessToken = TokenService.generateAccessToken(user);
         const refreshToken = TokenService.generateRefreshToken(user);
 
+        // Set secure HTTP-only cookies
         res.cookie("token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -222,14 +238,15 @@ export const verify2FA = async (req, res, next) => {
             sameSite: "Strict",
         });
 
-        logger.info("2FA verified. User logged in:", user._id);
+        logger.info(`2FA verified for user: ${user._id}`);
 
         return res.status(200).json({
             status: "success",
-            message: "Login successful",
+            message: "Login successful.",
             accessToken,
             refreshToken,
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
                 role: user.role,
@@ -237,7 +254,7 @@ export const verify2FA = async (req, res, next) => {
             },
         });
     } catch (error) {
-        handleError(error, next, "2FA verification error");
+        return handleError(error, next, "2FA verification error");
     }
 };
 
