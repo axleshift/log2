@@ -12,7 +12,6 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))
-const VendorLogin = React.lazy(() => import('./views/pages/login/VendorLogin'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
@@ -53,7 +52,7 @@ ErrorBoundary.propTypes = {
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-  const storedTheme = useSelector((state) => state.theme) // Redux state for theme
+  const storedTheme = useSelector((state) => state.theme)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -62,13 +61,13 @@ const App = () => {
     if (theme) {
       setColorMode(theme)
     } else if (!isColorModeSet()) {
-      setColorMode(storedTheme) // Keep Redux-managed theme
+      setColorMode(storedTheme)
     }
   }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <Suspense
           fallback={
             <div className="d-flex justify-content-center align-items-center vh-100">
@@ -80,7 +79,6 @@ const App = () => {
           <ErrorBoundary>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/VendorLogin" element={<VendorLogin />} />
               <Route path="/register" element={<Register />} />
               <Route path="/404" element={<Page404 />} />
               <Route path="/500" element={<Page500 />} />
@@ -102,8 +100,8 @@ const App = () => {
             </Routes>
           </ErrorBoundary>
         </Suspense>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

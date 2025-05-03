@@ -3,22 +3,43 @@ import PropTypes from 'prop-types'
 
 const AuthContext = createContext()
 
-export const useAuth = () => {
-  return useContext(AuthContext)
-}
+export const useAuth = () => useContext(AuthContext)
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [accessToken, setAccessToken] = useState(null)
 
-  // Check localStorage on initial load for persisted user and token
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    const storedToken = localStorage.getItem('accessToken')
+  // Safe JSON parse
+  const parseJSON = (value, key) => {
+    try {
+      return value ? JSON.parse(value) : null
+    } catch (e) {
+      console.error(`Error parsing JSON for ${key}:`, e)
+      localStorage.removeItem(key)
+      return null
+    }
+  }
 
-    if (storedToken && storedUser) {
-      setUser(JSON.parse(storedUser))
-      setAccessToken(storedToken)
+  // Basic JWT format validation
+  const isValidJWT = (token) => {
+    return typeof token === 'string' && token.split('.').length === 3
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    const userData = parseJSON(localStorage.getItem('user'), 'user')
+
+    if (!token || !isValidJWT(token)) {
+      console.warn('Invalid or malformed token. Clearing.')
+      localStorage.removeItem('accessToken')
+      setAccessToken(null)
+      setUser(null)
+      return
+    }
+
+    if (token && userData) {
+      setAccessToken(token)
+      setUser(userData)
     }
   }, [])
 

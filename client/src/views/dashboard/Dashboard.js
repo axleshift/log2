@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { CContainer, CRow, CCol, CSpinner, CWidgetStatsA } from '@coreui/react'
+import { CContainer, CRow, CCol, CSpinner, CWidgetStatsA, CFormSelect } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import UserDashboard from './UserDashboard'
@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [filter, setFilter] = useState('all')
 
   const BASE_URL = import.meta.env.VITE_API_URL
   const PO_API_URL = `${BASE_URL}/api/v1/purchaseOrder`
@@ -66,6 +67,20 @@ const Dashboard = () => {
   return (
     <CContainer fluid className="px-5 py-4">
       <h1 className="mb-4">Dashboard</h1>
+
+      <CRow className="mb-3 align-items-center">
+        <CCol md="4">
+          <CFormSelect
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Filter data"
+          >
+            <option value="all">All Time</option>
+            <option value="last7">Last 7 Days</option>
+            <option value="month">This Month</option>
+          </CFormSelect>
+        </CCol>
+      </CRow>
 
       {/* Purchase Orders and Inventory Widgets */}
       <CRow>

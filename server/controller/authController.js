@@ -6,6 +6,9 @@ import { generateOtp, sendOtpEmail, storeOtp, getOtp, clearOtp } from "../utils/
 import { getAllUsers, findUserByEmail, findUserByUsername, createUser } from "./userController.js";
 import VendorModel from "../models/vendor.js";
 import UserModel from "../models/UserModel.js";
+import { send2FACode } from "../utils/otpStore.js";
+
+const pending2FA = new Map();
 
 const handleError = (error, next, message) => {
     logger.error(message, { error: error.message, stack: error.stack });
@@ -153,7 +156,6 @@ export const loginUser = async (req, res, next) => {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        logger.warn("Validation errors:", { errors: errors.array() });
         return res.status(400).json({ status: "error", errors: errors.array() });
     }
 
@@ -163,7 +165,6 @@ export const loginUser = async (req, res, next) => {
             return res.status(401).json({ status: "error", message: "Invalid credentials" });
         }
 
-        // Prevent vendors from logging in if not approved
         if (user.role === "vendor" && user.status === "Pending") {
             return res.status(403).json({ status: "error", message: "Your account is pending approval by an admin." });
         }
@@ -172,6 +173,39 @@ export const loginUser = async (req, res, next) => {
         if (!isPasswordValid) {
             return res.status(401).json({ status: "error", message: "Invalid credentials" });
         }
+
+        // Generate 6-digit 2FA code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        pending2FA.set(user.username, { code, expires: Date.now() + 5 * 60 * 1000 }); // 5 mins expiry
+
+        await send2FACode(user.email, code);
+
+        return res.status(202).json({
+            status: "2fa_required",
+            message: "A 2FA code has been sent to your email.",
+            username: user.username,
+        });
+    } catch (error) {
+        handleError(error, next, "Login error");
+    }
+};
+
+// 2FA VERIFICATION FOR LOGIN
+export const verify2FA = async (req, res, next) => {
+    const { username, code } = req.body;
+
+    try {
+        const user = await findUserByUsername(username);
+        if (!user) {
+            return res.status(401).json({ status: "error", message: "Invalid username" });
+        }
+
+        const record = pending2FA.get(username);
+        if (!record || record.code !== code || Date.now() > record.expires) {
+            return res.status(401).json({ status: "error", message: "Invalid or expired 2FA code" });
+        }
+
+        pending2FA.delete(username);
 
         const accessToken = TokenService.generateAccessToken(user);
         const refreshToken = TokenService.generateRefreshToken(user);
@@ -188,7 +222,7 @@ export const loginUser = async (req, res, next) => {
             sameSite: "Strict",
         });
 
-        logger.info("User logged in successfully:", user._id);
+        logger.info("2FA verified. User logged in:", user._id);
 
         return res.status(200).json({
             status: "success",
@@ -203,7 +237,7 @@ export const loginUser = async (req, res, next) => {
             },
         });
     } catch (error) {
-        handleError(error, next, "Login error");
+        handleError(error, next, "2FA verification error");
     }
 };
 

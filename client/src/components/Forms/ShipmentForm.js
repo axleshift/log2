@@ -247,6 +247,7 @@ const ShipmentManagerPage = () => {
         <h4>Shipments</h4>
         <CButton
           color="primary"
+          variant="outline"
           onClick={() => {
             setEditMode(false)
             setCurrentId(null)

@@ -2,7 +2,7 @@ import express from "express";
 import { verifyRecaptcha } from "../../middleware/recaptcha.js";
 import { tokenMiddleware } from "../../middleware/authMiddleware.js";
 import { validateRegistration, loginValidation, forgotPasswordValidation, changePasswordValidation } from "../../middleware/validationHandler.js";
-import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, sendOTPForRegistration, getUsers, approveUser, cancelApproval } from "../../controller/authController.js";
+import { registerUser, loginUser, logoutUser, refreshToken, forgotPassword, verifyOtp, changePassword, sendOTPForRegistration, getUsers, approveUser, cancelApproval, verify2FA } from "../../controller/authController.js";
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.post("/register", validateRegistration, registerUser);
 
 router.post("/refresh", refreshToken);
 router.post("/login", verifyRecaptcha, loginValidation, loginUser);
+router.post("/verify-2fa", verify2FA);
 router.post("/logout", tokenMiddleware, logoutUser);
 
 router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
