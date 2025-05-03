@@ -92,3 +92,28 @@ export const sendInviteEmail = async (vendorEmails, procurement, rfq) => {
         throw new Error("Failed to send email");
     }
 };
+
+// LOGIN 2FA
+export const send2FACode = async (to, code) => {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
+    try {
+        await transporter.sendMail({
+            from: `"Freight Management System Logistics 2" <${process.env.GMAIL_USER}>`,
+            to,
+            subject: "Your 2FA Code",
+            text: `Your verification code is: ${code}`,
+            html: `<p>Your verification code is: <b>${code}</b></p>`,
+        });
+        console.log("2FA code sent successfully");
+    } catch (error) {
+        console.error("Error sending 2FA code:", error);
+        throw new Error("Failed to send 2FA code");
+    }
+};
