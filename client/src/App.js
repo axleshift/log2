@@ -22,6 +22,8 @@ const NoticeDetails = React.lazy(() => import('./views/pages/NoticeDetails/notic
 const NoticeToProceedDetails = React.lazy(
   () => import('./views/pages/NoticeToProceed/notice-to-proceed.js'),
 )
+const TermsAndConditions = React.lazy(() => import('./views/pages/Compliance/Terms.js'))
+const NonDisclosureAgreement = React.lazy(() => import('./views/pages/Compliance/NonDisclosure.js'))
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -86,6 +88,8 @@ const App = () => {
               <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/notice-details/:id" element={<NoticeDetails />} />
               <Route path="/notice-to-proceed/:id" element={<NoticeToProceedDetails />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/nda" element={<NonDisclosureAgreement />} />
               <Route path="/" element={<Landing />} />
 
               {/* Protected Routes */}

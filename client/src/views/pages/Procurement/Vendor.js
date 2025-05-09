@@ -215,7 +215,7 @@ const VendorManagement = () => {
 
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)} className="bg-light">
         <CModalHeader onClose={() => setModalVisible(false)}>
-          <CModalTitle>User Details</CModalTitle>
+          <CModalTitle>Vendor Profile</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedUser && (
@@ -224,7 +224,7 @@ const VendorManagement = () => {
                 <strong>User ID:</strong> {selectedUser._id}
               </p>
               <p>
-                <strong>Name:</strong> {selectedUser?.name || 'N/A'}
+                <strong>Name:</strong> {selectedUser?.fullName || 'N/A'}
               </p>
               <p>
                 <strong>Email:</strong> {selectedUser.email}

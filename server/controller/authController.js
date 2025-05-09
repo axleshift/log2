@@ -52,9 +52,9 @@ export const verifyOtp = async (req, res, next) => {
 };
 
 export const registerUser = async (req, res, next) => {
-    const { email, username, password, role, vendorDetails } = req.body;
+    const { email, username, password, role } = req.body;
 
-    const validRoles = ["staff", "admin", "super admin", "vendor"];
+    const validRoles = ["staff", "admin", "super admin"];
     const userRole = validRoles.includes(role) ? role : "user";
 
     try {
@@ -73,35 +73,11 @@ export const registerUser = async (req, res, next) => {
             username,
             password: hashedPassword,
             role: userRole,
-            status: userRole === "vendor" ? "Pending" : "Active",
+            status: "Active",
         });
 
         if (!newUser) {
             throw new Error("User creation failed");
-        }
-
-        // Handle vendor creation if user role is 'vendor'
-        if (userRole === "vendor" && vendorDetails) {
-            const vendorData = {
-                userId: newUser._id,
-                businessName: vendorDetails.businessName,
-                fullName: vendorDetails.fullName,
-                businessAddress: vendorDetails.businessAddress,
-                contactNumber: vendorDetails.contactNumber,
-                certifications: vendorDetails.certifications || [],
-                taxId: vendorDetails.taxId || `TAX-${Date.now()}`,
-                vendorId: `VENDOR-${Date.now()}`,
-            };
-
-            console.log("Vendor Data:", vendorData);
-
-            try {
-                const newVendor = new VendorModel(vendorData);
-                await newVendor.save();
-            } catch (error) {
-                console.error("Error creating vendor:", error);
-                return res.status(500).json({ status: "error", message: "Vendor creation failed." });
-            }
         }
 
         // Generate tokens
@@ -124,6 +100,72 @@ export const registerUser = async (req, res, next) => {
         });
     } catch (error) {
         console.error("Registration Error:", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+};
+
+export const registerVendor = async (req, res, next) => {
+    const { email, username, password, vendorDetails } = req.body;
+
+    try {
+        // Check if email or username is already in use
+        const [existingUserByEmail, existingUserByUsername] = await Promise.all([findUserByEmail(email), findUserByUsername(username)]);
+
+        if (existingUserByEmail || existingUserByUsername) {
+            return res.status(400).json({ status: "error", message: "Email or username already in use" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Create user as vendor
+        const newUser = await createUser({
+            email,
+            username,
+            password: hashedPassword,
+            role: "vendor",
+            status: "Pending",
+        });
+
+        if (!newUser) {
+            throw new Error("User creation failed");
+        }
+
+        // Create vendor record
+        const vendorData = {
+            userId: newUser._id,
+            email: newUser.email,
+            businessName: vendorDetails.businessName,
+            fullName: vendorDetails.fullName,
+            businessAddress: vendorDetails.businessAddress,
+            contactNumber: vendorDetails.contactNumber,
+            certifications: vendorDetails.certifications || [],
+            taxId: vendorDetails.taxId || `TAX-${Date.now()}`,
+            vendorId: `VENDOR-${Date.now()}`,
+        };
+
+        const newVendor = new VendorModel(vendorData);
+        await newVendor.save();
+
+        // Generate tokens
+        const accessToken = TokenService.generateAccessToken({ userId: newUser._id });
+        const refreshToken = TokenService.generateRefreshToken({ userId: newUser._id });
+
+        // Set refresh token in cookies
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
+
+        // Respond with success
+        return res.status(201).json({
+            status: "success",
+            message: "Vendor created successfully",
+            accessToken,
+        });
+    } catch (error) {
+        console.error("Vendor Registration Error:", error);
         return res.status(500).json({ status: "error", message: error.message });
     }
 };
@@ -225,7 +267,7 @@ export const verify2FA = async (req, res, next) => {
         const accessToken = TokenService.generateAccessToken(user);
         const refreshToken = TokenService.generateRefreshToken(user);
 
-        // Set secure HTTP-only cookies
+        //  secure HTTP-only cookies
         res.cookie("token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

@@ -37,7 +37,8 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [email, setEmail] = useState('')
-  const [otpVerified, setOtpVerified] = useState(false)
+  const [otpVerified, setOtpVerified] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
 
   const selectedRole = watch('role', 'user')
 
@@ -75,6 +76,7 @@ function Register() {
         role: data.role || 'user',
       }
 
+      // Vendor specific data
       if (data.role === 'vendor') {
         userData.vendorDetails = {
           businessName: data.businessName,
@@ -83,13 +85,25 @@ function Register() {
           contactNumber: data.contactNumber,
           certifications: data.certifications ? data.certifications.split(',') : [],
           taxId: data.taxId,
+          email,
         }
       }
 
-      const response = await registerUser(userData)
+      // Send the request to the appropriate API based on the role
+      const response = await fetch(`${USER_API_URL}/register/${data.role}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      })
 
-      Cookies.set('token', response.accessToken, { expires: 1 })
-      Cookies.set('refreshToken', response.refreshToken, { expires: 1 })
+      if (!response.ok) {
+        const errorResponse = await response.json()
+        throw new Error(errorResponse.message || 'Registration failed. Please try again.')
+      }
+      const responseData = await response.json()
+
+      Cookies.set('token', responseData.accessToken, { expires: 1 })
+      Cookies.set('refreshToken', responseData.refreshToken, { expires: 30 })
 
       setNotification({ message: 'Registration Successful! Redirecting...', type: 'success' })
 
@@ -138,15 +152,28 @@ function Register() {
                       {errors.username && <CAlert color="danger">{errors.username.message}</CAlert>}
 
                       {/* Password */}
-                      <CInputGroup className={`mb-3 ${errors.password ? 'is-invalid' : ''}`}>
+                      <CInputGroup className="mb-3">
                         <CInputGroupText>
                           <CIcon icon={cilLockLocked} />
                         </CInputGroupText>
                         <CFormInput
-                          type="password"
+                          type={showPassword ? 'text' : 'password'}
                           placeholder="Password"
-                          {...register('password', { required: 'Password is required' })}
+                          {...register('password', {
+                            required: 'Password is required',
+                            minLength: {
+                              value: 6,
+                              message: 'Password must be at least 6 characters',
+                            },
+                          })}
                         />
+                        <CInputGroupText
+                          role="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {showPassword ? '🙈' : '👁️'}
+                        </CInputGroupText>
                       </CInputGroup>
                       {errors.password && <CAlert color="danger">{errors.password.message}</CAlert>}
 
@@ -157,7 +184,7 @@ function Register() {
                           <option value="super admin">Super Admin</option>
                           <option value="admin">Admin</option>
                           <option value="vendor">Vendor</option>
-                          <option value="Staff">Staff</option>
+                          <option value="staff">Staff</option>
                         </CFormSelect>
                       </CInputGroup>
 
