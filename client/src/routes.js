@@ -29,8 +29,6 @@ const Settings = lazy(() => import('./views/settings/Settings.js'))
 
 // Procurement
 const product = lazy(() => import('./views/pages/Procurement/product.js'))
-const VendorManagement = lazy(() => import('./views/pages/Procurement/Vendor.js'))
-const VendorList = lazy(() => import('./views/pages/Procurement/VendorList.js'))
 const ProductDetails = lazy(() => import('./components/product/ProductDetails.js'))
 const ProductCreation = lazy(() => import('./components/product/Creation.js'))
 const RFQManagement = lazy(() => import('./views/pages/Procurement/RFQManagement.js'))
@@ -48,9 +46,7 @@ const SubmittedQuotesPage = lazy(() => import('./views/pages/Procurement/SubmitQ
 // Vendor Management
 const VendorRFQList = lazy(() => import('./views/pages/VendorManagement/Vendor.js'))
 const VendorRFQDetails = lazy(() => import('./views/pages/VendorManagement/VendorRFQDetails.js'))
-const CreateVendorProfile = lazy(
-  () => import('./views/pages/VendorManagement/CreateVendorProfile.js'),
-)
+const VendorManagement = lazy(() => import('./views/pages/procurement/VendorManagement.js'))
 
 // Routes
 const routes = [
@@ -79,8 +75,6 @@ const routes = [
   { path: '/procurement', name: 'Procurement Dashboard', element: ProcurementPage },
   { path: '/procurement/:id', name: 'Procurement Details', element: ProcurementDetails },
   { path: '/procurement/rfq/:id', name: 'RFQ Details', element: RFQDetails },
-  { path: '/procurement/vendors', name: 'Vendor Management', element: VendorManagement },
-  { path: '/procurement/vendorlist', name: 'Vendor List', element: VendorList },
   { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
   { path: '/procurement/shipments', name: 'Shipment Tracking', element: ShipmentsAndTracking },
   { path: '/rfq/create/:id', name: 'Create RFQ', element: CreateRFQ },
@@ -94,11 +88,7 @@ const routes = [
   { path: '/vendor/communication', name: 'Vendor Communication', element: ChatbotCard },
   { path: '/vendor/shipments', name: 'Vendor Shipments', element: ShipmentsList },
   { path: '/vendor/rfqs/:id', name: 'Vendor RFQ Details', element: VendorRFQDetails },
-  {
-    path: '/vendor/createvendorprofile',
-    name: 'Create Vendor Profile',
-    element: CreateVendorProfile,
-  },
+  { path: '/vendor/management', name: 'VendorManagement', element: VendorManagement },
 ]
 
 export default routes

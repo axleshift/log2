@@ -37,7 +37,7 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [email, setEmail] = useState('')
-  const [otpVerified, setOtpVerified] = useState(true)
+  const [otpVerified, setOtpVerified] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
   const selectedRole = watch('role', 'user')
@@ -65,41 +65,57 @@ function Register() {
     setNotification({ message: '', type: '' })
 
     try {
+      const email = data.email || ''
       if (!email) {
         throw new Error('Email verification is required.')
       }
 
-      const userData = {
-        username: data.username,
-        email,
-        password: data.password,
-        role: data.role || 'user',
-      }
+      const formData = new FormData()
+      formData.append('username', data.username)
+      formData.append('email', email)
+      formData.append('password', data.password)
+      formData.append('role', data.role || 'user')
 
-      // Vendor specific data
+      // Vendor details
       if (data.role === 'vendor') {
-        userData.vendorDetails = {
-          businessName: data.businessName,
-          fullName: data.fullName,
-          businessAddress: data.businessAddress,
-          contactNumber: data.contactNumber,
-          certifications: data.certifications ? data.certifications.split(',') : [],
-          taxId: data.taxId,
-          email,
-        }
+        formData.append('businessName', data.businessName)
+        formData.append('fullName', data.fullName)
+        formData.append('businessAddress', data.businessAddress)
+        formData.append('contactNumber', data.contactNumber)
+        formData.append('taxId', data.taxId)
+        formData.append('website', data.website)
+        formData.append('businessType', data.businessType)
+        formData.append('countryOfRegistration', data.countryOfRegistration)
+        formData.append('yearEstablished', data.yearEstablished)
+        formData.append('agreeToTerms', data.agreeToTerms ? 'true' : 'false')
+        formData.append('acceptNDA', data.acceptNDA ? 'true' : 'false')
+
+        // Handle documents
+        const docFields = [
+          'businessRegistrationCertificate',
+          'companyProfile',
+          'isoCertification',
+          'authorizationCertificate',
+          'complianceDeclaration',
+          'productCatalog',
+        ]
+
+        docFields.forEach((field) => {
+          const file = data.documents?.[field]?.[0]
+          if (file) formData.append(field, file)
+        })
       }
 
-      // Send the request to the appropriate API based on the role
-      const response = await fetch(`${USER_API_URL}/register/${data.role}`, {
+      const response = await fetch(`${USER_API_URL}/register/vendor`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+        body: formData,
       })
 
       if (!response.ok) {
         const errorResponse = await response.json()
         throw new Error(errorResponse.message || 'Registration failed. Please try again.')
       }
+
       const responseData = await response.json()
 
       Cookies.set('token', responseData.accessToken, { expires: 1 })

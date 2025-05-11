@@ -53,7 +53,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Vendor Management',
-    to: '/procurement/vendors',
+    to: '/vendor/management',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faUsersCog} className="nav-icon" />,
   },
@@ -112,13 +112,6 @@ const _nav = [
     icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
   },
   {
-    component: CNavItem,
-    name: 'Creat Vendor Profile',
-    to: '/vendor/CreateVendorProfile',
-    role_exclude: ['vendor', 'user'],
-    icon: <FontAwesomeIcon icon={faUserPlus} className="nav-icon" />,
-  },
-  {
     component: CNavTitle,
     name: 'VENDOR MANAGEMENT',
     role_exclude: ['user', 'staff'],
@@ -157,13 +150,6 @@ const _nav = [
     to: '/vendor/communication',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faComments} className="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Vendor List',
-    to: '/Procurement/VendorList',
-    role_exclude: ['vendor'],
-    icon: <FontAwesomeIcon icon={faAddressBook} className="nav-icon" />,
   },
   {
     component: CNavTitle,

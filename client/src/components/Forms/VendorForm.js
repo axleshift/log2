@@ -1,11 +1,11 @@
 import React from 'react'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, Controller } from 'react-hook-form'
 import {
   CInputGroup,
   CInputGroupText,
   CFormInput,
-  CFormCheck,
   CAlert,
+  CFormCheck,
   CFormSelect,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -14,14 +14,13 @@ import { cilHome, cilPhone, cilUser, cilEnvelopeClosed, cilGlobeAlt } from '@cor
 function VendorForm() {
   const {
     register,
+    control,
+    setValue,
     formState: { errors },
   } = useFormContext()
 
   const documentFields = [
     'businessRegistrationCertificate',
-    'taxClearanceCertificate',
-    'financialStatements',
-    'insuranceCertificate',
     'companyProfile',
     'isoCertification',
     'authorizationCertificate',
@@ -149,52 +148,21 @@ function VendorForm() {
         <CFormInput placeholder="Tax ID" {...register('taxId')} />
       </CInputGroup>
 
-      {/* VAT Number */}
-      <CInputGroup className="mb-3">
-        <CInputGroupText>VAT</CInputGroupText>
-        <CFormInput placeholder="VAT Number" {...register('vatNumber')} />
-      </CInputGroup>
-
-      {/* Certifications */}
-      <CInputGroup className="mb-3">
-        <CInputGroupText>Certifications</CInputGroupText>
-        <CFormInput placeholder="Comma-separated certifications" {...register('certifications')} />
-      </CInputGroup>
-
-      {/* Categories */}
-      <CInputGroup className="mb-3">
-        <CInputGroupText>Categories</CInputGroupText>
-        <CFormInput placeholder="Comma-separated categories" {...register('categories')} />
-      </CInputGroup>
-
-      {/* Authorized Dealer */}
-      <CFormCheck className="mb-3" label="Authorized Dealer" {...register('authorizedDealer')} />
-
-      {/* Banking Info */}
-      <h6 className="mt-4 mb-2">Banking Information</h6>
-      <CInputGroup className="mb-3">
-        <CInputGroupText>Bank</CInputGroupText>
-        <CFormInput placeholder="Bank Name" {...register('bankingInfo.bankName')} />
-      </CInputGroup>
-      <CInputGroup className="mb-3">
-        <CInputGroupText>Account #</CInputGroupText>
-        <CFormInput placeholder="Account Number" {...register('bankingInfo.bankAccountNumber')} />
-      </CInputGroup>
-      <CInputGroup className="mb-3">
-        <CInputGroupText>SWIFT</CInputGroupText>
-        <CFormInput placeholder="SWIFT Code" {...register('bankingInfo.bankSwiftCode')} />
-      </CInputGroup>
-      <CInputGroup className="mb-3">
-        <CInputGroupText>Bank Country</CInputGroupText>
-        <CFormInput placeholder="Bank Country" {...register('bankingInfo.bankCountry')} />
-      </CInputGroup>
-
-      {/* Documents (URLs) */}
-      <h6 className="mt-4 mb-2">Documents (URLs)</h6>
+      {/* File Inputs for Documents */}
+      <h6 className="mt-4 mb-2">Upload Documents</h6>
       {documentFields.map((doc) => (
         <CInputGroup className="mb-2" key={doc}>
           <CInputGroupText>{doc.replace(/([A-Z])/g, ' $1')}</CInputGroupText>
-          <CFormInput placeholder={`URL for ${doc}`} {...register(`documents.${doc}`)} />
+          <CFormInput
+            type="file"
+            accept="application/pdf, image/*"
+            {...register(`documents.${doc}`)}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+              }
+            }}
+          />
         </CInputGroup>
       ))}
 
@@ -214,9 +182,9 @@ function VendorForm() {
               </a>
             </>
           }
-          {...register('acceptTerms', { required: 'You must agree to the Terms and Conditions' })}
+          {...register('agreeToTerms', { required: 'You must agree to the Terms and Conditions' })}
         />
-        {errors.acceptTerms && <CAlert color="danger">{errors.acceptTerms.message}</CAlert>}
+        {errors.agreeToTerms && <CAlert color="danger">{errors.agreeToTerms.message}</CAlert>}
       </div>
 
       {/* NDA Agreement */}

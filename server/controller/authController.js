@@ -105,10 +105,9 @@ export const registerUser = async (req, res, next) => {
 };
 
 export const registerVendor = async (req, res, next) => {
-    const { email, username, password, vendorDetails } = req.body;
+    const { email, username, password } = req.body;
 
     try {
-        // Check if email or username is already in use
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([findUserByEmail(email), findUserByUsername(username)]);
 
         if (existingUserByEmail || existingUserByUsername) {
@@ -117,7 +116,6 @@ export const registerVendor = async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // Create user as vendor
         const newUser = await createUser({
             email,
             username,
@@ -126,31 +124,35 @@ export const registerVendor = async (req, res, next) => {
             status: "Pending",
         });
 
-        if (!newUser) {
-            throw new Error("User creation failed");
-        }
+        if (!newUser) throw new Error("User creation failed");
 
-        // Create vendor record
-        const vendorData = {
+        const vendorDetails = {
             userId: newUser._id,
-            email: newUser.email,
-            businessName: vendorDetails.businessName,
-            fullName: vendorDetails.fullName,
-            businessAddress: vendorDetails.businessAddress,
-            contactNumber: vendorDetails.contactNumber,
-            certifications: vendorDetails.certifications || [],
-            taxId: vendorDetails.taxId || `TAX-${Date.now()}`,
             vendorId: `VENDOR-${Date.now()}`,
+            email: newUser.email,
+            businessName: req.body.businessName,
+            fullName: req.body.fullName,
+            businessAddress: req.body.businessAddress,
+            contactNumber: req.body.contactNumber,
+            taxId: req.body.taxId,
+            documents: {
+                businessRegistrationCertificate: req.files?.businessRegistrationCertificate?.[0]?.path || "",
+                companyProfile: req.files?.companyProfile?.[0]?.path || "",
+                isoCertification: req.files?.isoCertification?.[0]?.path || "",
+                authorizationCertificate: req.files?.authorizationCertificate?.[0]?.path || "",
+                complianceDeclaration: req.files?.complianceDeclaration?.[0]?.path || "",
+                productCatalog: req.files?.productCatalog?.[0]?.path || "",
+            },
+            agreeToTerms: req.body.agreeToTerms === "true",
+            acceptNDA: req.body.acceptNDA === "true",
         };
 
-        const newVendor = new VendorModel(vendorData);
+        const newVendor = new VendorModel(vendorDetails);
         await newVendor.save();
 
-        // Generate tokens
         const accessToken = TokenService.generateAccessToken({ userId: newUser._id });
         const refreshToken = TokenService.generateRefreshToken({ userId: newUser._id });
 
-        // Set refresh token in cookies
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -158,10 +160,9 @@ export const registerVendor = async (req, res, next) => {
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
-        // Respond with success
         return res.status(201).json({
             status: "success",
-            message: "Vendor created successfully",
+            message: "Vendor registered successfully",
             accessToken,
         });
     } catch (error) {

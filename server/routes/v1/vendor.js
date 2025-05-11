@@ -1,9 +1,9 @@
 import express from "express";
-import { createVendor, getAllVendors, getVendorById, updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor } from "../../controller/vendor.js";
+import { getAllVendors, getVendorById, updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor, getAllVendorsWithUserDetails } from "../../controller/vendor.js";
 
 const router = express.Router();
 
-router.post("/create", createVendor);
+router.get("/with-users", getAllVendorsWithUserDetails);
 router.get("/", getAllVendors);
 router.get("/:id", getVendorById);
 router.put("/:id", updateVendor);
