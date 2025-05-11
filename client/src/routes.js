@@ -46,7 +46,7 @@ const SubmittedQuotesPage = lazy(() => import('./views/pages/Procurement/SubmitQ
 // Vendor Management
 const VendorRFQList = lazy(() => import('./views/pages/VendorManagement/Vendor.js'))
 const VendorRFQDetails = lazy(() => import('./views/pages/VendorManagement/VendorRFQDetails.js'))
-const VendorManagement = lazy(() => import('./views/pages/procurement/VendorManagement.js'))
+const Vendors = lazy(() => import('./views/pages/Procurement/VendorManagement.js'))
 
 // Routes
 const routes = [
@@ -88,7 +88,7 @@ const routes = [
   { path: '/vendor/communication', name: 'Vendor Communication', element: ChatbotCard },
   { path: '/vendor/shipments', name: 'Vendor Shipments', element: ShipmentsList },
   { path: '/vendor/rfqs/:id', name: 'Vendor RFQ Details', element: VendorRFQDetails },
-  { path: '/vendor/management', name: 'VendorManagement', element: VendorManagement },
+  { path: '/vendor/management', name: 'VendorManagement', element: Vendors },
 ]
 
 export default routes
