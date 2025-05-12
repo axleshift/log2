@@ -1,6 +1,32 @@
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
+// GET /api/v1/vendor/with-users
+export const getAllVendorsWithUserDetails = async (req, res) => {
+    try {
+        const vendorUsers = await User.find({ role: "vendor" }).lean();
+
+        const userIds = vendorUsers.map((user) => user._id);
+        const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
+
+        const vendorMap = {};
+        vendorProfiles.forEach((vendor) => {
+            vendorMap[vendor.userId.toString()] = vendor;
+        });
+
+        // Merge user with corresponding vendor profile
+        const combined = vendorUsers.map((user) => ({
+            ...user,
+            vendorProfile: vendorMap[user._id.toString()] || null,
+        }));
+
+        res.status(200).json({ vendors: combined });
+    } catch (error) {
+        console.error("Error fetching vendors with user details:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
 // Get All Vendors
 export const getAllVendors = async (req, res) => {
     try {
@@ -118,35 +144,6 @@ export const unapproveVendor = async (req, res) => {
     }
 };
 
-// GET /api/v1/vendor/with-users
-export const getAllVendorsWithUserDetails = async (req, res) => {
-    try {
-        // Get all users with the role "vendor"
-        const vendorUsers = await User.find({ role: "vendor" }).lean();
-
-        // Get vendor profiles that match userIds
-        const userIds = vendorUsers.map((user) => user._id);
-        const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
-
-        // Map vendorProfiles by userId for fast lookup
-        const vendorMap = {};
-        vendorProfiles.forEach((vendor) => {
-            vendorMap[vendor.userId.toString()] = vendor;
-        });
-
-        // Merge user with corresponding vendor profile
-        const combined = vendorUsers.map((user) => ({
-            ...user,
-            vendorProfile: vendorMap[user._id.toString()] || null,
-        }));
-
-        res.status(200).json({ vendors: combined });
-    } catch (error) {
-        console.error("Error fetching vendors with user details:", error);
-        res.status(500).json({ message: "Server error", error });
-    }
-};
-
 /**import Vendor from "../models/vendor.js";
  * 
 
@@ -196,7 +193,6 @@ export const createVendor = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
-
 
 
 

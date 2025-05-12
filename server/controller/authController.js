@@ -284,12 +284,14 @@ export const verify2FA = async (req, res, next) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
+            expires: new Date(Date.now() + 3600 * 1000),
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
+            expires: new Date(Date.now() + 3600 * 1000),
         });
 
         logger.info(`2FA verified for user: ${user._id}`);
@@ -346,14 +348,33 @@ export const changePassword = async (req, res, next) => {
 
 export const refreshToken = (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json({ status: "error", message: "Refresh token not found." });
+    if (!refreshToken) {
+        return res.status(401).json({ status: "error", message: "Refresh token not found." });
+    }
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ status: "error", message: "Invalid refresh token." });
+        if (err) {
+            return res.status(403).json({ status: "error", message: "Invalid refresh token." });
+        }
 
         // Generate new access token
         const accessToken = TokenService.generateAccessToken({ userId: user.userId });
-        return res.json({ status: "success", accessToken });
+
+        // Send new access token in a secure, HTTP-only cookie
+        res.cookie("token", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+            maxAge: 3600 * 1000,
+        });
+
+        // Send back both accessToken and refreshToken
+        return res.status(200).json({
+            status: "success",
+            message: "Access token refreshed.",
+            accessToken,
+            refreshToken,
+        });
     });
 };
 
