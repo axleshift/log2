@@ -74,7 +74,7 @@ app.post("/chatbot", async (req, res) => {
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes for APIv1
-app.use("/api/v1/", APIv1);
+app.use("/api/v1", APIv1);
 
 // Error handling middleware
 app.use(errorHandler);
