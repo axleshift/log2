@@ -1,5 +1,6 @@
 import express from "express";
-import { getAllVendors, getVendorById, updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor, getAllVendorsWithUserDetails } from "../../controller/vendor.js";
+import mongoose from "mongoose";
+import { getAllVendorsWithUserDetails, getAllVendors, getVendorById, updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor } from "../../controller/vendor.js";
 
 const router = express.Router();
 
