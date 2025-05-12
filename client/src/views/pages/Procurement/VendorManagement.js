@@ -39,7 +39,7 @@ const Vendors = () => {
 
     const fetchVendors = async () => {
       try {
-        const response = await fetch(`${VENDOR_API_URL}/with-users`, {
+        const response = await fetch(`${VENDOR_API_URL}/doc/with-users`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

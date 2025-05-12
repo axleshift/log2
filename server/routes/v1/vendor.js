@@ -4,7 +4,7 @@ import { getAllVendorsWithUserDetails, getAllVendors, getVendorById, updateVendo
 
 const router = express.Router();
 
-router.get("/with-users", getAllVendorsWithUserDetails);
+router.get("/doc/with-users", getAllVendorsWithUserDetails);
 router.get("/", getAllVendors);
 /*router.get("/:id", getVendorById);*/
 router.get("/:id", (req, res, next) => {

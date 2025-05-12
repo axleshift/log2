@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
-// GET /api/v1/vendor/with-users
+// GET /api/v1/vendor/doc/with-users
 export const getAllVendorsWithUserDetails = async (req, res) => {
     try {
         const vendorUsers = await User.find({ role: "vendor" }).lean();
 
-        const userIds = vendorUsers.map((user) => new mongoose.Types.ObjectId(user._id)); // Ensure these are ObjectIds
+        const userIds = vendorUsers.map((user) => new mongoose.Types.ObjectId(user._id));
         const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
 
         const vendorMap = {};
