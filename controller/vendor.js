@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
-// GET /api/v1/vendor/doc/with-users
+// GET /api/v1/vendor/with-users
 export const getAllVendorsWithUserDetails = async (req, res) => {
     try {
         const vendorUsers = await User.find({ role: "vendor" }).lean();

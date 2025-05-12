@@ -4,9 +4,8 @@ import { getAllVendorsWithUserDetails, getAllVendors, getVendorById, updateVendo
 
 const router = express.Router();
 
-router.get("/doc/with-users", getAllVendorsWithUserDetails);
+router.get("/with-users", getAllVendorsWithUserDetails);
 router.get("/", getAllVendors);
-/*router.get("/:id", getVendorById);*/
 router.get("/:id", (req, res, next) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -14,6 +13,7 @@ router.get("/:id", (req, res, next) => {
     }
     return getVendorById(req, res, next);
 });
+
 router.put("/:id", updateVendor);
 router.delete("/:id", deleteVendor);
 router.put("/approve/:id", approveVendor);
