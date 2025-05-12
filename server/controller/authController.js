@@ -15,6 +15,13 @@ const handleError = (error, next, message) => {
     return next({ status: "error", message });
 };
 
+// Helper function to build the document URL
+const buildDocumentUrl = (field, files, req) => {
+    const file = files?.[field]?.[0];
+    const protocol = process.env.NODE_ENV === "production" ? "https" : req.protocol;
+    return file ? `${protocol}://${req.get("host")}/uploads/${file.filename}` : undefined;
+};
+
 export const sendOTPForRegistration = async (req, res, next) => {
     const { email } = req.body;
 
@@ -105,7 +112,7 @@ export const registerUser = async (req, res, next) => {
 };
 
 export const registerVendor = async (req, res, next) => {
-    const { email, username, password } = req.body;
+    const { email, username, password, businessName, fullName, businessAddress, contactNumber, taxId, agreeToTerms, acceptNDA } = req.body;
 
     try {
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([findUserByEmail(email), findUserByUsername(username)]);
@@ -126,25 +133,29 @@ export const registerVendor = async (req, res, next) => {
 
         if (!newUser) throw new Error("User creation failed");
 
+        // Build documents URLs using the helper function
+        const documents = {
+            businessRegistrationCertificate: buildDocumentUrl("businessRegistrationCertificate", req.files, req),
+            companyProfile: buildDocumentUrl("companyProfile", req.files, req),
+            isoCertification: buildDocumentUrl("isoCertification", req.files, req),
+            authorizationCertificate: buildDocumentUrl("authorizationCertificate", req.files, req),
+            complianceDeclaration: buildDocumentUrl("complianceDeclaration", req.files, req),
+            productCatalog: buildDocumentUrl("productCatalog", req.files, req),
+        };
+
+        // Build vendor details and save to the Vendor model
         const vendorDetails = {
             userId: newUser._id,
             vendorId: `VENDOR-${Date.now()}`,
             email: newUser.email,
-            businessName: req.body.businessName,
-            fullName: req.body.fullName,
-            businessAddress: req.body.businessAddress,
-            contactNumber: req.body.contactNumber,
-            taxId: req.body.taxId,
-            documents: {
-                businessRegistrationCertificate: req.files?.businessRegistrationCertificate?.[0]?.path || "",
-                companyProfile: req.files?.companyProfile?.[0]?.path || "",
-                isoCertification: req.files?.isoCertification?.[0]?.path || "",
-                authorizationCertificate: req.files?.authorizationCertificate?.[0]?.path || "",
-                complianceDeclaration: req.files?.complianceDeclaration?.[0]?.path || "",
-                productCatalog: req.files?.productCatalog?.[0]?.path || "",
-            },
-            agreeToTerms: req.body.agreeToTerms === "true",
-            acceptNDA: req.body.acceptNDA === "true",
+            businessName,
+            fullName,
+            businessAddress,
+            contactNumber,
+            taxId,
+            documents,
+            agreeToTerms: agreeToTerms === "true",
+            acceptNDA: acceptNDA === "true",
         };
 
         const newVendor = new VendorModel(vendorDetails);

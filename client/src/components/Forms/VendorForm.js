@@ -153,15 +153,16 @@ function VendorForm() {
       {documentFields.map((doc) => (
         <CInputGroup className="mb-2" key={doc}>
           <CInputGroupText>{doc.replace(/([A-Z])/g, ' $1')}</CInputGroupText>
-          <CFormInput
-            type="file"
-            accept="application/pdf, image/*"
-            {...register(`documents.${doc}`)}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-              }
-            }}
+          <Controller
+            name={`documents.${doc}`}
+            control={control}
+            render={({ field }) => (
+              <CFormInput
+                type="file"
+                accept="application/pdf, image/*"
+                onChange={(e) => field.onChange(e.target.files)}
+              />
+            )}
           />
         </CInputGroup>
       ))}

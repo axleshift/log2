@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import {
   CCard,
@@ -13,14 +13,46 @@ import {
   CCardText,
   CCardTitle,
   CBadge,
+  CTooltip,
+  CFormCheck,
 } from '@coreui/react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import opencage from 'opencage-api-client'
+import PropTypes from 'prop-types'
 
 const BASE_URL = import.meta.env.VITE_API_URL
 const SHIPMENT_API_URL = `${BASE_URL}/api/v1/shipment`
 const OPENCAGE_API_KEY = import.meta.env.VITE_OPENCAGE_API_KEY
+
+const RecenterMap = ({ center }) => {
+  const map = useMap()
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 13)
+    }
+  }, [center])
+  return null
+}
+
+RecenterMap.propTypes = {
+  center: PropTypes.object,
+}
+
+const getStatusColor = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'delivered':
+      return 'success'
+    case 'in transit':
+      return 'info'
+    case 'delayed':
+      return 'danger'
+    case 'pending':
+      return 'secondary'
+    default:
+      return 'warning'
+  }
+}
 
 const DeliveryTracking = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
@@ -30,6 +62,8 @@ const DeliveryTracking = () => {
   const [shipmentData, setShipmentData] = useState(null)
   const [vehicleData, setVehicleData] = useState(null)
   const [error, setError] = useState(null)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const intervalRef = useRef(null)
 
   const handleTrack = async () => {
     if (!trackingNumber.trim()) {
@@ -89,6 +123,17 @@ const DeliveryTracking = () => {
     }
   }
 
+  useEffect(() => {
+    if (autoRefresh) {
+      intervalRef.current = setInterval(() => {
+        handleTrack()
+      }, 30000) // 30 seconds
+    } else {
+      clearInterval(intervalRef.current)
+    }
+    return () => clearInterval(intervalRef.current)
+  }, [autoRefresh, trackingNumber])
+
   return (
     <CCard className="shadow-sm border-0">
       <CCardHeader className="bg-primary text-white">
@@ -126,6 +171,18 @@ const DeliveryTracking = () => {
           </CCol>
         </CRow>
 
+        <CTooltip content="Automatically refreshes tracking data every 60 seconds">
+          <div className="d-flex align-items-center gap-2">
+            <CFormCheck
+              type="checkbox"
+              id="autoRefreshSwitch"
+              label="Auto Refresh"
+              checked={autoRefresh}
+              onChange={() => setAutoRefresh(!autoRefresh)}
+            />
+          </div>
+        </CTooltip>
+
         {error && <CAlert color="danger">{error}</CAlert>}
 
         {deliveryStatus && (
@@ -134,7 +191,10 @@ const DeliveryTracking = () => {
               <CCardTitle className="text-success mb-3">✅ Delivery Status</CCardTitle>
               <CCardText>
                 <strong>Status:</strong>{' '}
-                <CBadge color="info" className="px-3 py-1 text-uppercase">
+                <CBadge
+                  color={getStatusColor(deliveryStatus.status)}
+                  className="px-3 py-1 text-uppercase"
+                >
                   {deliveryStatus.status}
                 </CBadge>
               </CCardText>
@@ -172,6 +232,7 @@ const DeliveryTracking = () => {
                 zoom={13}
                 style={{ height: '300px', width: '100%' }}
               >
+                <RecenterMap center={coordinates} />
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution="&copy; OpenStreetMap contributors"

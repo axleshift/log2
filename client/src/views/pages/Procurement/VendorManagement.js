@@ -18,6 +18,7 @@ import {
   CModalBody,
   CModalFooter,
   CSpinner,
+  CAlert,
 } from '@coreui/react'
 
 const VENDOR_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/vendor`
@@ -30,6 +31,8 @@ const Vendors = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
+  const [alertMessage, setAlertMessage] = useState(null)
+  const [alertColor, setAlertColor] = useState(null)
 
   useEffect(() => {
     if (!accessToken) return
@@ -81,11 +84,16 @@ const Vendors = () => {
 
       if (response.ok) {
         updateUserStatus(userId, 'Approved')
+        setAlertMessage('User approved successfully!')
+        setAlertColor('success')
       } else {
-        console.error('Error approving user', response.statusText)
+        setAlertMessage('Error approving user.')
+        setAlertColor('danger')
       }
     } catch (error) {
       console.error('Error approving user:', error)
+      setAlertMessage('Error approving user.')
+      setAlertColor('danger')
     } finally {
       setActionLoading(null)
     }
@@ -106,11 +114,16 @@ const Vendors = () => {
 
       if (response.ok) {
         updateUserStatus(userId, 'Pending')
+        setAlertMessage('Approval canceled successfully!')
+        setAlertColor('warning')
       } else {
-        console.error('Error canceling approval:', response.statusText)
+        setAlertMessage('Error canceling approval.')
+        setAlertColor('danger')
       }
     } catch (error) {
       console.error('Error canceling approval:', error)
+      setAlertMessage('Error canceling approval.')
+      setAlertColor('danger')
     } finally {
       setActionLoading(null)
     }
@@ -134,6 +147,12 @@ const Vendors = () => {
 
   return (
     <>
+      {alertMessage && (
+        <CAlert color={alertColor} className="mt-3" closeButton>
+          {alertMessage}
+        </CAlert>
+      )}
+
       <CRow>
         <CCol xs="12">
           <CCard className="shadow-lg">
@@ -241,76 +260,76 @@ const Vendors = () => {
                     <strong>Contact Number:</strong> {selectedUser.vendorProfile.contactNumber}
                   </p>
 
-                  {/* Render documents as clickable preview links */}
+                  {/* Render documents as clickable View links */}
                   {selectedUser.vendorProfile.documents?.businessRegistrationCertificate && (
                     <p>
-                      <strong>Business Registration Certificate:</strong>
+                      <strong>Business Registration Certificate:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.businessRegistrationCertificate}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}
                   {selectedUser.vendorProfile.documents?.companyProfile && (
                     <p>
-                      <strong>Company Profile:</strong>
+                      <strong>Company Profile:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.companyProfile}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}
                   {selectedUser.vendorProfile.documents?.isoCertification && (
                     <p>
-                      <strong>ISO Certification:</strong>
+                      <strong>ISO Certification:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.isoCertification}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}
                   {selectedUser.vendorProfile.documents?.authorizationCertificate && (
                     <p>
-                      <strong>Authorization Certificate:</strong>
+                      <strong>Authorization Certificate:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.authorizationCertificate}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}
                   {selectedUser.vendorProfile.documents?.complianceDeclaration && (
                     <p>
-                      <strong>Compliance Declaration:</strong>
+                      <strong>Compliance Declaration:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.complianceDeclaration}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}
                   {selectedUser.vendorProfile.documents?.productCatalog && (
                     <p>
-                      <strong>Product Catalog:</strong>
+                      <strong>Product Catalog:</strong>{' '}
                       <a
                         href={selectedUser.vendorProfile.documents.productCatalog}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Preview
+                        View
                       </a>
                     </p>
                   )}

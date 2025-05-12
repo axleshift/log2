@@ -90,7 +90,7 @@ function Register() {
         formData.append('agreeToTerms', data.agreeToTerms ? 'true' : 'false')
         formData.append('acceptNDA', data.acceptNDA ? 'true' : 'false')
 
-        // Handle documents
+        // Handle documents (for vendor registration)
         const docFields = [
           'businessRegistrationCertificate',
           'companyProfile',

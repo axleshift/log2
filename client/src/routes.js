@@ -14,17 +14,8 @@ import ChatbotCard from './views/pages/chatbot/chatbot.js'
 const Dashboard = lazy(() => import('./views/dashboard/Dashboard'))
 const Alerts = lazy(() => import('./views/pages/Alerts/Alerts.js'))
 const Analytics = lazy(() => import('./views/pages/Analytics/Analytics.js'))
-const DocumentTracking = lazy(() => import('./views/pages/DocumentTracking/DocumentTracking.js'))
-const LogisticsDashboard = lazy(() => import('./views/Management/logistics/LogisticsDashboard'))
-const IncomingDetails = lazy(
-  () => import('./views/Management/logistics/incoming/IncomingDetails.js'),
-)
-const OutgoingDetails = lazy(
-  () => import('./views/Management/logistics/outgoing/OutgoingDetails.js'),
-)
 const Inventory = lazy(() => import('./views/inventory/Inventory.js'))
 const ProfilePage = lazy(() => import('./views/Account/Profile.js'))
-const DocumentDetails = lazy(() => import('./views/pages/DocumentTracking/DocumentDetails.js'))
 const Settings = lazy(() => import('./views/settings/Settings.js'))
 
 // Procurement
@@ -55,15 +46,10 @@ const routes = [
   { path: '/award', name: 'Award', element: CreateAwardNotice },
   { path: '/announcement', name: 'Announcement', element: CreateAnnouncement },
   { path: '/notification', name: 'Notification', element: CreateNotification },
-  { path: '/logistics', name: 'Logistics Dashboard', element: LogisticsDashboard },
-  { path: '/incoming', name: 'Incoming Details', element: IncomingDetails },
-  { path: '/outgoing', name: 'Outgoing Details', element: OutgoingDetails },
   { path: '/inventory', name: 'Inventory', element: Inventory },
   { path: '/alerts', name: 'Alerts', element: Alerts },
   { path: '/analytics', name: 'Analytics', element: Analytics },
-  { path: '/documentTracking', name: 'DocumentTracking', element: DocumentTracking },
   { path: '/profile', name: 'ProfilePage', element: ProfilePage },
-  { path: '/DocumentDetails/:id', name: 'DocumentDetails', element: DocumentDetails },
   { path: '/settings/user-management', name: 'Settings', element: Settings },
 
   // Procurement
