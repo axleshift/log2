@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
@@ -6,7 +7,7 @@ export const getAllVendorsWithUserDetails = async (req, res) => {
     try {
         const vendorUsers = await User.find({ role: "vendor" }).lean();
 
-        const userIds = vendorUsers.map((user) => user._id);
+        const userIds = vendorUsers.map((user) => new mongoose.Types.ObjectId(user._id)); // Ensure these are ObjectIds
         const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
 
         const vendorMap = {};
