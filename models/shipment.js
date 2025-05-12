@@ -100,4 +100,5 @@ ShipmentSchema.pre("save", function (next) {
 });
 
 // Prevent OverwriteModelError
-export default mongoose.models.Shipmentdelivery || mongoose.model("Shipmentdelivery", ShipmentSchema);
+export default mongoose.models.Shipment || mongoose.model("Shipment", ShipmentSchema);
+//export default mongoose.models.Shipmentdelivery || mongoose.model("Shipmentdelivery", ShipmentSchema);
