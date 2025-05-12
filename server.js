@@ -13,6 +13,8 @@ import { initializeSocket } from "./utils/socket.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import UserModel from "./models/UserModel.js";
 import { tokenMiddleware } from "./middleware/authMiddleware.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const genAI = new GoogleGenerativeAI("AIzaSyD72fhdjwxqG-dDlctfe15TvbqoO8K-uN8");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -21,6 +23,9 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize Socket.io
 initializeSocket(server);
@@ -64,6 +69,9 @@ app.post("/chatbot", async (req, res) => {
         return res.status(500).json({ message: "Something went wrong." });
     }
 });
+
+//  Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes for APIv1
 app.use("/api/v1/", APIv1);
