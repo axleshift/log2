@@ -92,7 +92,7 @@ const ShipmentsList = () => {
             filteredShipments.map((shipment, index) => (
               <CTableRow key={shipment._id}>
                 <CTableDataCell>{index + 1}</CTableDataCell>
-                <CTableDataCell>{shipment.vendorName || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{shipment.fullName || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{shipment.tracking_id || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{shipment.status || 'Unknown'}</CTableDataCell>
                 <CTableDataCell>

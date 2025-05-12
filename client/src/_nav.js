@@ -136,7 +136,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Shipment & Delivery',
+    name: 'Shipment Records',
     to: '/vendor/shipments',
     role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faShippingFast} className="nav-icon" />,

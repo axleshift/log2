@@ -25,8 +25,8 @@ export const createInventory = async (req, res) => {
 // Get All Inventory Records
 export const getAllInventory = async (req, res) => {
     try {
-        const inventory = await Inventory.find().populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "itemName");
-
+        const inventory = await Inventory.find().populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "name");
+        console.log(inventory);
         res.status(200).json(inventory);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -36,7 +36,7 @@ export const getAllInventory = async (req, res) => {
 // Get Inventory by ID
 export const getInventoryById = async (req, res) => {
     try {
-        const inventory = await Inventory.findById(req.params.id).populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "itemName");
+        const inventory = await Inventory.findById(req.params.id).populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "name");
 
         if (!inventory) return res.status(404).json({ message: "Inventory not found" });
 

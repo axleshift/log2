@@ -83,9 +83,10 @@ const Inventory = () => {
       const res = await axios.get(SHIPMENT_API_URL, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
+      console.log('Shipments fetched:', res.data)
       setShipments(res.data?.shipments || [])
     } catch (error) {
-      console.error('Failed to fetch shipments')
+      console.error('Failed to fetch shipments', error)
     }
   }
 
@@ -262,7 +263,9 @@ const Inventory = () => {
                         onChange={(e) => handleRowCheckChange(e, item._id)}
                       />
                     </CTableDataCell>
-                    <CTableDataCell>{item.shipment?.tracking_id || 'N/A'}</CTableDataCell>
+                    <CTableDataCell>
+                      {item.shipment ? item.shipment.tracking_id : 'N/A'}
+                    </CTableDataCell>
                     <CTableDataCell>{item.product?.name || 'N/A'}</CTableDataCell>
                     <CTableDataCell>{item.sku}</CTableDataCell>
                     <CTableDataCell>{item.quantity}</CTableDataCell>
