@@ -7,7 +7,7 @@ export const getAllVendorsWithUserDetails = async (req, res) => {
     try {
         const vendorUsers = await User.find({ role: "vendor" }).lean();
 
-        const userIds = vendorUsers.map((user) => new mongoose.Types.ObjectId(user._id));
+        const userIds = vendorUsers.map((user) => user._id);
         const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
 
         const vendorMap = {};
@@ -33,21 +33,6 @@ export const getAllVendors = async (req, res) => {
     try {
         const vendors = await Vendor.find().populate("userId", "username email role status");
         res.status(200).json(vendors);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Get Vendor by ID
-export const getVendorById = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status").populate("bids");
-
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        res.status(200).json(vendor);
     } catch (error) {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
@@ -197,7 +182,20 @@ export const createVendor = async (req, res) => {
 
 
 
+// Get Vendor by ID
+export const getVendorById = async (req, res) => {
+    try {
+        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status").populate("bids");
 
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found" });
+        }
+
+        res.status(200).json(vendor);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
 
 
 
