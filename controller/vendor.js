@@ -1,204 +1,6 @@
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
-export const getAllVendorsWithUserDetails = async (req, res) => {
-    try {
-        const vendorUsers = await User.find({ role: "vendor" }).lean();
-
-        const userIds = vendorUsers.map((user) => user._id);
-
-        const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
-
-        const vendorMap = vendorProfiles.reduce((acc, vendor) => {
-            acc[vendor.userId.toString()] = vendor;
-            return acc;
-        }, {});
-
-        const combined = vendorUsers.map((user) => ({
-            ...user,
-            vendorProfile: vendorMap[user._id.toString()] || null,
-        }));
-
-        res.status(200).json({ vendors: combined });
-    } catch (error) {
-        console.error("Error fetching vendors with user details:", error);
-        res.status(500).json({ message: "Server error", error });
-    }
-};
-
-// Get All Vendors
-/**{export const getAllVendors = async (req, res) => {
-    try {
-        const vendors = await Vendor.find().populate("userId", "username email role status");
-        res.status(200).json(vendors);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};}  */
-
-// Update Vendor
-export const updateVendor = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id);
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        Object.assign(vendor, req.body);
-        vendor.updatedAt = Date.now();
-
-        await vendor.save();
-        await vendor.populate("userId", "username email role status");
-
-        res.status(200).json({ message: "Vendor updated successfully", vendor });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Delete Vendor (soft delete)
-export const deleteVendor = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id);
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        vendor.status = "Deleted"; // need to add status in schema if delete is needed
-        vendor.updatedAt = Date.now();
-
-        await vendor.save();
-        res.status(200).json({ message: "Vendor marked as deleted" });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Approve Vendor
-export const approveVendor = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status");
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        vendor.status = "Approved";
-        vendor.updatedAt = Date.now();
-        await vendor.save();
-
-        res.status(200).json({ message: "Vendor approved successfully", vendor });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Reject Vendor
-export const rejectVendor = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status");
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        vendor.status = "Rejected";
-        vendor.updatedAt = Date.now();
-        await vendor.save();
-
-        res.status(200).json({ message: "Vendor rejected successfully", vendor });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-// Unapprove Vendor (set to Pending)
-export const unapproveVendor = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status");
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        vendor.status = "Pending";
-        vendor.updatedAt = Date.now();
-        await vendor.save();
-
-        res.status(200).json({ message: "Vendor approval status set to pending", vendor });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-/**import Vendor from "../models/vendor.js";
- * 
-
-import User from "../models/UserModel.js";
-
-
-export const createVendor = async (req, res) => {
-    try {
-        const { userId, businessName, fullName, email, contactNumber, businessAddress, website, businessRegistrationNumber, businessType, countryOfRegistration, yearEstablished, taxId, vatNumber, documents, categories, authorizedDealer, certifications, agreeToTerms, acceptNDA } =
-            req.body;
-
-        const existingUser = await User.findById(userId);
-        if (!existingUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const existingVendor = await Vendor.findOne({ $or: [{ email }, { taxId }] });
-        if (existingVendor) {
-            return res.status(400).json({ message: "Vendor already exists" });
-        }
-
-        const vendor = new Vendor({
-            userId,
-            businessName,
-            fullName,
-            email,
-            contactNumber,
-            businessAddress,
-            website,
-            businessRegistrationNumber,
-            businessType,
-            countryOfRegistration,
-            yearEstablished,
-            taxId,
-            vatNumber,
-            documents,
-            categories,
-            authorizedDealer,
-            certifications,
-            agreeToTerms,
-            acceptNDA,
-        });
-
-        await vendor.save();
-        res.status(201).json({ message: "Vendor created successfully", vendor });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-
-
-// Get Vendor by ID
-export const getVendorById = async (req, res) => {
-    try {
-        const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status").populate("bids");
-
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found" });
-        }
-
-        res.status(200).json(vendor);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
-    }
-};
-
-
-
-
-
 // Create Vendor
 export const createVendor = async (req, res) => {
     try {
@@ -232,6 +34,7 @@ export const createVendor = async (req, res) => {
     }
 };
 
+// Get all vendors
 export const getAllVendors = async (req, res) => {
     try {
         const vendors = await Vendor.find().populate("userId", "username email role status");
@@ -241,7 +44,7 @@ export const getAllVendors = async (req, res) => {
     }
 };
 
-// Get Vendor by ID with User Details
+// Get vendor by ID
 export const getVendorById = async (req, res) => {
     try {
         const vendor = await Vendor.findById(req.params.id).populate("userId", "username email role status");
@@ -254,7 +57,20 @@ export const getVendorById = async (req, res) => {
     }
 };
 
-// Update Vendor with User Details
+// Get vendor by userId
+export const getVendorByUserId = async (req, res) => {
+    try {
+        const vendor = await Vendor.findOne({ userId: req.params.userId }).populate("userId", "username email role status");
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found" });
+        }
+        res.status(200).json(vendor);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
+
+// Update vendor
 export const updateVendor = async (req, res) => {
     try {
         const vendor = await Vendor.findById(req.params.id);
@@ -274,7 +90,7 @@ export const updateVendor = async (req, res) => {
     }
 };
 
-// Delete Vendor
+// Delete (Deactivate) Vendor
 export const deleteVendor = async (req, res) => {
     try {
         const vendor = await Vendor.findById(req.params.id);
@@ -282,21 +98,21 @@ export const deleteVendor = async (req, res) => {
             return res.status(404).json({ message: "Vendor not found" });
         }
 
-        vendor.status = "Approved";
+        vendor.status = "Deactivated";
         vendor.updatedAt = Date.now();
         await vendor.save();
         await vendor.populate("userId", "username email role status");
 
-        res.status(200).json({ message: "Vendor deleted successfully" });
+        res.status(200).json({ message: "Vendor deactivated successfully", vendor });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
 
-// Approve Vendor with User Details
+// Approve vendor
 export const approveVendor = async (req, res) => {
     try {
-        const vendor = await Vendor.findOne({ vendorId: req.params.id });
+        const vendor = await Vendor.findById(req.params.id);
         if (!vendor) {
             return res.status(404).json({ message: "Vendor not found" });
         }
@@ -313,10 +129,10 @@ export const approveVendor = async (req, res) => {
     }
 };
 
-// Reject Vendor with User Details
+// Reject vendor
 export const rejectVendor = async (req, res) => {
     try {
-        const vendor = await Vendor.findOne({ vendorId: req.params.id });
+        const vendor = await Vendor.findById(req.params.id);
         if (!vendor) {
             return res.status(404).json({ message: "Vendor not found" });
         }
@@ -333,10 +149,10 @@ export const rejectVendor = async (req, res) => {
     }
 };
 
-// Unapprove Vendor with User Details
+// Unapprove vendor (set to Pending)
 export const unapproveVendor = async (req, res) => {
     try {
-        const vendor = await Vendor.findOne({ vendorId: req.params.id });
+        const vendor = await Vendor.findById(req.params.id);
         if (!vendor) {
             return res.status(404).json({ message: "Vendor not found" });
         }
@@ -352,4 +168,3 @@ export const unapproveVendor = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
-**/
