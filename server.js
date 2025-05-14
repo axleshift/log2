@@ -71,7 +71,8 @@ app.post("/chatbot", async (req, res) => {
 });
 
 //  Serve uploaded files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+//app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Routes for APIv1
 app.use("/api/v1", APIv1);
