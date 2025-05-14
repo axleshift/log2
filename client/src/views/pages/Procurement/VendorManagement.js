@@ -55,7 +55,7 @@ const Vendors = () => {
 
         const data = await response.json()
         console.log('Data:', data)
-        setUsers(Array.isArray(data.vendors) ? data.vendors : [])
+        setUsers(data.vendors)
       } catch (error) {
         console.error('Error fetching vendors:', error)
         setUsers([])
@@ -175,7 +175,7 @@ const Vendors = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {Array.isArray(users) && users.length > 0 ? (
+                    {users.length > 0 ? (
                       users.map((user) => (
                         <CTableRow key={user._id} className="text-center">
                           <CTableDataCell>{user._id}</CTableDataCell>
