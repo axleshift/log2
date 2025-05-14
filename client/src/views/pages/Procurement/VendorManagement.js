@@ -18,6 +18,7 @@ import {
   CModalBody,
   CModalFooter,
   CSpinner,
+  CBadge,
 } from '@coreui/react'
 
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
@@ -184,9 +185,7 @@ const VendorManagement = () => {
                           <CTableDataCell>{user._id}</CTableDataCell>
                           <CTableDataCell>{user.email}</CTableDataCell>
                           <CTableDataCell>
-                            <CButton color={getStatusColor(user.status)} className="mr-2">
-                              {user.status}
-                            </CButton>
+                            <CBadge color={getStatusColor(user.status)}>{user.status}</CBadge>
                           </CTableDataCell>
                           <CTableDataCell>{user.role}</CTableDataCell>
                           <CTableDataCell>
@@ -258,7 +257,7 @@ const VendorManagement = () => {
                 <strong>Role:</strong> {selectedUser.role}
               </p>
 
-              <h5 className="mt-3">Vendor Information</h5>
+              <h5 className="mt-3">Vendor Profile</h5>
               <p>
                 <strong>Business Name:</strong> {vendorDetails.businessName}
               </p>
@@ -276,18 +275,22 @@ const VendorManagement = () => {
               </p>
 
               <h5 className="mt-3">Documents</h5>
-              <ul>
-                {vendorDetails.documents &&
-                  Object.entries(vendorDetails.documents).map(([key, value]) =>
+              {vendorDetails.documents &&
+              Object.values(vendorDetails.documents).some((val) => val) ? (
+                <ul>
+                  {Object.entries(vendorDetails.documents).map(([key, value]) =>
                     value ? (
                       <li key={key}>
                         <a href={value} target="_blank" rel="noopener noreferrer">
-                          {key.replace(/([A-Z])/g, ' $1')} - View Document
+                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
                         </a>
                       </li>
                     ) : null,
                   )}
-              </ul>
+                </ul>
+              ) : (
+                <p>No uploaded documents.</p>
+              )}
             </div>
           )}
         </CModalBody>
