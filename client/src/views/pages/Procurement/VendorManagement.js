@@ -55,7 +55,7 @@ const Vendors = () => {
 
         const data = await response.json()
         console.log('Data:', data)
-        setUsers(data.vendors)
+        setUsers(data.vendors || [])
       } catch (error) {
         console.error('Error fetching vendors:', error)
         setUsers([])
