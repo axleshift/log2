@@ -47,11 +47,14 @@ const Vendors = () => {
           },
         })
 
+        console.log('Response:', response)
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`)
         }
 
         const data = await response.json()
+        console.log('Data:', data)
         setUsers(data.vendors)
       } catch (error) {
         console.error('Error fetching vendors:', error)
@@ -152,7 +155,6 @@ const Vendors = () => {
           {alertMessage}
         </CAlert>
       )}
-
       <CRow>
         <CCol xs="12">
           <CCard className="shadow-lg">

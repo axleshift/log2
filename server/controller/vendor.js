@@ -2,20 +2,19 @@ import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
-// GET /api/v1/vendor/with-users
 export const getAllVendorsWithUserDetails = async (req, res) => {
     try {
         const vendorUsers = await User.find({ role: "vendor" }).lean();
 
         const userIds = vendorUsers.map((user) => user._id);
+
         const vendorProfiles = await Vendor.find({ userId: { $in: userIds } }).lean();
 
-        const vendorMap = {};
-        vendorProfiles.forEach((vendor) => {
-            vendorMap[vendor.userId.toString()] = vendor;
-        });
+        const vendorMap = vendorProfiles.reduce((acc, vendor) => {
+            acc[vendor.userId.toString()] = vendor;
+            return acc;
+        }, {});
 
-        // Merge user with corresponding vendor profile
         const combined = vendorUsers.map((user) => ({
             ...user,
             vendorProfile: vendorMap[user._id.toString()] || null,
