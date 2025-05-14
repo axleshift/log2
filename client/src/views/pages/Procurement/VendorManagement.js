@@ -175,7 +175,7 @@ const Vendors = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {users.length > 0 ? (
+                    {Array.isArray(users) && users.length > 0 ? (
                       users.map((user) => (
                         <CTableRow key={user._id} className="text-center">
                           <CTableDataCell>{user._id}</CTableDataCell>
