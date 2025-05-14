@@ -1,10 +1,12 @@
 import express from "express";
-import { getAllVendorsWithUserDetails, /**getAllVendors,**/ updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor } from "../../controller/vendor.js";
+import { createVendor, getAllVendors, getVendorByUserId, getVendorById, updateVendor, deleteVendor, approveVendor, rejectVendor, unapproveVendor } from "../../controller/vendor.js";
 
 const router = express.Router();
 
-//router.get("/with-users", getAllVendors);
-router.get("/", getAllVendorsWithUserDetails);
+router.post("/create", createVendor);
+router.get("/user/:userId", getVendorByUserId);
+router.get("/", getAllVendors);
+router.get("/:id", getVendorById);
 router.put("/:id", updateVendor);
 router.delete("/:id", deleteVendor);
 router.put("/approve/:id", approveVendor);

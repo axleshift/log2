@@ -30,7 +30,7 @@ const CreateAwardNotice = () => {
     vendorId: '',
   })
 
-  const [vendors, setVendors] = useState([]) // Ensure vendors is an empty array by default
+  const [vendors, setVendors] = useState([])
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -44,8 +44,7 @@ const CreateAwardNotice = () => {
       const res = await axios.get(VENDOR_API_URL, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-      // Ensure vendors is an array and update state
-      setVendors(Array.isArray(res.data) ? res.data : [])
+      setVendors(res.data)
     } catch (err) {
       console.error('Failed to fetch vendors', err)
       showToast('Error loading vendors', 'danger')
@@ -144,15 +143,11 @@ const CreateAwardNotice = () => {
           <CFormLabel>Vendor</CFormLabel>
           <CFormSelect name="vendorId" value={awardData.vendorId} onChange={handleChange} required>
             <option value="">Select Vendor</option>
-            {Array.isArray(vendors) && vendors.length > 0 ? (
-              vendors.map((vendor) => (
-                <option key={vendor._id} value={vendor._id}>
-                  {vendor.businessName} ({vendor.fullName})
-                </option>
-              ))
-            ) : (
-              <option disabled>No vendors available</option>
-            )}
+            {vendors.map((vendor) => (
+              <option key={vendor._id} value={vendor._id}>
+                {vendor.businessName} ({vendor.fullName})
+              </option>
+            ))}
           </CFormSelect>
         </CCol>
       </CRow>
