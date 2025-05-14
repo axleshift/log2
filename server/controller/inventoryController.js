@@ -25,7 +25,7 @@ export const createInventory = async (req, res) => {
 // Get All Inventory Records
 export const getAllInventory = async (req, res) => {
     try {
-        const inventory = await Inventory.find().populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "name");
+        const inventory = await Inventory.find().populate("shipment", "tracking_id").populate("warehouse_id", "location").populate("product", "name").lean();
         console.log(inventory);
         res.status(200).json(inventory);
     } catch (error) {
