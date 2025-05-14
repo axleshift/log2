@@ -26,7 +26,7 @@ const USER_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`
 
 const Vendors = () => {
   const { accessToken } = useAuth()
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState([]) // Initial state is always an empty array
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
@@ -55,10 +55,10 @@ const Vendors = () => {
 
         const data = await response.json()
         console.log('Data:', data)
-        setUsers(data.vendors || [])
+        setUsers(Array.isArray(data.vendors) ? data.vendors : []) // Ensure users state is always an array
       } catch (error) {
         console.error('Error fetching vendors:', error)
-        setUsers([])
+        setUsers([]) // Reset to empty array if error occurs
       } finally {
         setLoading(false)
       }
