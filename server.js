@@ -37,6 +37,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(sessionMiddleware);
 app.use(loggerMiddleware);
+
+// TEST ROUTE
+app.get("/api/v1/ping", (req, res) => {
+    res.send("pong");
+});
+
 app.post("/chatbot", async (req, res) => {
     try {
         const { query } = req.body;
