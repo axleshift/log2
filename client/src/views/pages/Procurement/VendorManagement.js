@@ -246,7 +246,7 @@ const VendorManagement = () => {
                 <strong>User ID:</strong> {selectedUser._id}
               </p>
               <p>
-                <strong>Name:</strong> {selectedUser?.username || 'N/A'}
+                <strong>Username:</strong> {selectedUser?.username || 'N/A'}
               </p>
               <p>
                 <strong>Email:</strong> {selectedUser.email}

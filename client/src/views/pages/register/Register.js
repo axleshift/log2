@@ -37,7 +37,7 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [notification, setNotification] = useState({ message: '', type: '' })
   const [email, setEmail] = useState('')
-  const [otpVerified, setOtpVerified] = useState(true)
+  const [otpVerified, setOtpVerified] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
   const selectedRole = watch('role', 'user')

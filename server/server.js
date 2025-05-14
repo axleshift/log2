@@ -37,12 +37,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(sessionMiddleware);
 app.use(loggerMiddleware);
-
-// TEST ROUTE
-app.get("/api/v1/ping", (req, res) => {
-    res.send("pong");
-});
-
 app.post("/chatbot", async (req, res) => {
     try {
         const { query } = req.body;
@@ -76,7 +70,7 @@ app.post("/chatbot", async (req, res) => {
     }
 });
 
-//  Serve uploaded files statically
+//  Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes for APIv1
