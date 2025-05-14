@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
@@ -28,14 +27,14 @@ export const getAllVendorsWithUserDetails = async (req, res) => {
 };
 
 // Get All Vendors
-export const getAllVendors = async (req, res) => {
+/**{export const getAllVendors = async (req, res) => {
     try {
         const vendors = await Vendor.find().populate("userId", "username email role status");
         res.status(200).json(vendors);
     } catch (error) {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
-};
+};}  */
 
 // Update Vendor
 export const updateVendor = async (req, res) => {
