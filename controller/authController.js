@@ -346,34 +346,32 @@ export const changePassword = async (req, res, next) => {
     }
 };
 
-export const refreshToken = (req, res, next) => {
+export const refreshToken = (req, res) => {
     const refreshToken = req.cookies.refreshToken;
+
     if (!refreshToken) {
         return res.status(401).json({ status: "error", message: "Refresh token not found." });
     }
 
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(403).json({ status: "error", message: "Invalid refresh token." });
+            return res.status(403).json({ status: "error", message: "Invalid or expired refresh token." });
         }
 
-        // Generate new access token
-        const accessToken = TokenService.generateAccessToken({ userId: user.userId });
+        const newAccessToken = TokenService.generateAccessToken({ userId: decoded.userId });
 
-        // Send new access token in a secure, HTTP-only cookie
-        res.cookie("token", accessToken, {
+        // Set new access token in cookie
+        res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
-            maxAge: 3600 * 1000,
+            maxAge: 60 * 60 * 1000,
         });
 
-        // Send back both accessToken and refreshToken
         return res.status(200).json({
             status: "success",
             message: "Access token refreshed.",
-            accessToken,
-            refreshToken,
+            accessToken: newAccessToken,
         });
     });
 };
