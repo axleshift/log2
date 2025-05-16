@@ -11,7 +11,6 @@ import {
   CSpinner,
   CFormInput,
   CFormTextarea,
-  CFormSelect,
   CFormLabel,
   CTable,
   CTableHead,
@@ -32,7 +31,7 @@ const QUOTE_API_URL = `${API_URL}/api/v1/vendor-quotes`
 const VendorQuotes = () => {
   const { accessToken } = useAuth()
   const [quotes, setQuotes] = useState([])
-  const [form, setForm] = useState({ vendorName: '', price: '', details: '', status: 'Pending' })
+  const [form, setForm] = useState({ vendorName: '', price: '', details: '' })
   const [loading, setLoading] = useState(false)
   const [toasts, setToasts] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
@@ -72,7 +71,7 @@ const VendorQuotes = () => {
           'Content-Type': 'application/json',
         },
       })
-      setForm({ vendorName: '', price: '', details: '', status: 'Pending' })
+      setForm({ vendorName: '', price: '', details: '' })
       setModalVisible(false)
       fetchQuotes()
       showToast('Vendor quote created!')
@@ -85,18 +84,16 @@ const VendorQuotes = () => {
 
   return (
     <div>
-      {/* Button to open modal */}
       <CButton color="primary" onClick={() => setModalVisible(true)} className="mb-3">
         + Create Quote
       </CButton>
 
-      {/* Modal for quote creation */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>Create Vendor Quote</CModalHeader>
         <CModalBody>
           <form onSubmit={handleSubmit}>
             <CRow className="mb-3">
-              <CCol md={4}>
+              <CCol md={6}>
                 <CFormLabel>Vendor Name</CFormLabel>
                 <CFormInput
                   name="vendorName"
@@ -105,7 +102,7 @@ const VendorQuotes = () => {
                   required
                 />
               </CCol>
-              <CCol md={4}>
+              <CCol md={6}>
                 <CFormLabel>Price</CFormLabel>
                 <CFormInput
                   name="price"
@@ -114,14 +111,6 @@ const VendorQuotes = () => {
                   onChange={handleChange}
                   required
                 />
-              </CCol>
-              <CCol md={4}>
-                <CFormLabel>Status</CFormLabel>
-                <CFormSelect name="status" value={form.status} onChange={handleChange}>
-                  <option value="Pending">Pending</option>
-                  <option value="Accepted">Accepted</option>
-                  <option value="Rejected">Rejected</option>
-                </CFormSelect>
               </CCol>
             </CRow>
             <CRow className="mb-3">
@@ -146,7 +135,6 @@ const VendorQuotes = () => {
         </CModalFooter>
       </CModal>
 
-      {/* Vendor Quote Table */}
       <CTable striped>
         <CTableHead>
           <CTableRow>
@@ -160,7 +148,7 @@ const VendorQuotes = () => {
           {quotes.map((q) => (
             <CTableRow key={q._id}>
               <CTableDataCell>{q.vendorName}</CTableDataCell>
-              <CTableDataCell>${q.price}</CTableDataCell>
+              <CTableDataCell>{q.price}</CTableDataCell>
               <CTableDataCell>{q.details}</CTableDataCell>
               <CTableDataCell>{q.status}</CTableDataCell>
             </CTableRow>
@@ -168,7 +156,6 @@ const VendorQuotes = () => {
         </CTableBody>
       </CTable>
 
-      {/* Toasts */}
       <CToaster placement="top-end">
         {toasts.map((toast) => (
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>

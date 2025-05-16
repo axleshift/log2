@@ -2,10 +2,23 @@ import mongoose from "mongoose";
 
 const vendorQuotePendingSchema = new mongoose.Schema(
     {
-        vendorName: { type: String, required: true },
+        vendorId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Vendor",
+            required: true,
+        },
         price: { type: Number, required: true },
         details: { type: String },
-        status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" },
+        status: {
+            type: String,
+            enum: ["Pending", "Accepted", "Rejected"],
+            default: "Pending",
+        },
+        rfqId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "RFQ",
+            required: true,
+        },
     },
     { timestamps: true }
 );

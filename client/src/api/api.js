@@ -4,6 +4,63 @@ const API_URL = import.meta.env.VITE_API_URL
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
+})
+
+// Request Interceptor: sets Content-Type properly
+api.interceptors.request.use(
+  (config) => {
+    if (config.data instanceof FormData) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+    } else {
+      config.headers['Content-Type'] = 'application/json'
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
+// Response Interceptor: handle 401 errors by refreshing token
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        await api.post('/auth/refresh-token')
+
+        return api(originalRequest)
+      } catch (refreshError) {
+        console.error('Session expired, redirecting to login...')
+
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
+    }
+
+    return Promise.reject(error)
+  },
+)
+
+// Reusable API functions with params and headers flexibility
+export const apiService = {
+  get: (url, params = {}, headers = {}) => api.get(url, { params, headers }),
+  post: (url, data, headers = {}) => api.post(url, data, { headers }),
+  put: (url, data, headers = {}) => api.put(url, data, { headers }),
+  delete: (url, headers = {}) => api.delete(url, { headers }),
+}
+
+export default api
+
+/**import axios from 'axios'
+
+const API_URL = import.meta.env.VITE_API_URL
+
+const api = axios.create({
+  baseURL: API_URL,
   withCredentials: true, // Automatically send cookies with requests
 })
 
@@ -50,3 +107,4 @@ export const apiService = {
 }
 
 export default api
+**/

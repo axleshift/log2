@@ -37,7 +37,7 @@ const VendorQuotes = () => {
       setQuotes(res.data)
       setFilteredQuotes(res.data)
     } catch (err) {
-      console.error('Failed to fetch vendor quotes')
+      console.error('Failed to fetch vendor quotes', err)
     }
   }
 
@@ -51,9 +51,13 @@ const VendorQuotes = () => {
   }
 
   const handleSearchChange = (e) => {
+    const searchTerm = e.target.value.toLowerCase()
     setSearch(e.target.value)
     setFilteredQuotes(
-      quotes.filter((q) => q.vendorName.toLowerCase().includes(e.target.value.toLowerCase())),
+      quotes.filter((q) => {
+        const vendorName = q.vendorId?.businessName || q.vendorId?.fullName || ''
+        return vendorName.toLowerCase().includes(searchTerm)
+      }),
     )
   }
 
@@ -68,7 +72,7 @@ const VendorQuotes = () => {
       )
       fetchQuotes()
     } catch (err) {
-      console.error('Failed to update status')
+      console.error('Failed to update status', err)
     }
   }
 
@@ -97,7 +101,9 @@ const VendorQuotes = () => {
         <CTableBody>
           {filteredQuotes.map((quote) => (
             <CTableRow key={quote._id}>
-              <CTableDataCell>{quote.vendorName}</CTableDataCell>
+              <CTableDataCell>
+                {quote.vendorId?.businessName || quote.vendorId?.fullName || 'N/A'}
+              </CTableDataCell>
               <CTableDataCell>${quote.price}</CTableDataCell>
               <CTableDataCell>{quote.status}</CTableDataCell>
               <CTableDataCell>
@@ -140,13 +146,15 @@ const VendorQuotes = () => {
           {selectedQuote && (
             <>
               <p>
-                <strong>Vendor:</strong> {selectedQuote.vendorName}
+                <strong>Vendor:</strong>{' '}
+                {selectedQuote.vendorId?.businessName || selectedQuote.vendorId?.fullName || 'N/A'}
               </p>
               <p>
-                <strong>Price:</strong> ${selectedQuote.price}
+                <strong>Price:</strong>
+                {selectedQuote.price}
               </p>
               <p>
-                <strong>Details:</strong> {selectedQuote.details}
+                <strong>Details:</strong> {selectedQuote.details || 'No details provided.'}
               </p>
             </>
           )}

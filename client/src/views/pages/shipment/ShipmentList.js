@@ -52,14 +52,22 @@ const ShipmentsList = () => {
     if (value === 'All') {
       setFilteredShipments(shipments)
     } else {
-      setFilteredShipments(shipments.filter((s) => s.status === value))
+      setFilteredShipments(
+        shipments.filter(
+          (s) =>
+            s.shipment?.shipment_description &&
+            s.shipment.shipment_description.toLowerCase().includes(value.toLowerCase()),
+        ),
+      )
     }
   }
 
   const handleSearchChange = (e) => {
     const keyword = e.target.value.toLowerCase()
     setSearch(keyword)
-    setFilteredShipments(shipments.filter((s) => s.vendorName?.toLowerCase().includes(keyword)))
+    setFilteredShipments(
+      shipments.filter((s) => s.shipper?.shipper_company_name?.toLowerCase().includes(keyword)),
+    )
   }
 
   return (
@@ -69,21 +77,22 @@ const ShipmentsList = () => {
       <div className="d-flex justify-content-between mb-3">
         <CFormSelect value={filter} onChange={(e) => handleFilterChange(e.target.value)}>
           <option value="All">All</option>
-          <option value="Pending">Pending</option>
-          <option value="In Transit">In Transit</option>
-          <option value="Delivered">Delivered</option>
         </CFormSelect>
 
-        <CFormInput placeholder="Search Vendor" value={search} onChange={handleSearchChange} />
+        <CFormInput
+          placeholder="Search Shipper Company"
+          value={search}
+          onChange={handleSearchChange}
+        />
       </div>
 
       <CTable striped hover responsive>
         <CTableHead>
           <CTableRow>
             <CTableHeaderCell>#</CTableHeaderCell>
-            <CTableHeaderCell>Vendor Name</CTableHeaderCell>
+            <CTableHeaderCell>Shipper Company</CTableHeaderCell>
             <CTableHeaderCell>Tracking ID</CTableHeaderCell>
-            <CTableHeaderCell>Status</CTableHeaderCell>
+            <CTableHeaderCell>Shipment Description</CTableHeaderCell>
             <CTableHeaderCell>Actions</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
@@ -92,9 +101,9 @@ const ShipmentsList = () => {
             filteredShipments.map((shipment, index) => (
               <CTableRow key={shipment._id}>
                 <CTableDataCell>{index + 1}</CTableDataCell>
-                <CTableDataCell>{shipment.fullName || 'N/A'}</CTableDataCell>
+                <CTableDataCell>{shipment.shipper?.shipper_company_name || 'N/A'}</CTableDataCell>
                 <CTableDataCell>{shipment.tracking_id || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{shipment.status || 'Unknown'}</CTableDataCell>
+                <CTableDataCell>{shipment.shipment?.shipment_description || 'N/A'}</CTableDataCell>
                 <CTableDataCell>
                   <CButton
                     color="info"
@@ -125,13 +134,15 @@ const ShipmentsList = () => {
           {selectedShipment && (
             <>
               <p>
-                <strong>Vendor:</strong> {selectedShipment.vendorName || 'N/A'}
+                <strong>Shipper Company:</strong>{' '}
+                {selectedShipment.shipper?.shipper_company_name || 'N/A'}
               </p>
               <p>
                 <strong>Tracking ID:</strong> {selectedShipment.tracking_id || 'N/A'}
               </p>
               <p>
-                <strong>Status:</strong> {selectedShipment.status || 'Unknown'}
+                <strong>Description:</strong>{' '}
+                {selectedShipment.shipment?.shipment_description || 'N/A'}
               </p>
               <p>
                 <strong>Details:</strong> {selectedShipment.details || 'N/A'}

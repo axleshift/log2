@@ -26,15 +26,14 @@ const RFQDetails = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchRFQ = async () => {
-      if (!id) {
-        setError('Invalid RFQ ID')
-        setLoading(false)
-        return
-      }
+    if (!id) {
+      setError('Invalid RFQ ID')
+      setLoading(false)
+      return
+    }
 
+    const fetchRFQ = async () => {
       try {
-        setLoading(true)
         const { data } = await axios.get(`${RFQ_API_URL}/${id}`)
         setRFQ(data.rfq)
       } catch (err) {
@@ -47,13 +46,45 @@ const RFQDetails = () => {
     fetchRFQ()
   }, [id])
 
-  if (loading) return <CSpinner color="primary" />
-  if (error) return <div className="text-danger">{error}</div>
-  if (!rfq) return <div>No RFQ found.</div>
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case 'Open':
+        return 'success'
+      case 'Closed':
+        return 'danger'
+      default:
+        return 'warning'
+    }
+  }
+
+  if (loading) {
+    return (
+      <CCard>
+        <CCardBody className="text-center">
+          <CSpinner color="primary" />
+        </CCardBody>
+      </CCard>
+    )
+  }
+
+  if (error) {
+    return (
+      <CCard>
+        <CCardBody className="text-center text-danger">{error}</CCardBody>
+      </CCard>
+    )
+  }
+
+  if (!rfq) {
+    return (
+      <CCard>
+        <CCardBody className="text-center">No RFQ found.</CCardBody>
+      </CCard>
+    )
+  }
 
   const products = rfq.products || []
   const vendors = rfq.vendors || []
-  const quotes = rfq.quotes || []
   const selectedVendor = rfq.selectedVendor || null
   const requestedBy = rfq.requestedBy?.email || rfq.procurementId?.requestedBy?.email || 'Unknown'
 
@@ -69,30 +100,24 @@ const RFQDetails = () => {
         {/* RFQ General Info */}
         <div className="row mb-3">
           <div className="col-md-6">
-            <strong>RFQ ID:</strong> {rfq._id}
+            <strong>RFQ ID:</strong> {rfq._id || 'N/A'}
           </div>
           <div className="col-md-6">
             <strong>Title:</strong> {rfq.procurementId?.title || 'N/A'}
           </div>
           <div className="col-md-6">
-            <strong>Description:</strong>{' '}
-            {rfq.procurementId?.description || 'No description available'}
+            <strong>Description:</strong> {rfq.procurementId?.description || 'No description'}
           </div>
           <div className="col-md-6">
-            <strong>Status:</strong>
-            <CBadge
-              color={
-                rfq.status === 'Open' ? 'success' : rfq.status === 'Closed' ? 'danger' : 'warning'
-              }
-            >
-              {rfq.status}
-            </CBadge>
+            <strong>Status:</strong>{' '}
+            <CBadge color={getStatusBadgeColor(rfq.status)}>{rfq.status || 'Unknown'}</CBadge>
           </div>
           <div className="col-md-6">
             <strong>Created By:</strong> {requestedBy}
           </div>
           <div className="col-md-6">
-            <strong>Created At:</strong> {new Date(rfq.createdAt).toLocaleDateString()}
+            <strong>Created At:</strong>{' '}
+            {rfq.createdAt ? new Date(rfq.createdAt).toLocaleDateString() : 'N/A'}
           </div>
         </div>
 
@@ -116,14 +141,12 @@ const RFQDetails = () => {
                 <CTableRow key={index}>
                   <CTableDataCell>{product.name || 'No name'}</CTableDataCell>
                   <CTableDataCell>{product.quantity || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{product.unit || 'No Unit'}</CTableDataCell>
+                  <CTableDataCell>{product.unit || 'N/A'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="3" className="text-center">
-                  No products listed
-                </CTableDataCell>
+                <CTableDataCell colSpan="3">No products listed</CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -151,14 +174,12 @@ const RFQDetails = () => {
                   <CTableDataCell>{vendor.businessName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.fullName || 'N/A'}</CTableDataCell>
                   <CTableDataCell>{vendor.contactNumber || 'N/A'}</CTableDataCell>
-                  <CTableDataCell>{vendor.userId?.email || 'No Email'}</CTableDataCell>
+                  <CTableDataCell>{vendor.userId?.email || 'No email'}</CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="4" className="text-center">
-                  No vendors added yet.
-                </CTableDataCell>
+                <CTableDataCell colSpan="4">No vendors added yet</CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
@@ -170,7 +191,7 @@ const RFQDetails = () => {
         <h6>
           <strong>Selected Vendor:</strong>{' '}
           {selectedVendor?.businessName || (
-            <span className="text-muted">No vendor selected yet.</span>
+            <span className="text-muted">No vendor selected yet</span>
           )}
         </h6>
       </CCardBody>
