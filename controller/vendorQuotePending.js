@@ -82,3 +82,18 @@ export const updateVendorQuoteStatus = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+// DELETE
+export const deleteVendorQuote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedQuote = await VendorQuotePending.findByIdAndDelete(id);
+        if (!deletedQuote) {
+            return res.status(404).json({ message: "Quote not found" });
+        }
+        res.status(200).json({ message: "Quote deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting quote:", error);
+        res.status(500).json({ error: error.message });
+    }
+};

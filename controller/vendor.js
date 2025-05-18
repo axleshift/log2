@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Vendor from "../models/vendor.js";
 import User from "../models/UserModel.js";
 
@@ -90,21 +91,21 @@ export const updateVendor = async (req, res) => {
     }
 };
 
-// Delete (Deactivate) Vendor
-export const deleteVendor = async (req, res) => {
+// Delete vendor by userId
+export const deleteVendorByUserId = async (req, res) => {
     try {
-        const vendor = await Vendor.findById(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.params.userId);
+        const vendor = await Vendor.findOneAndDelete({ userId });
         if (!vendor) {
             return res.status(404).json({ message: "Vendor not found" });
         }
-
-        vendor.status = "Deactivated";
-        vendor.updatedAt = Date.now();
-        await vendor.save();
-        await vendor.populate("userId", "username email role status");
-
-        res.status(200).json({ message: "Vendor deactivated successfully", vendor });
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "Vendor and User deleted successfully" });
     } catch (error) {
+        console.error("Error deleting vendor and user:", error);
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
