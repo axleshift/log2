@@ -121,7 +121,14 @@ const PurchaseOrderPage = () => {
   const handleProductsChange = (e, index) => {
     const { name, value } = e.target
     const updated = [...poData.products]
-    updated[index][name] = ['quantity', 'unitPrice'].includes(name) ? parseFloat(value) : value
+
+    if (['quantity', 'unitPrice'].includes(name)) {
+      const parsedValue = parseFloat(value)
+      updated[index][name] = isNaN(parsedValue) ? 0 : parsedValue
+    } else {
+      updated[index][name] = value
+    }
+
     setPoData((prev) => ({ ...prev, products: updated }))
   }
 

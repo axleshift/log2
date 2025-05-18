@@ -14,6 +14,11 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
+  CSpinner,
+  CToast,
+  CToastBody,
+  CToastHeader,
+  CToaster,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
 
@@ -28,51 +33,81 @@ const VendorQuotes = () => {
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
-
-  const fetchQuotes = async () => {
-    try {
-      const res = await axios.get(QUOTE_API_URL, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      setQuotes(res.data)
-      setFilteredQuotes(res.data)
-    } catch (err) {
-      console.error('Failed to fetch vendor quotes', err)
-    }
-  }
+  const [loading, setLoading] = useState(false)
+  const [actionLoadingId, setActionLoadingId] = useState(null)
+  const [toast, setToast] = useState({ visible: false, message: '', color: '' })
 
   useEffect(() => {
     fetchQuotes()
   }, [])
 
-  const handleFilterChange = (value) => {
-    setFilter(value)
-    setFilteredQuotes(value === 'All' ? quotes : quotes.filter((q) => q.status === value))
+  useEffect(() => {
+    filterAndSearchQuotes()
+  }, [quotes, filter, search])
+
+  const fetchQuotes = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get(QUOTE_API_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      setQuotes(res.data)
+    } catch (err) {
+      console.error('Failed to fetch vendor quotes', err)
+      showToast('Failed to fetch vendor quotes', 'danger')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleSearchChange = (e) => {
-    const searchTerm = e.target.value.toLowerCase()
-    setSearch(e.target.value)
-    setFilteredQuotes(
-      quotes.filter((q) => {
-        const vendorName = q.vendorId?.businessName || q.vendorId?.fullName || ''
-        return vendorName.toLowerCase().includes(searchTerm)
-      }),
-    )
+  const filterAndSearchQuotes = () => {
+    let result = [...quotes]
+    if (filter !== 'All') {
+      result = result.filter((q) => q.status === filter)
+    }
+    if (search.trim()) {
+      const searchTerm = search.toLowerCase()
+      result = result.filter((q) =>
+        (q.vendorId?.businessName || q.vendorId?.fullName || '').toLowerCase().includes(searchTerm),
+      )
+    }
+    setFilteredQuotes(result)
   }
 
-  const handleStatusChange = async (id, status) => {
+  const showToast = (message, color = 'success') => {
+    setToast({ visible: true, message, color })
+  }
+
+  const handleStatusChange = async (quoteId, newStatus) => {
+    setActionLoadingId(quoteId)
     try {
       await axios.put(
-        `${QUOTE_API_URL}/${id}/status`,
-        { status },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
+        `${QUOTE_API_URL}/${quoteId}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       )
-      fetchQuotes()
+      await fetchQuotes()
+      showToast(`Quote ${newStatus.toLowerCase()} successfully!`)
     } catch (err) {
       console.error('Failed to update status', err)
+      showToast('Failed to update status', 'danger')
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  const handleDeleteQuote = async (id) => {
+    try {
+      await axios.delete(`${QUOTE_API_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      setQuotes((prev) => prev.filter((q) => q._id !== id))
+      showToast('Quote deleted successfully!')
+    } catch (err) {
+      console.error('Failed to delete quote', err)
+      showToast('Failed to delete quote', 'danger')
+    } finally {
+      setActionLoadingId(null)
     }
   }
 
@@ -80,66 +115,102 @@ const VendorQuotes = () => {
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="mb-4 fw-bold">RFQ Details – Submitted Quotes</h1>
       <div className="d-flex justify-content-between mb-3">
-        <CFormSelect value={filter} onChange={(e) => handleFilterChange(e.target.value)}>
+        <CFormSelect
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ maxWidth: 200 }}
+        >
           <option value="All">All</option>
           <option value="Pending">Pending</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Rejected</option>
         </CFormSelect>
-        <CFormInput placeholder="Search Vendor" value={search} onChange={handleSearchChange} />
+        <CFormInput
+          placeholder="Search Vendor"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ maxWidth: 300 }}
+        />
       </div>
 
-      <CTable striped hover responsive>
-        <CTableHead>
-          <CTableRow>
-            <CTableHeaderCell>Vendor Name</CTableHeaderCell>
-            <CTableHeaderCell>Price</CTableHeaderCell>
-            <CTableHeaderCell>Status</CTableHeaderCell>
-            <CTableHeaderCell>Actions</CTableHeaderCell>
-          </CTableRow>
-        </CTableHead>
-        <CTableBody>
-          {filteredQuotes.map((quote) => (
-            <CTableRow key={quote._id}>
-              <CTableDataCell>
-                {quote.vendorId?.businessName || quote.vendorId?.fullName || 'N/A'}
-              </CTableDataCell>
-              <CTableDataCell>${quote.price}</CTableDataCell>
-              <CTableDataCell>{quote.status}</CTableDataCell>
-              <CTableDataCell>
-                <CButton
-                  color="info"
-                  onClick={() => {
-                    setSelectedQuote(quote)
-                    setModalVisible(true)
-                  }}
-                >
-                  View
-                </CButton>
-                {quote.status === 'Pending' && (
-                  <>
+      {loading ? (
+        <div className="text-center my-5">
+          <CSpinner />
+          <div>Loading quotes...</div>
+        </div>
+      ) : (
+        <CTable striped hover responsive>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>Vendor Name</CTableHeaderCell>
+              <CTableHeaderCell>Price</CTableHeaderCell>
+              <CTableHeaderCell>Status</CTableHeaderCell>
+              <CTableHeaderCell>Actions</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {filteredQuotes.length === 0 ? (
+              <CTableRow>
+                <CTableDataCell colSpan={4} className="text-center">
+                  No quotes found.
+                </CTableDataCell>
+              </CTableRow>
+            ) : (
+              filteredQuotes.map((quote) => (
+                <CTableRow key={quote._id}>
+                  <CTableDataCell>
+                    {quote.vendorId?.businessName || quote.vendorId?.fullName || 'N/A'}
+                  </CTableDataCell>
+                  <CTableDataCell>${Number(quote.price).toLocaleString()}</CTableDataCell>
+                  <CTableDataCell>{quote.status}</CTableDataCell>
+                  <CTableDataCell>
                     <CButton
-                      color="success"
-                      className="ms-2"
-                      onClick={() => handleStatusChange(quote._id, 'Accepted')}
+                      color="info"
+                      onClick={() => {
+                        setSelectedQuote(quote)
+                        setModalVisible(true)
+                      }}
+                      disabled={actionLoadingId === quote._id}
                     >
-                      Accept
+                      View
                     </CButton>
+                    {quote.status === 'Pending' && (
+                      <>
+                        <CButton
+                          color="success"
+                          className="ms-2"
+                          onClick={() => handleStatusChange(quote._id, 'Accepted')}
+                          disabled={actionLoadingId === quote._id}
+                        >
+                          {actionLoadingId === quote._id ? <CSpinner size="sm" /> : 'Accept'}
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          className="ms-2"
+                          onClick={() => handleStatusChange(quote._id, 'Rejected')}
+                          disabled={actionLoadingId === quote._id}
+                        >
+                          {actionLoadingId === quote._id ? <CSpinner size="sm" /> : 'Reject'}
+                        </CButton>
+                      </>
+                    )}
                     <CButton
                       color="danger"
                       className="ms-2"
-                      onClick={() => handleStatusChange(quote._id, 'Rejected')}
+                      onClick={() => handleDeleteQuote(quote._id)}
+                      disabled={actionLoadingId === quote._id}
                     >
-                      Reject
+                      {actionLoadingId === quote._id ? <CSpinner size="sm" /> : 'Delete'}
                     </CButton>
-                  </>
-                )}
-              </CTableDataCell>
-            </CTableRow>
-          ))}
-        </CTableBody>
-      </CTable>
+                  </CTableDataCell>
+                </CTableRow>
+              ))
+            )}
+          </CTableBody>
+        </CTable>
+      )}
 
+      {/* Quote Details Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader closeButton>Quote Details</CModalHeader>
         <CModalBody>
@@ -150,8 +221,7 @@ const VendorQuotes = () => {
                 {selectedQuote.vendorId?.businessName || selectedQuote.vendorId?.fullName || 'N/A'}
               </p>
               <p>
-                <strong>Price:</strong>
-                {selectedQuote.price}
+                <strong>Price:</strong> ${Number(selectedQuote.price).toLocaleString()}
               </p>
               <p>
                 <strong>Details:</strong> {selectedQuote.details || 'No details provided.'}
@@ -165,6 +235,23 @@ const VendorQuotes = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+
+      {/* Toast Notification */}
+      <CToaster placement="top-end">
+        {toast.visible && (
+          <CToast
+            color={toast.color}
+            autohide={true}
+            delay={3000}
+            show={toast.visible}
+            fade={true}
+            onClose={() => setToast({ visible: false, message: '', color: '' })}
+          >
+            <CToastHeader>{toast.color === 'danger' ? 'Error' : 'Success'}</CToastHeader>
+            <CToastBody>{toast.message}</CToastBody>
+          </CToast>
+        )}
+      </CToaster>
     </div>
   )
 }

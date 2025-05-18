@@ -67,6 +67,9 @@ const ProcurementDetails = () => {
           <strong>Title:</strong> {procurement.title}
         </h6>
         <h6>
+          <strong>Description:</strong> {procurement.description || 'No description provided'}
+        </h6>
+        <h6>
           <strong>Department:</strong> {procurement.department}
         </h6>
         <h6>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom' // <-- import useNavigate
 import { useAuth } from '../../../context/AuthContext'
 import axios from 'axios'
 import {
@@ -14,6 +14,7 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
+  CButton,
 } from '@coreui/react'
 
 const RFQ_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/rfq`
@@ -21,6 +22,7 @@ const RFQ_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/rfq`
 const VendorRFQDetails = () => {
   const { id } = useParams()
   const { accessToken } = useAuth()
+  const navigate = useNavigate()
   const [rfq, setRfq] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -72,47 +74,57 @@ const VendorRFQDetails = () => {
   }
 
   return (
-    <CCard className="shadow-sm">
-      <CCardHeader className="bg-primary text-white fw-bold">
-        RFQ Details - {rfq.procurementId?.title || 'Untitled'}
-      </CCardHeader>
-      <CCardBody>
-        <p>
-          <strong>RFQ Number:</strong> {rfq.rfqNumber}
-        </p>
-        <p>
-          <strong>Deadline:</strong>{' '}
-          {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'N/A'}
-        </p>
-        <p>
-          <strong>Status:</strong> {rfq.status}
-        </p>
+    <>
+      <CButton color="secondary" className="mb-3" onClick={() => navigate(-1)}>
+        &larr; Back
+      </CButton>
 
-        <h5 className="mt-4">Products / Services</h5>
-        <CTable striped hover responsive>
-          <CTableHead color="light">
-            <CTableRow>
-              <CTableHeaderCell>#</CTableHeaderCell>
-              <CTableHeaderCell>Product / Service</CTableHeaderCell>
-              <CTableHeaderCell>Description</CTableHeaderCell>
-              <CTableHeaderCell>Quantity</CTableHeaderCell>
-              <CTableHeaderCell>Unit</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {rfq.products?.map((item, index) => (
-              <CTableRow key={index}>
-                <CTableHeaderCell>{index + 1}</CTableHeaderCell>
-                <CTableDataCell>{item.name}</CTableDataCell>
-                <CTableDataCell>{item.description}</CTableDataCell>
-                <CTableDataCell>{item.quantity}</CTableDataCell>
-                <CTableDataCell>{item.unit}</CTableDataCell>
+      <CCard className="shadow-sm">
+        <CCardHeader className="bg-primary text-white fw-bold">
+          RFQ Details - {rfq.procurementId?.title || 'Untitled'}
+        </CCardHeader>
+        <CCardBody>
+          <p>
+            <strong>RFQ Number:</strong> {rfq.rfqNumber || rfq._id}
+          </p>
+          <p>
+            <strong>Deadline:</strong>{' '}
+            {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'N/A'}
+          </p>
+          <p>
+            <strong>Description:</strong>{' '}
+            {rfq.procurementId?.description?.trim() || 'No description provided'}
+          </p>
+          <p>
+            <strong>Status:</strong> {rfq.status}
+          </p>
+
+          <h5 className="mt-4">Products / Services</h5>
+          <CTable striped hover responsive>
+            <CTableHead color="light">
+              <CTableRow>
+                <CTableHeaderCell>#</CTableHeaderCell>
+                <CTableHeaderCell>Product / Service</CTableHeaderCell>
+                <CTableHeaderCell>Description</CTableHeaderCell>
+                <CTableHeaderCell>Quantity</CTableHeaderCell>
+                <CTableHeaderCell>Unit</CTableHeaderCell>
               </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
-      </CCardBody>
-    </CCard>
+            </CTableHead>
+            <CTableBody>
+              {rfq.products?.map((item, index) => (
+                <CTableRow key={index}>
+                  <CTableHeaderCell>{index + 1}</CTableHeaderCell>
+                  <CTableDataCell>{item.name}</CTableDataCell>
+                  <CTableDataCell>{rfq.procurementId?.description || '-'}</CTableDataCell>
+                  <CTableDataCell>{item.quantity}</CTableDataCell>
+                  <CTableDataCell>{item.unit}</CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
+    </>
   )
 }
 

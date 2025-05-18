@@ -34,7 +34,6 @@ const ShipmentsList = () => {
       const res = await axios.get(SHIPMENT_API_URL, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-
       const fetched = res.data?.shipments || []
       setShipments(fetched)
       setFilteredShipments(fetched)
@@ -52,111 +51,116 @@ const ShipmentsList = () => {
     if (value === 'All') {
       setFilteredShipments(shipments)
     } else {
-      setFilteredShipments(
-        shipments.filter(
-          (s) =>
-            s.shipment?.shipment_description &&
-            s.shipment.shipment_description.toLowerCase().includes(value.toLowerCase()),
-        ),
-      )
+      const filtered = shipments.filter((shipment) => shipment.delivery?.status === value)
+      setFilteredShipments(filtered)
     }
   }
 
-  const handleSearchChange = (e) => {
-    const keyword = e.target.value.toLowerCase()
-    setSearch(keyword)
-    setFilteredShipments(
-      shipments.filter((s) => s.shipper?.shipper_company_name?.toLowerCase().includes(keyword)),
+  const handleSearch = (value) => {
+    setSearch(value)
+    const lowercased = value.toLowerCase()
+    const filtered = shipments.filter((shipment) =>
+      shipment.tracking_id?.toString().toLowerCase().includes(lowercased),
     )
+    setFilteredShipments(filtered)
+  }
+
+  const openModal = (shipment) => {
+    setSelectedShipment(shipment)
+    setModalVisible(true)
+  }
+
+  const closeModal = () => {
+    setSelectedShipment(null)
+    setModalVisible(false)
   }
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="mb-4 fw-bold">Shipment Records</h1>
-
-      <div className="d-flex justify-content-between mb-3">
+    <>
+      <div className="d-flex gap-2 mb-3">
+        <CFormInput
+          placeholder="Search by Tracking ID"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
         <CFormSelect value={filter} onChange={(e) => handleFilterChange(e.target.value)}>
           <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="In Transit">In Transit</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Delayed">Delayed</option>
         </CFormSelect>
-
-        <CFormInput
-          placeholder="Search Shipper Company"
-          value={search}
-          onChange={handleSearchChange}
-        />
       </div>
 
-      <CTable striped hover responsive>
+      <CTable hover responsive>
         <CTableHead>
           <CTableRow>
-            <CTableHeaderCell>#</CTableHeaderCell>
-            <CTableHeaderCell>Shipper Company</CTableHeaderCell>
             <CTableHeaderCell>Tracking ID</CTableHeaderCell>
-            <CTableHeaderCell>Shipment Description</CTableHeaderCell>
-            <CTableHeaderCell>Actions</CTableHeaderCell>
+            <CTableHeaderCell>Status</CTableHeaderCell>
+            <CTableHeaderCell>Consignee</CTableHeaderCell>
+            <CTableHeaderCell>Driver</CTableHeaderCell>
+            <CTableHeaderCell>Action</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {Array.isArray(filteredShipments) && filteredShipments.length > 0 ? (
-            filteredShipments.map((shipment, index) => (
-              <CTableRow key={shipment._id}>
-                <CTableDataCell>{index + 1}</CTableDataCell>
-                <CTableDataCell>{shipment.shipper?.shipper_company_name || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{shipment.tracking_id || 'N/A'}</CTableDataCell>
-                <CTableDataCell>{shipment.shipment?.shipment_description || 'N/A'}</CTableDataCell>
-                <CTableDataCell>
-                  <CButton
-                    color="info"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedShipment(shipment)
-                      setModalVisible(true)
-                    }}
-                  >
-                    View
-                  </CButton>
-                </CTableDataCell>
-              </CTableRow>
-            ))
-          ) : (
-            <CTableRow>
-              <CTableDataCell colSpan={5} className="text-center text-muted">
-                No shipments found.
+          {filteredShipments.map((shipment) => (
+            <CTableRow key={shipment._id}>
+              <CTableDataCell>{shipment.tracking_id}</CTableDataCell>
+              <CTableDataCell>{shipment.delivery?.status || 'N/A'}</CTableDataCell>
+              <CTableDataCell>{shipment.consignee?.consignee_company_name || 'N/A'}</CTableDataCell>
+              <CTableDataCell>{shipment.vehicle?.driver_name || 'N/A'}</CTableDataCell>
+              <CTableDataCell>
+                <CButton size="sm" color="primary" onClick={() => openModal(shipment)}>
+                  View
+                </CButton>
               </CTableDataCell>
             </CTableRow>
-          )}
+          ))}
         </CTableBody>
       </CTable>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader closeButton>Shipment Details</CModalHeader>
+      <CModal visible={modalVisible} onClose={closeModal}>
+        <CModalHeader closeButton>
+          <strong>Shipment Details</strong>
+        </CModalHeader>
         <CModalBody>
           {selectedShipment && (
             <>
               <p>
-                <strong>Shipper Company:</strong>{' '}
-                {selectedShipment.shipper?.shipper_company_name || 'N/A'}
+                <strong>Tracking ID:</strong> {selectedShipment.tracking_id}
               </p>
               <p>
-                <strong>Tracking ID:</strong> {selectedShipment.tracking_id || 'N/A'}
+                <strong>Status:</strong> {selectedShipment.delivery?.status || 'N/A'}
               </p>
               <p>
-                <strong>Description:</strong>{' '}
-                {selectedShipment.shipment?.shipment_description || 'N/A'}
+                <strong>Consignee:</strong> {selectedShipment.consignee?.consignee_company_name}
               </p>
               <p>
-                <strong>Details:</strong> {selectedShipment.details || 'N/A'}
+                <strong>Shipper:</strong> {selectedShipment.shipper?.shipper_company_name}
+              </p>
+              <p>
+                <strong>Vehicle:</strong> {selectedShipment.vehicle?.name}
+              </p>
+              <p>
+                <strong>Driver:</strong> {selectedShipment.vehicle?.driver_name}
+              </p>
+              <p>
+                <strong>Weight:</strong> {selectedShipment.shipment?.shipment_weight} kg
+              </p>
+              <p>
+                <strong>Dimensions:</strong>{' '}
+                {`${selectedShipment.shipment?.shipment_dimension_length} x ${selectedShipment.shipment?.shipment_dimension_width} x ${selectedShipment.shipment?.shipment_dimension_height} cm`}
               </p>
             </>
           )}
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+          <CButton color="secondary" onClick={closeModal}>
             Close
           </CButton>
         </CModalFooter>
       </CModal>
-    </div>
+    </>
   )
 }
 

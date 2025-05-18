@@ -46,8 +46,6 @@ const CreateProcurement = () => {
     estimatedCost: 0,
   })
 
-  // const [currency, setCurrency] = useState('PHP')
-  //  const currencyOptions = ['PHP', 'USD', 'EUR', 'GBP', 'JPY']
   const [toasts, setToasts] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -162,7 +160,7 @@ const CreateProcurement = () => {
 
       const res = await axios.post(PROCUREMENT_API_URL, procurementPayload, { headers })
 
-      setProcurements((prev) => [...prev, res.data]) // Optimistically add to list
+      setProcurements((prev) => [...prev, res.data])
 
       setProcurementData({
         title: '',
@@ -184,17 +182,26 @@ const CreateProcurement = () => {
     }
   }
 
-  const handleDelete = async () => {
-    if (!deleteId || !accessToken) return
+  const handleDelete = async (id) => {
+    if (!id || !accessToken) return
 
     try {
-      await axios.delete(`${PROCUREMENT_API_URL}/${deleteId}`, {
+      await axios.delete(`${PROCUREMENT_API_URL}/${id}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-      setProcurements((prev) => prev.filter((p) => p._id !== deleteId))
-      setDeleteModal(false)
+      setProcurements((prev) => prev.filter((p) => p._id !== id))
+
+      setToasts((prev) => [
+        ...prev,
+        { id: Date.now(), color: 'success', message: 'Procurement deleted successfully' },
+      ])
     } catch (err) {
       console.error('Error deleting procurement:', err)
+
+      setToasts((prev) => [
+        ...prev,
+        { id: Date.now(), color: 'danger', message: 'Failed to delete procurement' },
+      ])
     }
   }
 
@@ -325,22 +332,6 @@ const CreateProcurement = () => {
                   Add Product
                 </CButton>
               </CCol>
-              {/**     <CCol md={6}>
-                <label htmlFor="currency">Select Currency:</label>
-                <select
-                  id="currency"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="form-control"
-                >
-                  {currencyOptions.map((cur) => (
-                    <option key={cur} value={cur}>
-                      {cur}
-                    </option>
-                  ))}
-                </select>
-              </CCol>
-     remove currency         */}
             </CRow>
 
             <CRow className="mt-3 text-end">
@@ -439,6 +430,9 @@ const CreateProcurement = () => {
                         </CButton>
                       </>
                     )}
+                    <CButton color="danger" size="sm" onClick={() => handleDelete(proc._id)}>
+                      Delete
+                    </CButton>
                   </CTableDataCell>
                 </CTableRow>
               ))}

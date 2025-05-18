@@ -1,8 +1,8 @@
 import { lazy } from 'react'
+import { element } from 'prop-types'
 
 // Direct imports
 import CreateAwardNotice from './views/pages/Award/award.js'
-import VendorQuotes from './views/pages/Quotes/Quotes.js'
 import ShipmentsList from './views/pages/shipment/ShipmentList.js'
 import CreateAnnouncement from './views/pages/Announcement/announcement.js'
 import CreateNotification from './views/pages/Notification/Notification.js'
@@ -29,15 +29,16 @@ const ProcurementDetails = lazy(
 )
 const RFQDetails = lazy(() => import('./components/procurement/procurement/RFQDetails.js'))
 const PurchaseManagement = lazy(() => import('./views/pages/Procurement/PurchaseManagement.js'))
-const ShipmentsAndTracking = lazy(() => import('./views/pages/Procurement/Shipments.js'))
 const CreateRFQ = lazy(() => import('./components/procurement/procurement/CreateRFQ.js'))
 const ApprovalList = lazy(() => import('./views/pages/Procurement/ApprovalList.js'))
 const SubmittedQuotesPage = lazy(() => import('./views/pages/Procurement/SubmitQuote.js'))
+const DeliveryTrackingWithList = lazy(() => import('./views/pages/Procurement/Shipments.js'))
 
 // Vendor Management
 const VendorRFQList = lazy(() => import('./views/pages/VendorManagement/Vendor.js'))
 const VendorRFQDetails = lazy(() => import('./views/pages/VendorManagement/VendorRFQDetails.js'))
 const Vendors = lazy(() => import('./views/pages/Procurement/VendorManagement.js'))
+const ShipmentsAndTracking = lazy(() => import('./views/pages/shipment/ShipmentManagement.js'))
 
 // Routes
 const routes = [
@@ -62,17 +63,21 @@ const routes = [
   { path: '/procurement/:id', name: 'Procurement Details', element: ProcurementDetails },
   { path: '/procurement/rfq/:id', name: 'RFQ Details', element: RFQDetails },
   { path: '/procurement/po-payments', name: 'Purchase Management', element: PurchaseManagement },
-  { path: '/procurement/shipments', name: 'Shipment Tracking', element: ShipmentsAndTracking },
+  { path: '/vendor/shipments', name: 'Shipment Tracking', element: ShipmentsAndTracking },
   { path: '/rfq/create/:id', name: 'Create RFQ', element: CreateRFQ },
   { path: '/admin/approval', name: 'Approval List', element: ApprovalList },
   { path: '/procurement/submit-quote', name: 'Submit Quote', element: SubmittedQuotesPage },
+  {
+    path: '/procurement/shipments',
+    name: 'Shipments List and Tracking',
+    element: DeliveryTrackingWithList,
+  },
 
   // Vendor Section
-  { path: '/vendor/rfqs', name: 'Vendor RFQs', element: VendorRFQList },
-  { path: '/vendor/quotes', name: 'Vendor Quotes', element: VendorQuotes },
+  { path: '/vendor/quotes', name: 'Vendor RFQs', element: VendorRFQList },
   { path: '/vendor/invoice', name: 'Invoice Page', element: InvoicePage },
   { path: '/vendor/communication', name: 'Vendor Communication', element: ChatbotCard },
-  { path: '/vendor/shipments', name: 'Vendor Shipments', element: ShipmentsList },
+  { path: '/vendor/shipments-records', name: 'Vendor Shipments', element: ShipmentsList },
   { path: '/vendor/rfqs/:id', name: 'Vendor RFQ Details', element: VendorRFQDetails },
   { path: '/vendor/management', name: 'VendorManagement', element: Vendors },
 ]

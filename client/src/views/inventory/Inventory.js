@@ -62,6 +62,12 @@ const Inventory = () => {
     fetchShipments()
     fetchProducts()
     fetchWarehouses()
+
+    const intervalId = setInterval(() => {
+      fetchInventoryData()
+    }, 30000)
+
+    return () => clearInterval(intervalId)
   }, [])
 
   const fetchInventoryData = async () => {

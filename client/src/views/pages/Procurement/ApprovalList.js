@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -12,13 +12,7 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CBadge,
   CSpinner,
-  CModal,
-  CModalHeader,
-  CModalBody,
-  CModalFooter,
-  CFormTextarea,
 } from '@coreui/react'
 import { useAuth } from '../../../context/AuthContext'
 
@@ -29,10 +23,7 @@ const ApprovalList = () => {
   const { accessToken } = useAuth()
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
-  const [rejectModal, setRejectModal] = useState(false)
-  const [selectedId, setSelectedId] = useState(null)
-  const [rejectReason, setRejectReason] = useState('')
+  const [updatingId, setUpdatingId] = useState(null)
 
   useEffect(() => {
     const fetchProcurements = async () => {
@@ -53,7 +44,7 @@ const ApprovalList = () => {
 
   const handleApprove = async (id) => {
     try {
-      setUpdating(true)
+      setUpdatingId(id)
       await axios.patch(
         `${PROCUREMENT_API_URL}/${id}/approve`,
         {},
@@ -61,39 +52,27 @@ const ApprovalList = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         },
       )
-      setProcurements(procurements.filter((p) => p._id !== id))
+      setProcurements((prev) => prev.filter((p) => p._id !== id))
     } catch (err) {
       alert('Failed to approve procurement')
+      console.error(err)
     } finally {
-      setUpdating(false)
+      setUpdatingId(null)
     }
   }
 
-  const handleReject = async () => {
-    if (!rejectReason.trim()) {
-      alert('Please provide a rejection reason.')
-      return
-    }
-
+  const handleReject = async (id) => {
     try {
-      setUpdating(true)
-      await axios.patch(
-        `${PROCUREMENT_API_URL}/${selectedId}/reject`,
-        { rejectionReason },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      )
-
-      setProcurements(procurements.filter((p) => p._id !== selectedId))
-
-      setRejectModal(false)
-      setRejectReason('')
+      setUpdatingId(id)
+      await axios.patch(`${PROCUREMENT_API_URL}/${id}/reject`, null, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      setProcurements((prev) => prev.filter((p) => p._id !== id))
     } catch (err) {
-      console.error('Failed to reject procurement:', err)
       alert('Failed to reject procurement')
+      console.error(err)
     } finally {
-      setUpdating(false)
+      setUpdatingId(null)
     }
   }
 
@@ -123,52 +102,38 @@ const ApprovalList = () => {
                   <CTableDataCell>{p.requestedBy?.email || 'Unknown'}</CTableDataCell>
                   <CTableDataCell>
                     <CButton
+                      color="primary"
+                      className="me-2"
+                      onClick={() => navigate(`/procurement/${p._id}`)}
+                    >
+                      View Details
+                    </CButton>
+                    <CButton
                       color="success"
                       className="me-2"
                       onClick={() => handleApprove(p._id)}
-                      disabled={updating}
+                      disabled={updatingId === p._id}
                     >
-                      {updating ? <CSpinner size="sm" /> : 'Approve'}
+                      {updatingId === p._id ? <CSpinner size="sm" /> : 'Approve'}
                     </CButton>
                     <CButton
                       color="danger"
-                      onClick={() => {
-                        setSelectedId(p._id)
-                        setRejectModal(true)
-                      }}
+                      disabled={updatingId === p._id}
+                      onClick={() => handleReject(p._id)}
                     >
-                      Reject
+                      {updatingId === p._id ? <CSpinner size="sm" /> : 'Reject'}
                     </CButton>
                   </CTableDataCell>
                 </CTableRow>
               ))
             ) : (
               <CTableRow>
-                <CTableDataCell colSpan="4">No pending Procurement Request.</CTableDataCell>
+                <CTableDataCell colSpan="4">No pending Procurement Requests.</CTableDataCell>
               </CTableRow>
             )}
           </CTableBody>
         </CTable>
       </CCardBody>
-      {/* Reject Modal */}
-      <CModal visible={rejectModal} onClose={() => setRejectModal(false)}>
-        <CModalHeader>Reject Procurement</CModalHeader>
-        <CModalBody>
-          <CFormTextarea
-            placeholder="Enter rejection reason..."
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-          />
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setRejectModal(false)}>
-            Cancel
-          </CButton>
-          <CButton color="danger" onClick={handleReject}>
-            Confirm Reject
-          </CButton>
-        </CModalFooter>
-      </CModal>
     </CCard>
   )
 }

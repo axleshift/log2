@@ -93,14 +93,14 @@ export const deleteProcurementById = async (req, res) => {
 export const approveProcurement = async (req, res) => {
     try {
         const { id } = req.params;
-
         const procurement = await Procurement.findByIdAndUpdate(id, { status: "Approved", rejectionReason: null }, { new: true });
 
         if (!procurement) return res.status(404).json({ message: "Procurement request not found" });
 
-        res.status(200).json({ message: "Procurement Approved", data: procurement });
+        return res.status(200).json({ message: "Procurement approved", data: procurement });
     } catch (error) {
-        res.status(500).json({ message: "Error approving procurement", error });
+        console.error("Error approving procurement:", error);
+        return res.status(500).json({ message: "Error approving procurement", error: error.message });
     }
 };
 
@@ -108,21 +108,20 @@ export const approveProcurement = async (req, res) => {
 export const rejectProcurement = async (req, res) => {
     try {
         const { id } = req.params;
-        const { rejectionReason } = req.body;
 
-        if (!rejectionReason || rejectionReason.trim() === "") {
-            return res.status(400).json({ message: "Rejection reason is required" });
-        }
-
-        const procurement = await Procurement.findByIdAndUpdate(id, { status: "Rejected", rejectionReason }, { new: true });
+        const procurement = await Procurement.findByIdAndUpdate(
+            id,
+            { status: "Rejected", rejectionReason: null }, // clear any previous reason
+            { new: true }
+        );
 
         if (!procurement) {
             return res.status(404).json({ message: "Procurement request not found" });
         }
 
-        res.status(200).json({ message: "Procurement Rejected", data: procurement });
+        return res.status(200).json({ message: "Procurement rejected", data: procurement });
     } catch (error) {
         console.error("Error rejecting procurement:", error);
-        res.status(500).json({ message: "Error rejecting procurement", error });
+        return res.status(500).json({ message: "Error rejecting procurement", error: error.message });
     }
 };

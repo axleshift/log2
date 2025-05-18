@@ -485,11 +485,10 @@ const ShipmentManagerPage = () => {
                 >
                   Edit
                 </CButton>
-                {/** 
+
                 <CButton size="sm" color="danger" onClick={() => handleDelete(shipment._id)}>
                   Delete
                 </CButton>
-                */}
               </CTableDataCell>
             </CTableRow>
           ))}

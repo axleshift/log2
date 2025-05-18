@@ -139,6 +139,29 @@ const VendorManagement = () => {
     }
   }
 
+  const handleDeleteVendor = async (userId) => {
+    setActionLoading(userId)
+    try {
+      const response = await fetch(`${VENDOR_API_URL}/user/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      if (response.ok) {
+        setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId))
+      } else {
+        console.error('Error deleting vendor:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error deleting vendor:', error)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   const handleViewDetails = (user) => {
     setSelectedUser(user)
     fetchVendorDetails(user._id)
@@ -216,6 +239,14 @@ const VendorManagement = () => {
                                 Approve
                               </CButton>
                             )}
+                            <CButton
+                              color="danger"
+                              onClick={() => handleDeleteVendor(user._id)}
+                              className="ml-2"
+                              disabled={actionLoading === user._id}
+                            >
+                              {actionLoading === user._id ? <CSpinner size="sm" /> : 'Delete'}
+                            </CButton>
                           </CTableDataCell>
                         </CTableRow>
                       ))
