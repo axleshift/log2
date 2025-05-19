@@ -32,13 +32,10 @@ export const createVendorQuote = async (req, res) => {
 
         await quote.save();
 
-        const populatedQuote = await quote
-            .populate({
-                path: "vendorId",
-                select: "businessName fullName",
-            })
-            .execPopulate();
-
+        const populatedQuote = await quote.populate({
+            path: "vendorId",
+            select: "businessName fullName",
+        });
         res.status(201).json(populatedQuote);
     } catch (error) {
         console.error("Error creating quote:", error);
