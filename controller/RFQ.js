@@ -90,58 +90,7 @@ export const getVendorRFQById = async (req, res) => {
     }
 };
 
-// Submit a quote for a given RFQ (authenticated vendor)
-export const submitQuote = async (req, res) => {
-    try {
-        if (!req.user?.id) {
-            return res.status(401).json({ message: "Unauthorized! User not logged in." });
-        }
-
-        const { totalPrice, quantity, leadTime, terms, validUntil } = req.body;
-        const rfqId = req.params.id;
-
-        const vendor = await Vendor.findOne({ userId: req.user.id });
-        if (!vendor) {
-            return res.status(404).json({ message: "Vendor not found." });
-        }
-
-        const rfq = await RFQ.findById(rfqId);
-        if (!rfq) {
-            return res.status(404).json({ message: "RFQ not found." });
-        }
-
-        if (!rfq.vendors.includes(vendor._id)) {
-            return res.status(403).json({ message: "Vendor not invited to this RFQ." });
-        }
-
-        // Check if vendor has already submitted a quote
-        const existingQuote = rfq.quotes.find((q) => q.vendorId.toString() === vendor._id.toString());
-        if (existingQuote) {
-            return res.status(400).json({ message: "Quote already submitted by this vendor." });
-        }
-
-        const newQuote = {
-            vendorId: vendor._id,
-            totalPrice,
-            quantity,
-            leadTime,
-            terms,
-            validUntil,
-            quoteDate: new Date(),
-            status: "Pending",
-        };
-
-        rfq.quotes.push(newQuote);
-        await rfq.save();
-
-        return res.status(201).json({ message: "Quote submitted successfully.", quote: newQuote });
-    } catch (error) {
-        console.error("Quote submission error:", error);
-        return res.status(500).json({ message: "Server error. Please try again later." });
-    }
-};
-
-// Delete an RFQ by ID (authenticated)
+// Delete an RFQ by ID
 export const deleteRFQ = async (req, res) => {
     try {
         if (!req.user?.id) {

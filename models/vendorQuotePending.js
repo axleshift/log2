@@ -9,6 +9,8 @@ const vendorQuotePendingSchema = new mongoose.Schema(
         },
         price: { type: Number, required: true },
         details: { type: String },
+        leadTime: { type: String },
+        terms: { type: String },
         status: {
             type: String,
             enum: ["Pending", "Accepted", "Rejected"],
