@@ -12,7 +12,14 @@ import {
   CAlert,
 } from '@coreui/react'
 
-function ProductForm({ formData, handleChange, handleFileChange, handleSubmit, loading, error }) {
+function ProductForm({
+  formData,
+  handleChange,
+  handleFileChange,
+  handleSubmit,
+  loading,
+  error = '',
+}) {
   return (
     <CForm onSubmit={handleSubmit}>
       {error && <CAlert color="danger">{error}</CAlert>}
@@ -214,10 +221,6 @@ ProductForm.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
-}
-
-ProductForm.defaultProps = {
-  error: '',
 }
 
 export default ProductForm

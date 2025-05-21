@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import axios from 'axios'
 import {
   CButton,
@@ -26,7 +26,6 @@ const VENDOR_API_URL = `${BASE_URL}/api/v1/vendor`
 const PRODUCT_API_URL = `${BASE_URL}/api/v1/product`
 const WAREHOUSE_API_URL = 'https://backend-log1.axleshift.com/api/v1/warehouseLoc/locations'
 
-// Helper: Wrap text for pdf-lib rendering
 const wrapText = (font, text, maxWidth, fontSize) => {
   const words = text.split(' ')
   const lines = []
@@ -111,7 +110,15 @@ const InvoicePage = () => {
     fetchData()
   }, [fetchData])
 
-  const getWarehouseName = (id) => warehouses?.data?.find((w) => w._id === id)?.warehouseName || '—'
+  const warehouseMap = useMemo(() => {
+    const map = {}
+    warehouses?.data?.forEach((w) => {
+      map[w._id] = w.warehouseName
+    })
+    return map
+  }, [warehouses])
+
+  const getWarehouseName = (id) => warehouseMap[id] || '—'
 
   const calculateRowHeight = (rowTexts, columnWidths, font, fontSize) => {
     const wrappedCols = rowTexts.map((text, i) => wrapText(font, text, columnWidths[i], fontSize))

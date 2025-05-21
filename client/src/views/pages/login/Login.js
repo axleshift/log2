@@ -132,7 +132,7 @@ const Login = () => {
     } else if (user.role === 'staff') {
       navigate('/procurement')
     } else if (user.role === 'vendor') {
-      navigate('/inventory')
+      navigate('/dashboard')
     } else {
       setNotification({ message: 'Unauthorized role.', type: 'danger' })
     }

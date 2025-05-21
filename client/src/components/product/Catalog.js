@@ -71,8 +71,8 @@ function ProductCatalog() {
     setFilteredProducts(filtered)
   }, [searchQuery, selectedCategory, priceRange, products])
 
-  const onViewDetails = (productId) => navigate(`/procurement/product/${productId}`)
-  const onAddProduct = () => navigate('/procurement/product/new')
+  const onViewDetails = (productId) => navigate(`/product/${productId}`)
+  const onAddProduct = () => navigate('/product/new')
 
   return (
     <CContainer className="py-4">

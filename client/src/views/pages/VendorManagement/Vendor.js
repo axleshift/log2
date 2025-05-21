@@ -41,12 +41,39 @@ const VendorRFQsWithQuotes = () => {
   const [error, setError] = useState(null)
   const [toasts, setToasts] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
-  const [form, setForm] = useState({ price: '', details: '' })
+  const [form, setForm] = useState({ price: '', details: '', status: 'Pending' })
   const [selectedRFQ, setSelectedRFQ] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [quoteStatuses, setQuoteStatuses] = useState({})
 
   const showToast = (message, color = 'success') => {
-    setToasts((prev) => [...prev, { id: Date.now(), message, color }])
-    setTimeout(() => setToasts((prev) => prev.slice(1)), 4000)
+    const id = Date.now()
+    setToasts((prev) => [...prev, { id, message, color }])
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 4000)
+  }
+
+  const fetchQuoteStatus = async (rfqId) => {
+    try {
+      const response = await axios.get(`${QUOTE_API_URL}/status/${rfqId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      return response.data.status || 'Not Submitted'
+    } catch {
+      return 'Not Submitted'
+    }
+  }
+
+  const fetchAllQuoteStatuses = async (rfqsList) => {
+    const statuses = {}
+    await Promise.all(
+      rfqsList.map(async (rfq) => {
+        const status = await fetchQuoteStatus(rfq._id)
+        statuses[rfq._id] = status
+      }),
+    )
+    setQuoteStatuses(statuses)
   }
 
   const fetchVendorRFQs = async () => {
@@ -54,10 +81,10 @@ const VendorRFQsWithQuotes = () => {
       const response = await axios.get(`${RFQ_API_URL}/vendor/rfqs`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-      setRfqs(response.data.rfqs || [])
-      console.log('Fetched RFQs:', response.data.rfqs)
+      const rfqList = response.data.rfqs || []
+      setRfqs(rfqList)
+      fetchAllQuoteStatuses(rfqList)
     } catch (err) {
-      console.error('Failed to fetch RFQs:', err)
       setError(err.response?.data?.message || 'Failed to load RFQs.')
     } finally {
       setLoading(false)
@@ -72,7 +99,7 @@ const VendorRFQsWithQuotes = () => {
 
   const openQuoteModal = (rfq) => {
     setSelectedRFQ(rfq)
-    setForm({ price: '', details: '' })
+    setForm({ price: '', details: '', leadTime: '', terms: '', status: 'Pending' })
     setModalVisible(true)
   }
 
@@ -84,6 +111,9 @@ const VendorRFQsWithQuotes = () => {
   const handleSubmitQuote = async (e) => {
     e.preventDefault()
     if (!selectedRFQ) return
+
+    setSubmitting(true)
+
     try {
       await axios.post(
         QUOTE_API_URL,
@@ -91,6 +121,9 @@ const VendorRFQsWithQuotes = () => {
           rfqId: selectedRFQ._id,
           price: form.price,
           details: form.details,
+          leadTime: form.leadTime,
+          terms: form.terms,
+          status: form.status,
         },
         {
           headers: {
@@ -99,11 +132,29 @@ const VendorRFQsWithQuotes = () => {
           },
         },
       )
+
+      showToast('Quote submitted!', 'success')
       setModalVisible(false)
-      showToast('Quote submitted!')
+      setForm({ price: '', details: '', leadTime: '', terms: '', status: 'Pending' })
+      fetchVendorRFQs()
     } catch (err) {
       console.error(err)
       showToast('Failed to submit quote', 'danger')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteRFQ = async (rfqId) => {
+    try {
+      await axios.delete(`${RFQ_API_URL}/${rfqId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      showToast('RFQ deleted!', 'success')
+      fetchVendorRFQs()
+    } catch (error) {
+      console.error('Delete failed:', error)
+      showToast('Failed to delete RFQ', 'danger')
     }
   }
 
@@ -130,6 +181,7 @@ const VendorRFQsWithQuotes = () => {
                 <CTableHeaderCell>#</CTableHeaderCell>
                 <CTableHeaderCell>Title</CTableHeaderCell>
                 <CTableHeaderCell>Due Date</CTableHeaderCell>
+                <CTableHeaderCell>Quote Status</CTableHeaderCell>
                 <CTableHeaderCell>Action</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -141,12 +193,21 @@ const VendorRFQsWithQuotes = () => {
                   <CTableDataCell>
                     {rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : 'N/A'}
                   </CTableDataCell>
+                  <CTableDataCell>{quoteStatuses[rfq._id] || 'Loading...'}</CTableDataCell>
                   <CTableDataCell>
                     <Link to={`/vendor/rfqs/${rfq._id}`} className="btn btn-sm btn-primary me-2">
                       View Details
                     </Link>
-                    <CButton color="success" size="sm" onClick={() => openQuoteModal(rfq)}>
+                    <CButton
+                      color="success"
+                      size="sm"
+                      onClick={() => openQuoteModal(rfq)}
+                      className="me-2"
+                    >
                       Submit Quote
+                    </CButton>
+                    <CButton color="danger" size="sm" onClick={() => handleDeleteRFQ(rfq._id)}>
+                      Delete
                     </CButton>
                   </CTableDataCell>
                 </CTableRow>
@@ -156,30 +217,66 @@ const VendorRFQsWithQuotes = () => {
         )}
       </CCardBody>
 
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader>Submit Quote for {selectedRFQ?.procurementId?.title || 'RFQ'}</CModalHeader>
+      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} scrollable>
+        <CModalHeader>
+          <strong>Submit Quote for</strong>&nbsp;{selectedRFQ?.procurementId?.title || 'RFQ'}
+        </CModalHeader>
         <CModalBody>
           <form onSubmit={handleSubmitQuote}>
             <CRow className="mb-3">
-              <CCol md={6}>
-                <CFormLabel>Price</CFormLabel>
+              <CCol md={12} className="mb-3">
+                <CFormLabel htmlFor="price">Price</CFormLabel>
                 <CFormInput
+                  id="price"
                   name="price"
                   type="number"
                   value={form.price}
                   onChange={handleChange}
                   required
+                  placeholder="Enter your quote price"
                 />
               </CCol>
-              <CCol md={6}>
-                <CFormLabel>Details</CFormLabel>
-                <CFormTextarea name="details" value={form.details} onChange={handleChange} />
+
+              <CCol md={12} className="mb-3">
+                <CFormLabel htmlFor="details">Details / Description</CFormLabel>
+                <CFormTextarea
+                  id="details"
+                  name="details"
+                  value={form.details}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Provide additional details if any"
+                />
+              </CCol>
+
+              <CCol md={12} className="mb-3">
+                <CFormLabel htmlFor="leadTime">Lead Time</CFormLabel>
+                <CFormInput
+                  id="leadTime"
+                  name="leadTime"
+                  value={form.leadTime}
+                  onChange={handleChange}
+                  placeholder="e.g. 2 weeks"
+                />
+              </CCol>
+
+              <CCol md={12} className="mb-3">
+                <CFormLabel htmlFor="terms">Terms & Conditions</CFormLabel>
+                <CFormTextarea
+                  id="terms"
+                  name="terms"
+                  value={form.terms}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="Specify payment or delivery terms"
+                />
               </CCol>
             </CRow>
-            <CRow className="text-center">
+
+            <CRow className="text-center mb-2">
               <CCol>
-                <CButton color="primary" type="submit">
-                  Submit Quote
+                <CButton color="primary" type="submit" disabled={submitting}>
+                  {submitting ? 'Submitting...' : 'Submit Quote'}
                 </CButton>
               </CCol>
             </CRow>
@@ -194,7 +291,7 @@ const VendorRFQsWithQuotes = () => {
 
       <CToaster placement="top-end">
         {toasts.map((toast) => (
-          <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
+          <CToast key={toast.id} autohide visible color={toast.color}>
             <CToastHeader closeButton>
               {toast.color === 'success' ? '✅ Success' : '🚨 Error'}
             </CToastHeader>

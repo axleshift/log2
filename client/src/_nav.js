@@ -94,8 +94,8 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Product Catalog',
-    to: '/procurement/product-catalog',
-    role_exclude: ['vendor', 'user', 'staff'],
+    to: '/product-catalog',
+    role_exclude: ['user', 'staff'],
     icon: <FontAwesomeIcon icon={faBoxOpen} className="nav-icon" />,
   },
   {
@@ -108,7 +108,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Shipment List',
-    to: '/procurement/shipments',
+    to: '/shipments',
     role_exclude: ['vendor', 'user', 'staff'],
     icon: <FontAwesomeIcon icon={faTruck} className="nav-icon" />,
   },

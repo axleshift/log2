@@ -2,18 +2,26 @@ import React, { useState, useEffect } from 'react'
 import { CContainer, CRow, CCol, CSpinner, CWidgetStatsA } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilLockLocked, cilWarning } from '@coreui/icons'
 import UserDashboard from './UserDashboard'
 import MainChart from './MainChart'
+import { useAuth } from '../../context/AuthContext.js'
 
 const Dashboard = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([])
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const { user } = useAuth()
+  const [showAccessModal, setShowAccessModal] = useState(false)
 
   const BASE_URL = import.meta.env.VITE_API_URL
   const PO_API_URL = `${BASE_URL}/api/v1/purchaseOrder`
   const INVENTORY_API_URL = `${BASE_URL}/api/v1/inventory`
+
+  const isVendor = user?.role === 'vendor'
 
   const navigate = useNavigate()
 
@@ -74,8 +82,18 @@ const Dashboard = () => {
             value={purchaseOrders.length}
             title="Purchase Orders"
             icon={<i className="cil-list-numbered" />}
-            onClick={() => navigate('/procurement/po-payments')}
-            style={{ cursor: 'pointer', padding: '3rem' }}
+            onClick={() => {
+              if (isVendor) {
+                setShowAccessModal(true)
+                return
+              }
+              navigate('/procurement/po-payments')
+            }}
+            style={{
+              cursor: isVendor ? 'not-allowed' : 'pointer',
+              padding: '3rem',
+              opacity: isVendor ? 0.5 : 1,
+            }}
           />
         </CCol>
         <CCol sm="12" md="6" lg="4">
@@ -90,6 +108,28 @@ const Dashboard = () => {
           />
         </CCol>
       </CRow>
+
+      <CModal visible={showAccessModal} onClose={() => setShowAccessModal(false)}>
+        <CModalHeader closeButton>
+          <CIcon icon={cilWarning} size="lg" className="text-danger me-2" />
+          <strong> Access Restricted</strong>
+        </CModalHeader>
+        <CModalBody>
+          <div className="d-flex align-items-center">
+            <CIcon icon={cilLockLocked} size="xl" className="text-danger me-3" />
+            <div>
+              Vendors are not allowed to access the Purchase Orders section.
+              <br />
+              If you believe this is an error, please contact the administrator.
+            </div>
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setShowAccessModal(false)}>
+            Close
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
       {/* Main Chart with both inventory and purchase orders */}
       <MainChart inventory={inventory} purchaseOrders={purchaseOrders} />

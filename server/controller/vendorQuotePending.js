@@ -4,7 +4,7 @@ import Vendor from "../models/vendor.js";
 // Create a new vendor quote
 export const createVendorQuote = async (req, res) => {
     try {
-        const { rfqId, price, details } = req.body;
+        const { rfqId, price, details, leadTime, terms } = req.body;
 
         if (!rfqId || !price) {
             return res.status(400).json({ message: "RFQ ID and price are required." });
@@ -28,6 +28,8 @@ export const createVendorQuote = async (req, res) => {
             rfqId,
             price,
             details: details || "",
+            leadTime: leadTime || "",
+            terms: terms || "",
         });
 
         await quote.save();
@@ -36,6 +38,7 @@ export const createVendorQuote = async (req, res) => {
             path: "vendorId",
             select: "businessName fullName",
         });
+
         res.status(201).json(populatedQuote);
     } catch (error) {
         console.error("Error creating quote:", error);
@@ -92,5 +95,28 @@ export const deleteVendorQuote = async (req, res) => {
     } catch (error) {
         console.error("Error deleting quote:", error);
         res.status(500).json({ error: error.message });
+    }
+};
+
+// GET QUOTE STATUS
+export const getVendorQuoteStatus = async (req, res) => {
+    try {
+        const { rfqId } = req.params;
+
+        const vendor = await Vendor.findOne({ userId: req.user.id });
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found" });
+        }
+
+        const quote = await VendorQuotePending.findOne({ rfqId, vendorId: vendor._id });
+
+        if (!quote) {
+            return res.status(200).json({ status: "Not Submitted" });
+        }
+
+        return res.status(200).json({ status: quote.status });
+    } catch (error) {
+        console.error("Error getting quote status:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };

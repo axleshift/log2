@@ -7,29 +7,30 @@ import axios from 'axios'
 
 const PRODUCT_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/product/create`
 
+const initialFormState = {
+  name: '',
+  description: '',
+  price: '',
+  category: '',
+  stockQuantity: '',
+  images: [],
+  status: 'Available',
+  sku: '',
+  weight: '',
+  length: '',
+  width: '',
+  height: '',
+  manufacturer: '',
+  tags: '',
+  color: '',
+  size: '',
+}
+
 function ProductCreation() {
   const { accessToken } = useAuth()
   const navigate = useNavigate()
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    stockQuantity: '',
-    images: [],
-    status: 'Available',
-    sku: '',
-    weight: '',
-    length: '',
-    width: '',
-    height: '',
-    manufacturer: '',
-    tags: '',
-    color: '',
-    size: '',
-  })
-
+  const [formData, setFormData] = useState(initialFormState)
   const [loading, setLoading] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastColor, setToastColor] = useState('success')
@@ -48,11 +49,18 @@ function ProductCreation() {
   }
 
   useEffect(() => {
+    const updates = {}
+
     if (formData.name && !formData.sku) {
-      setFormData((prev) => ({ ...prev, sku: generateSKU() }))
+      updates.sku = generateSKU()
     }
+
     if (formData.name || formData.category) {
-      setFormData((prev) => ({ ...prev, tags: generateTags() }))
+      updates.tags = generateTags()
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setFormData((prev) => ({ ...prev, ...updates }))
     }
   }, [formData.name, formData.category])
 
@@ -66,28 +74,38 @@ function ProductCreation() {
     setFormData((prev) => ({ ...prev, images: files }))
   }
 
+  const validateForm = () => {
+    if (!formData.name || !formData.price || !formData.category) {
+      showToast('Please fill in all required fields: Name, Price, Category.', 'warning')
+      return false
+    }
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!accessToken) {
       return showToast('Authentication error. Please log in again.', 'danger')
     }
 
+    if (!validateForm()) return
+
     setLoading(true)
 
     const payload = new FormData()
 
-    // Append regular fields
     for (const key in formData) {
       if (key === 'images') {
-        formData.images.forEach((file) => payload.append('images', file))
+        if (formData.images.length > 0) {
+          formData.images.forEach((file) => payload.append('images', file))
+        }
       } else if (['length', 'width', 'height'].includes(key)) {
-        continue // handle dimensions separately
+        continue
       } else if (formData[key]) {
         payload.append(key, formData[key])
       }
     }
 
-    // Append nested dimensions
     const dimensions = JSON.stringify({
       length: formData.length || 0,
       width: formData.width || 0,
@@ -100,28 +118,9 @@ function ProductCreation() {
       await axios.post(PRODUCT_API_URL, payload, { headers })
 
       showToast('✅ Product created successfully!', 'success')
-      setTimeout(() => {
-        navigate('/procurement/product-catalog')
-      }, 2000)
+      setTimeout(() => navigate('/procurement/product-catalog'), 2000)
 
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        stockQuantity: '',
-        images: [],
-        status: 'Available',
-        sku: '',
-        weight: '',
-        length: '',
-        width: '',
-        height: '',
-        manufacturer: '',
-        tags: '',
-        color: '',
-        size: '',
-      })
+      setFormData(initialFormState)
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to create product'
       showToast(`🚨 ${msg}`, 'danger')

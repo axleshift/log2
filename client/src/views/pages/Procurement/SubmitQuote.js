@@ -161,7 +161,7 @@ const VendorQuotes = () => {
                   <CTableDataCell>
                     {quote.vendorId?.businessName || quote.vendorId?.fullName || 'N/A'}
                   </CTableDataCell>
-                  <CTableDataCell>${Number(quote.price).toLocaleString()}</CTableDataCell>
+                  <CTableDataCell>{Number(quote.price).toLocaleString()}</CTableDataCell>
                   <CTableDataCell>{quote.status}</CTableDataCell>
                   <CTableDataCell>
                     <CButton
@@ -221,10 +221,17 @@ const VendorQuotes = () => {
                 {selectedQuote.vendorId?.businessName || selectedQuote.vendorId?.fullName || 'N/A'}
               </p>
               <p>
-                <strong>Price:</strong> ${Number(selectedQuote.price).toLocaleString()}
+                <strong>Price:</strong>
+                {Number(selectedQuote.price).toLocaleString()}
               </p>
               <p>
                 <strong>Details:</strong> {selectedQuote.details || 'No details provided.'}
+              </p>
+              <p>
+                <strong>Lead Time:</strong> {selectedQuote.leadTime || 'No lead time specified.'}
+              </p>
+              <p>
+                <strong>Terms:</strong> {selectedQuote.terms || 'No terms specified.'}
               </p>
             </>
           )}

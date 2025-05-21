@@ -55,10 +55,10 @@ const routes = [
 
   // Procurement
   { path: '/procurement/rfq-management', name: 'RFQ Management', element: RFQManagement },
-  { path: '/procurement/product-catalog', name: 'Product Catalog', element: product },
+  { path: '/product-catalog', name: 'Product Catalog', element: product },
   { path: '/budget/request', name: 'Budget Request', element: BudgetRequestPage },
-  { path: '/procurement/product/:id', name: 'Product Details', element: ProductDetails },
-  { path: '/procurement/product/new', name: 'Create Product', element: ProductCreation },
+  { path: '/product/:id', name: 'Product Details', element: ProductDetails },
+  { path: '/product/new', name: 'Create Product', element: ProductCreation },
   { path: '/procurement', name: 'Procurement Dashboard', element: ProcurementPage },
   { path: '/procurement/:id', name: 'Procurement Details', element: ProcurementDetails },
   { path: '/procurement/rfq/:id', name: 'RFQ Details', element: RFQDetails },
@@ -68,7 +68,7 @@ const routes = [
   { path: '/admin/approval', name: 'Approval List', element: ApprovalList },
   { path: '/procurement/submit-quote', name: 'Submit Quote', element: SubmittedQuotesPage },
   {
-    path: '/procurement/shipments',
+    path: '/shipments',
     name: 'Shipments List and Tracking',
     element: DeliveryTrackingWithList,
   },
